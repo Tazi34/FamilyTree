@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs
+FamilyTree/ClientApp/.vscode/launch.json
+FamilyTree/ClientApp/package-lock.json
+FamilyTree/ClientApp/package-lock.json
