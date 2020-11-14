@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using FamilyTree.Helpers;
+using System;
 
 namespace FamilyTree
 {
@@ -21,6 +24,7 @@ namespace FamilyTree
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase(Guid.NewGuid().ToString()));
             services.AddControllersWithViews();
 
             // In production, the React files will be served from this directory
@@ -31,7 +35,7 @@ namespace FamilyTree
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DataContext context)
         {
             if (env.IsDevelopment())
             {
@@ -44,10 +48,14 @@ namespace FamilyTree
                 app.UseHsts();
             }
 
+            //var context = app.ApplicationServices.GetService<DataContext>();
+            AddTestData.AddData(context);
+
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
-
+            //app.UseSpaStaticFiles();
+            
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
@@ -57,15 +65,15 @@ namespace FamilyTree
                     pattern: "{controller}/{action=Index}/{id?}");
             });
 
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
+            //app.UseSpa(spa =>
+            //{
+            //    spa.Options.SourcePath = "ClientApp";
 
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            //    if (env.IsDevelopment())
+            //    {
+            //        spa.UseReactDevelopmentServer(npmScript: "start");
+            //    }
+            //});
         }
     }
 }
