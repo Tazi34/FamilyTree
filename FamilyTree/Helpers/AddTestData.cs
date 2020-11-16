@@ -16,7 +16,8 @@ namespace FamilyTree.Helpers
                 Name = "Krzys",
                 Surname = "Kicun",
                 Email = "abc@kicunmail",
-                Birthday = DateTime.Today
+                Birthday = DateTime.Today,
+                PasswordHash = "dupa123"
             };
             var testPrevSurname1 = new PreviousSurname
             {
