@@ -1,8 +1,8 @@
-import "./Tree.css";
 import React, { Component } from "react";
-import { mainNode } from "./D3Tree.js";
-
-const sampleData = require("../../samples/3levelsSample.json");
+// import { mainNode } from "./D3Tree";
+import { mainNode } from "./d3-dag/test";
+var _ = require("lodash");
+const dTree = require("d3-dtree");
 interface State {
   d3: any;
 }
@@ -10,6 +10,72 @@ interface Props {}
 
 const rd3 = require("react-d3-library");
 const RD3Component = rd3.Component;
+const treeData2 = [
+  {
+    name: "Niclas Superlongsurname",
+    class: "man",
+    textClass: "emphasis",
+    marriages: [
+      {
+        spouse: {
+          name: "Iliana",
+          class: "woman",
+          extra: {
+            nickname: "Illi",
+          },
+        },
+        children: [
+          {
+            name: "James",
+            class: "man",
+            marriages: [
+              {
+                spouse: {
+                  name: "Alexandra",
+                  class: "woman",
+                },
+                children: [
+                  {
+                    name: "Eric",
+                    class: "man",
+                    marriages: [
+                      {
+                        spouse: {
+                          name: "Eva",
+                          class: "woman",
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    name: "Jane",
+                    class: "woman",
+                  },
+                  {
+                    name: "Jasper",
+                    class: "man",
+                  },
+                  {
+                    name: "Emma",
+                    class: "woman",
+                  },
+                  {
+                    name: "Julia",
+                    class: "woman",
+                  },
+                  {
+                    name: "Jessica",
+                    class: "woman",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
 
 class Tree extends Component<Props, State> {
   constructor(props: any) {
@@ -21,9 +87,8 @@ class Tree extends Component<Props, State> {
   }
 
   render() {
-    console.log(mainNode);
     return (
-      <div style={{ border: "5px solid red", padding: "10px" }}>
+      <div id="graph" style={{ border: "5px solid red", padding: "10px" }}>
         <RD3Component data={this.state.d3} />
       </div>
     );

@@ -1,0 +1,15 @@
+export const X = "x";
+export const Y = "y";
+export const C_X = "cx";
+export const C_Y = "cy";
+export const WIDTH = "width";
+export const HEIGHT = "height";
+export const DISPLAY = "display";
+export const COLOR = "color";
+export const LINE_START_X = "x1";
+export const LINE_START_Y = "y1";
+export const LINE_END_X = "x2";
+export const LINE_END_Y = "y2";
+export const STYLE = "style";
+export const STROKE = "stroke";
+export const FILL = "fill";
