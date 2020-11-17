@@ -16,5 +16,11 @@ namespace FamilyTree.Helpers
             : base(options)
         {
         }
+        protected override void OnModelCreating(ModelBuilder model_builder)
+        {
+            model_builder.Entity<User>(entity => {
+                entity.HasIndex(e => e.Email).IsUnique(true);
+            });
+        }
     }
 }

@@ -37,24 +37,14 @@ namespace FamilyTree.Controllers
                 return Unauthorized();
             return Ok(request);
         }
-        [Authorize]
         [HttpPost]
         [Route("")]
         public ActionResult<AuthenticateResponse> Post(CreateUserRequest model)
         {
-            db_context.Users.Add(new User
-            {
-                Name = model.Name,
-                Email = model.Email,
-                Surname = model.Surname,
-                PasswordHash = model.Password
-            });
-            db_context.SaveChanges();
-            return GetJWT(new AuthenticateRequest
-            {
-                Email = model.Email,
-                Password = model.Password
-            });
+            var new_user = user_service.CreateUser(model);
+            if (new_user == null)
+                return BadRequest("Not unique email");
+            return new_user;
         }
         [HttpGet]
         [Route("facebook")]

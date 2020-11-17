@@ -21,5 +21,6 @@ namespace FamilyTree.Models
         [Required]
         [MinLength(6)]
         public string Password { get; set; }
+        public DateTime Birthday { get; set; }
     }
 }

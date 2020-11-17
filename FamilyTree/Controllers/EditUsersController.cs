@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FamilyTree.Helpers;
 using FamilyTree.Models;
+using FamilyTree.Services;
+using System.Security.Claims;
 
 namespace FamilyTree.Controllers
 {
@@ -13,41 +15,36 @@ namespace FamilyTree.Controllers
     [ApiController]
     public class EditUsersController : ControllerBase
     {
-        private DataContext db_context;
-        public EditUsersController(DataContext context)
+        private DataContext _context;
+        private UserService _user_service;
+        public EditUsersController(DataContext context, IUserService user_service)
         {
-            db_context = context;
+            _context = context;
+            _user_service = (UserService)user_service;
         }
         [HttpPut]
         [Route("")]
-        public AuthenticateResponse ModifyUser(ModifyUserRequest model)
+        public ActionResult<AuthenticateResponse> ModifyUser(ModifyUserRequest model)
         {
-            var user = db_context.Users.SingleOrDefault(user => user.UserId == model.UserId);
-            user.Name = model.Name;
-            user.Email = model.Email;
-            user.Surname = model.Surname;
-            db_context.SaveChanges();
-            return new AuthenticateResponse
-            {
-                UserId = user.UserId,
-                Name = user.Name,
-                Email = user.Email,
-                Surname = user.Surname
-            };
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            if (userId != model.UserId)
+                return Unauthorized();
+            var result = _user_service.Modify(model);
+            if (result == null)
+                return BadRequest();
+            return result;
         }
         [HttpPut]
         [Route("password_change")]
-        public AuthenticateResponse ChangePassword(ChangePasswordRequest model)
+        public ActionResult<AuthenticateResponse> ChangePassword(ChangePasswordRequest model)
         {
-            var user = db_context.Users.SingleOrDefault(user => user.UserId == model.UserId);
-            db_context.SaveChanges();
-            return new AuthenticateResponse
-            {
-                UserId = user.UserId,
-                Name = user.Name,
-                Email = user.Email,
-                Surname = user.Surname
-            };
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            if (userId != model.UserId)
+                return Unauthorized();
+            var result = _user_service.ChangePassword(model);
+            if (result == null)
+                return BadRequest();
+            return result;
         }
         [HttpPost]
         [Route("picture")]
