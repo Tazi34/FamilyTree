@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/free-solid-svg-icons": "^5.15.1",
+    "@fortawesome/react-fontawesome": "^0.1.12",
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
     "@types/d3": "^6.0.0",
+    "@types/fg-loadcss": "^3.1.0",
     "bootstrap": "^4.3.1",
     "connected-react-router": "6.5.2",
     "d3": "^6.2.0",
     "d3-dag": "^0.3.4",
     "d3-dtree": "^2.4.1",
+    "fg-loadcss": "^3.1.0",
     "gojs": "^2.1.28",
     "gojs-react": "^1.0.9",
     "history": "4.10.1",
@@ -47,6 +52,7 @@
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-react": "7.16.0",
     "nan": "^2.14.1",
+    "postcss-normalize": "^9.0.0",
     "typescript": "3.6.4"
   },
   "scripts": {

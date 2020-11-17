@@ -1,36 +1,23 @@
-import {
-  AppBar,
-  Button,
-  Container,
-  Grid,
-  IconButton,
-  makeStyles,
-  Toolbar,
-  Typography,
-} from "@material-ui/core";
+import { Grid, makeStyles } from "@material-ui/core";
 import * as React from "react";
-import MenuIcon from "@material-ui/icons/Menu";
-import Navbar from "../navbar/Navbar";
+import Navbar from "../navbar/Navbar.jsx";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    flexGrow: 1,
+  test: {
+    border: "3px solid red",
+    color: "red",
+    height: 1000,
   },
 }));
 export default (props: { children?: React.ReactNode }) => {
+  const classes2 = useStyles();
   return (
     <React.Fragment>
       <Navbar></Navbar>
       <Grid container spacing={2}>
-        <Grid item xs={4}></Grid>
-        <Grid item xs={6}></Grid>
-        <Grid item xs={2}></Grid>
+        <Grid item xs={3} className={classes2.test}></Grid>
+        <Grid item xs={7} className={classes2.test}></Grid>
+        <Grid item xs={2} className={classes2.test}></Grid>
       </Grid>
     </React.Fragment>
   );
