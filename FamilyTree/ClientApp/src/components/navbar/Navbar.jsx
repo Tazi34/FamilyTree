@@ -65,7 +65,6 @@ const useStyles = makeStyles((theme) =>
 );
 export default function PrimarySearchAppBar() {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = React.useState(null);
 
   React.useEffect(() => {
     const node = loadCSS(
@@ -79,7 +78,7 @@ export default function PrimarySearchAppBar() {
   }, []);
 
   return (
-    <AppBar>
+    <AppBar position="relative">
       <Toolbar>
         <Icon className="fas fa-tree"></Icon>
         <Typography className={classes.title} variant="h6" noWrap>

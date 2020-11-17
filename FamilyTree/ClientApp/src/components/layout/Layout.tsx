@@ -1,24 +1,59 @@
-import { Grid, makeStyles } from "@material-ui/core";
+import { Box, Grid, makeStyles } from "@material-ui/core";
 import * as React from "react";
 import Navbar from "../navbar/Navbar.jsx";
+import { Theme, withTheme } from "@material-ui/core/styles";
 
-const useStyles = makeStyles((theme) => ({
-  test: {
-    border: "3px solid red",
+const useStyles = makeStyles((theme: Theme) => ({
+  lightBackground: {
+    flex: 0.75,
+    background: theme.palette.primary.light,
+  },
+  darkBackground: {
+    flex: 0.25,
+    background: theme.palette.primary.dark,
+  },
+  backgroundContainer: {
+    height: "100%",
+    zIndex: -100,
+    position: "absolute",
+    width: "100%",
+  },
+  container: {
+    height: "100%",
+  },
+  grid: { height: "100%" },
+  column: {
+    maring: 0,
+    padding: 0,
     color: "red",
-    height: 1000,
   },
 }));
-export default (props: { children?: React.ReactNode }) => {
-  const classes2 = useStyles();
+const Layout = (props: { children?: React.ReactNode; theme: Theme }) => {
+  const classes = useStyles();
   return (
-    <React.Fragment>
+    <Box
+      display="flex"
+      className={classes.container}
+      flexDirection="column"
+      alignItems="stretch"
+    >
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="stretch"
+        className={classes.backgroundContainer}
+      >
+        <div className={classes.lightBackground}></div>
+        <div className={classes.darkBackground}></div>
+      </Box>
       <Navbar></Navbar>
-      <Grid container spacing={2}>
-        <Grid item xs={3} className={classes2.test}></Grid>
-        <Grid item xs={7} className={classes2.test}></Grid>
-        <Grid item xs={2} className={classes2.test}></Grid>
+      <Grid container direction="row" className={classes.grid} justify="center">
+        <Grid item xs={3} className={classes.column}></Grid>
+        <Grid item xs={7} className={classes.column}></Grid>
+        <Grid item xs={2} className={classes.column}></Grid>
       </Grid>
-    </React.Fragment>
+    </Box>
   );
 };
+
+export default withTheme(Layout);
