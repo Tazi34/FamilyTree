@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace FamilyTree.Entities
 {
-    public enum Role
+    public static class Role
     {
-        Admin,
-        User
+        public const string Admin = "Admin";
+        public const string User = "User";
     }
 }

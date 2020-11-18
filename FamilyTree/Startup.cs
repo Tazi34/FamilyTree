@@ -37,6 +37,7 @@ namespace FamilyTree
 
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ITreeService, TreeService>();
             
 
             // In production, the React files will be served from this directory

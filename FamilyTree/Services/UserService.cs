@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using FamilyTree.Helpers;
 using FamilyTree.Models;
@@ -25,14 +26,15 @@ namespace FamilyTree.Services
             _context = context;
             _token_service = token_service;
         }
-        public AuthenticateResponse Authenticate(AuthenticateRequest auth_request)
+        public AuthenticateResponse Authenticate(AuthenticateRequest model)
         {
-            var user = _context.Users.SingleOrDefault(x => x.Email == auth_request.Email);
+            //var user = _context.Users.SingleOrDefault(x => x.Email == model.Email);
+            var user = _context.Users.Include(x => x.PrevSurnames).SingleOrDefault(x => x.Email.Equals(model.Email));
 
             if (user == null)
                 return null;
 
-            if (user.PasswordHash != auth_request.Password)
+            if (user.PasswordHash != model.Password)
                 return null;
 
             return new AuthenticateResponse
@@ -41,7 +43,9 @@ namespace FamilyTree.Services
                 Name = user.Name,
                 Surname = user.Surname,
                 UserId = user.UserId,
-                Token = _token_service.GetToken(user.UserId)
+                Token = _token_service.GetToken(user.UserId),
+                Role = user.Role,
+                PreviousSurnames = user.PrevSurnames.Select(x => x.Surname).ToList()
             };
         }
 
@@ -66,6 +70,17 @@ namespace FamilyTree.Services
             var same_email_user = _context.Users.SingleOrDefault(u => u.Email.Equals(model.Email));
             if (same_email_user != null)
                 return null;
+            var prev_surnames = new List<PreviousSurname>();
+            if(model.PreviousSurnames != null)
+            {
+                foreach (string surname in model.PreviousSurnames)
+                {
+                    prev_surnames.Add(new PreviousSurname
+                    {
+                        Surname = surname
+                    });
+                }
+            }
             var user1 = new User
             {
                 Name = model.Name,
@@ -73,7 +88,8 @@ namespace FamilyTree.Services
                 Email = model.Email,
                 PasswordHash = model.Password,
                 Role = Role.User,
-                Birthday = model.Birthday
+                Birthday = model.Birthday,
+                PrevSurnames = prev_surnames
             };
             _context.Users.Add(user1);
             _context.SaveChanges();
@@ -91,7 +107,7 @@ namespace FamilyTree.Services
 
         public AuthenticateResponse Modify(ModifyUserRequest model)
         {
-            var user = _context.Users.SingleOrDefault(u => u.UserId == model.UserId);
+            var user = _context.Users.Include(x => x.PrevSurnames).SingleOrDefault(u => u.UserId == model.UserId);
             if (user == null)
                 return null;
 
@@ -109,6 +125,29 @@ namespace FamilyTree.Services
                 user.Surname = model.Surname;
             if (model.Birthday != null)
                 user.Birthday = model.Birthday;
+            if (model.PreviousSurnames != null)
+            {
+                foreach(string surname in model.PreviousSurnames)
+                {
+                    bool add_surname = true;
+                    foreach(PreviousSurname s in user.PrevSurnames)
+                    {
+                        if (s.Surname.Equals(surname))
+                        {
+                            add_surname = false;
+                            break;
+                        }
+                    }
+                    if (add_surname)
+                    {
+                        user.PrevSurnames.Add(new PreviousSurname
+                        {
+                            Surname = surname
+                        });
+                    }
+                }
+            }
+
             _context.Users.Update(user);
             _context.SaveChanges();
             return Authenticate(new AuthenticateRequest

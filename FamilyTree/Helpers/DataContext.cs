@@ -11,6 +11,9 @@ namespace FamilyTree.Helpers
     {
         public DbSet<User> Users { get; set; }
         public DbSet<PreviousSurname> PreviousSurnames { get; set; }
+        public DbSet<Tree> Trees { get; set; }
+        public DbSet<Node> Nodes { get; set; }
+        public DbSet<Child> Children { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
@@ -18,9 +21,13 @@ namespace FamilyTree.Helpers
         }
         protected override void OnModelCreating(ModelBuilder model_builder)
         {
-            model_builder.Entity<User>(entity => {
-                entity.HasIndex(e => e.Email).IsUnique(true);
-            });
+            //model_builder.Entity<User>(entity => {
+            //    entity.HasIndex(e => e.Email).IsUnique(true);
+            //});
+            //model_builder.Entity<Child>(entity => {
+            //    entity
+            //    .HasNoKey();
+            //});
         }
     }
 }

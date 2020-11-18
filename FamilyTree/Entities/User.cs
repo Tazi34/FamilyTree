@@ -13,7 +13,7 @@ namespace FamilyTree.Entities
         public string Surname { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
-        public Role Role { get; set; }
+        public string Role { get; set; }
         public DateTime Birthday { get; set; }
         public string PictureUrl { get; set; }
         public List<PreviousSurname> PrevSurnames { get; set; }
