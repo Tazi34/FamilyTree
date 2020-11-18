@@ -63,5 +63,35 @@ namespace FamilyTree.Controllers
                 return BadRequest("Error occured");
             return Ok(tree);
         }
+        [HttpPut]
+        [Route("")]
+        public ActionResult<TreeResponse> ModifyTree(ModifyTreeRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var tree = _tree_service.ModifyTree(userId, model);
+            if (tree == null)
+                return BadRequest("No authorization or other error");
+            return Ok(tree);
+        }
+        [HttpPost]
+        [Route("node/{tree_id:int}")]
+        public ActionResult<TreeResponse> CreateNode(CreateNodeRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var tree = _tree_service.CreateNode(userId, model);
+            if (tree == null)
+                return BadRequest("No authorization or other error");
+            return Ok(tree);
+        }
+        [HttpPut]
+        [Route("node/{tree_id:int}")]
+        public ActionResult<TreeResponse> ModifyNode(ModifyNodeRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var tree = _tree_service.ModifyNode(userId, model);
+            if (tree == null)
+                return BadRequest("No authorization or other error");
+            return Ok(tree);
+        }
     }
 }
