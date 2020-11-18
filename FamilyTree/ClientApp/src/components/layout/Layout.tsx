@@ -2,6 +2,7 @@ import { Box, Grid, makeStyles } from "@material-ui/core";
 import * as React from "react";
 import Navbar from "../navbar/Navbar.jsx";
 import { Theme, withTheme } from "@material-ui/core/styles";
+import UserTreePanel from "../userTreeList/UserTreePanel";
 
 const useStyles = makeStyles((theme: Theme) => ({
   lightBackground: {
@@ -25,7 +26,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   column: {
     maring: 0,
     padding: 0,
-    color: "red",
   },
 }));
 const Layout = (props: { children?: React.ReactNode; theme: Theme }) => {
@@ -37,6 +37,7 @@ const Layout = (props: { children?: React.ReactNode; theme: Theme }) => {
       flexDirection="column"
       alignItems="stretch"
     >
+      <Navbar></Navbar>
       <Box
         display="flex"
         flexDirection="column"
@@ -46,9 +47,10 @@ const Layout = (props: { children?: React.ReactNode; theme: Theme }) => {
         <div className={classes.lightBackground}></div>
         <div className={classes.darkBackground}></div>
       </Box>
-      <Navbar></Navbar>
       <Grid container direction="row" className={classes.grid} justify="center">
-        <Grid item xs={3} className={classes.column}></Grid>
+        <Grid item xs={3} className={classes.column}>
+          <UserTreePanel></UserTreePanel>
+        </Grid>
         <Grid item xs={7} className={classes.column}></Grid>
         <Grid item xs={2} className={classes.column}></Grid>
       </Grid>
