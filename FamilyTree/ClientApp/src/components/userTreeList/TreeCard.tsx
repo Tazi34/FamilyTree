@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const TreeCard = ({ tree, className }: TreeCardProps) => {
   const classes = useStyles();
   const isPublic = tree.isPublic;
-  const publicText = isPublic ? "public " : "private";
+  const publicText = isPublic ? "public" : "private";
 
   return (
     <div className={className}>
