@@ -18,7 +18,7 @@ data.forEach((element) => {
 var mainNode = document.createElement("div");
 mainNode.className = "tree";
 const screen_height = 800;
-const screen_width = 1500;
+const screen_width = 1400;
 const svg = d3
   .select(mainNode)
   .append("svg")
@@ -69,4 +69,3 @@ initializeNodes(nodes, root.descendants());
 initializeLinks(links, root.links());
 
 export { mainNode };
-
