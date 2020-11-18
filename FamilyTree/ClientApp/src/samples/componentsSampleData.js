@@ -37,3 +37,30 @@ export const sampleTreesInformations = [
     members: 12,
   },
 ];
+
+export const friendsList = [
+  {
+    name: "Dawid",
+    surname: "Kowalski",
+    id: 1,
+    image: null,
+  },
+  {
+    name: "Anna",
+    surname: "Nowak",
+    id: 1,
+    image: null,
+  },
+  {
+    name: "Adrian",
+    surname: "Jastrzębski",
+    id: 1,
+    image: null,
+  },
+  {
+    name: "Aleksandra",
+    surname: "Romańczuk",
+    id: 1,
+    image: null,
+  },
+];

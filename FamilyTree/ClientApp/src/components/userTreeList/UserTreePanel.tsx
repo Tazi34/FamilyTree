@@ -15,6 +15,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   container: {
     width: "100%",
     height: "100%",
+    maring: "0 auto",
   },
   paper: {
     maxWidth: 300,
