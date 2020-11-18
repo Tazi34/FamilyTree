@@ -1,17 +1,15 @@
-import { Box, Grid, makeStyles } from "@material-ui/core";
+import { Box, makeStyles } from "@material-ui/core";
+import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import Navbar from "../navbar/Navbar.jsx";
-import { Theme, withTheme } from "@material-ui/core/styles";
-import UserTreePanel from "../userTreeList/UserTreePanel";
-import FriendsPanel from "../friendList/FriendsPanel";
 
 const useStyles = makeStyles((theme: Theme) => ({
   lightBackground: {
-    flex: 0.75,
+    flex: 0.85,
     background: theme.palette.primary.light,
   },
   darkBackground: {
-    flex: 0.25,
+    flex: 0.15,
     background: theme.palette.primary.dark,
   },
   backgroundContainer: {
@@ -33,7 +31,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     background: "#f4f4f4",
   },
 }));
-const Layout = (props: { children?: React.ReactNode; theme: Theme }) => {
+
+export interface LayoutPanelProperties {
+  component: React.ReactNode;
+  flex: number;
+}
+
+export default (props: { children?: React.ReactNode }) => {
   const classes = useStyles();
   return (
     <Box
@@ -52,19 +56,7 @@ const Layout = (props: { children?: React.ReactNode; theme: Theme }) => {
         <div className={classes.lightBackground}></div>
         <div className={classes.darkBackground}></div>
       </Box>
-      <Grid container direction="row" className={classes.grid} justify="center">
-        <Grid item xs={2} className={classes.column}>
-          <UserTreePanel></UserTreePanel>
-        </Grid>
-        <Grid item xs={9} className={classes.column}>
-          <div className={classes.mainPanel}></div>
-        </Grid>
-        <Grid item xs={1} className={classes.column}>
-          <FriendsPanel></FriendsPanel>
-        </Grid>
-      </Grid>
+      {props.children}
     </Box>
   );
 };
-
-export default withTheme(Layout);
