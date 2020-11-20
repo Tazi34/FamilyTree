@@ -1,0 +1,26 @@
+export interface Person {
+  id: number;
+  firstParent?: number;
+  secondParent?: number;
+  information: PersonData;
+}
+
+export interface Family {
+  firstParent?: number;
+  secondParent?: number;
+  children: number[];
+  id: string;
+}
+export interface PersonData {
+  name: string;
+  surname: string;
+  birthDate: string;
+}
+export interface TreeStructure {
+  people: PeopleCollection;
+  links: string[][];
+  families: Family[];
+}
+export interface PeopleCollection {
+  [key: number]: Person;
+}
