@@ -1,17 +1,14 @@
-import * as React from "react";
-import { Route } from "react-router";
-import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
-import Home from "./components/Home";
-import FetchData from "./components/FetchData";
-
-import "./custom.css";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core";
 import { lightGreen, lime } from "@material-ui/core/colors";
+import * as React from "react";
+import { Route } from "react-router";
 import FriendsPanel from "./components/friendList/FriendsPanel";
-import UserTreePanel from "./components/userTreeList/UserTreePanel";
-import LoginPage from "./components/loginPage/LoginPage";
 import EmptyLayout from "./components/layout/EmptyLayout";
-import HomePage from "./components/homePage/HomePage";
+import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
+import LoginPage from "./components/loginPage/LoginPage";
+
+import Tree from "./components/tree/Tree";
+import UserTreePanel from "./components/userTreeList/UserTreePanel";
 
 export const theme = createMuiTheme({
   palette: {
@@ -21,7 +18,7 @@ export const theme = createMuiTheme({
 });
 
 export default () => {
-  const isLogged = false;
+  const isLogged = true;
   return (
     <MuiThemeProvider theme={theme}>
       {isLogged && (
@@ -29,13 +26,12 @@ export default () => {
           rightPanel={<FriendsPanel></FriendsPanel>}
           leftPanel={<UserTreePanel></UserTreePanel>}
         >
-          <Route exact path="/tree" component={Home} />
-          <Route path="/fetch-data/:startDateIndex?" component={FetchData} />
+          <Route exact path="/" component={Tree} />
         </ThreeColumnLayout>
       )}
       {!isLogged && (
         <EmptyLayout>
-          <Route exact path="/" component={HomePage} />
+          <Route exact path="/" component={Tree} />
           <Route path="/login" component={LoginPage} />
         </EmptyLayout>
       )}

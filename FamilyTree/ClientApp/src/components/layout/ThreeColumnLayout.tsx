@@ -18,7 +18,7 @@ export interface LayoutPanelProperties {
 
 export default (props: {
   leftPanel?: React.ReactNode;
-  children?: React.ReactNode[];
+  children?: React.ReactNode;
   rightPanel?: React.ReactNode;
 }) => {
   const classes = useStyles();
