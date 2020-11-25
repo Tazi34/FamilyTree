@@ -18,20 +18,20 @@ namespace FamilyTree.Helpers
                 Surname = "Kicun",
                 Email = "abc@kicunmail",
                 Birthday = DateTime.Today,
-                PasswordHash = "dupa123",
+                PasswordHash = "haslo123",
                 Role = Role.User,
                 PrevSurnames = new List<PreviousSurname>()
             };
             var testPrevSurname1 = new PreviousSurname
             {
                 PreviousSurnameId = 1,
-                Surname = "Miekki",
+                Surname = "PrevNazwisko1",
                 UserId = 1
             };
             var testPrevSurname2 = new PreviousSurname
             {
                 PreviousSurnameId = 2,
-                Surname = "Bak",
+                Surname = "PrevNazwisko2",
                 UserId = 1
             };
             var testUser2 = new User
