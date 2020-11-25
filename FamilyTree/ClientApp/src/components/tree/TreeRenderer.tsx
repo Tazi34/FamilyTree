@@ -79,9 +79,11 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
         }
       }
     });
-    console.log("TRAVERSE");
+
     const firstLayer = nodes.filter((a: any) => a.layer == 0);
-    console.log(firstLayer[0].each((a: any) => console.log(a)));
+    firstLayer[0].each((a: any) => {
+      console.log(a);
+    });
     var linksCanvas = g.append("g").attr("class", "links");
     var nodesCanvas = g.append("g").attr("class", "nodes");
 

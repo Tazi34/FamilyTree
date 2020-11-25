@@ -30,7 +30,6 @@ class TreeContainer extends React.Component<{}, TreeContainerState> {
   };
 
   handleNodeDelete = (nodeId: number) => {
-    console.log("DELETE " + nodeId);
     this.setState({
       familyTreeEntries: this.state.familyTreeEntries.filter(
         (a: any) => a.id != nodeId

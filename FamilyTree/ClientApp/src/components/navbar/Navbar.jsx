@@ -8,6 +8,13 @@ import SearchIcon from "@material-ui/icons/Search";
 import { loadCSS } from "fg-loadcss";
 import * as React from "react";
 import { ApplicationName } from "../../ApplicationData";
+import {
+  HOME_PAGE_URI,
+  BLOG_PAGE_URI,
+  LOGIN_PAGE_URI,
+  TREE_PAGE_URI,
+} from "../../applicationRouting";
+import { RedirectButton } from "../UI/RedirectButton";
 const useStyles = makeStyles((theme) =>
   createStyles({
     grow: {
@@ -76,7 +83,7 @@ export default function PrimarySearchAppBar() {
   }, []);
 
   return (
-    <AppBar position="relative">
+    <AppBar position="fixed">
       <Toolbar>
         <Icon className="fas fa-tree"></Icon>
         <Typography className={classes.title} variant="h6" noWrap>
@@ -97,8 +104,10 @@ export default function PrimarySearchAppBar() {
         </div>
         <div className={classes.grow} />
         <div className={classes.sectionDesktop}>
-          <Button>Home</Button>
-          <Button>Login</Button>
+          <RedirectButton to={BLOG_PAGE_URI}>Blog</RedirectButton>
+          <RedirectButton to={HOME_PAGE_URI}>Home</RedirectButton>
+          <RedirectButton to={TREE_PAGE_URI}>Tree</RedirectButton>
+          <RedirectButton to={LOGIN_PAGE_URI}>Login</RedirectButton>
         </div>
       </Toolbar>
     </AppBar>
