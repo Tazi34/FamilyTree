@@ -3,6 +3,9 @@ export interface Person {
   firstParent?: number;
   secondParent?: number;
   information: PersonData;
+  canBeDeleted?: boolean;
+  children: number[];
+  partners: Person[];
 }
 
 export interface Family {
@@ -23,4 +26,9 @@ export interface TreeStructure {
 }
 export interface PeopleCollection {
   [key: number]: Person;
+}
+
+export interface PersonNode {
+  id: string;
+  neighbours: string[];
 }

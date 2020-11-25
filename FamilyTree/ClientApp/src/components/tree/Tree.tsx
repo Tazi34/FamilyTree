@@ -14,7 +14,7 @@ const Tree = () => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-      <TreeContainer width={2400} height={1400}></TreeContainer>
+      <TreeContainer></TreeContainer>
     </div>
   );
 };

@@ -28,15 +28,24 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
   private nodesGroup: React.RefObject<any>;
   constructor(props: TreeRendererProps) {
     super(props);
-    this.state = {
-      treeStructure: null,
-    };
     this.nodesGroup = React.createRef();
   }
+
   updateTree = () => {
+    console.log("update");
     const { rectWidth, rectHeight, treeStructure: structure } = this.props;
-    const linksData = structure.links;
-    console.log(document);
+    var linksData = structure.links;
+
+    const peopleCount = Object.keys(structure.people).length;
+    if (peopleCount == 1) {
+      var person = Object.keys(structure.people)[0];
+      linksData = [[person, "fakeNode1"]];
+    } else if (peopleCount == 0) {
+      var person = Object.keys(structure.people)[0];
+      linksData = [["fakeNode1", "fakeNode2"]];
+    }
+
+    console.log(structure);
     const g = d3.select(this.nodesGroup.current);
     g.attr("transform", "translate(-800,0)");
     var x_sep = rectWidth + 50,
@@ -62,10 +71,17 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
         n.data = data;
         n.isFamily = false;
       } else {
-        n.isFamily = true;
+        if (structure.families.some((a: any) => a.id == n.id)) {
+          n.isFamily = true;
+        } else {
+          n.isFamily = false;
+          n.isFake = true;
+        }
       }
     });
-
+    console.log("TRAVERSE");
+    const firstLayer = nodes.filter((a: any) => a.layer == 0);
+    console.log(firstLayer[0].each((a: any) => console.log(a)));
     var linksCanvas = g.append("g").attr("class", "links");
     var nodesCanvas = g.append("g").attr("class", "nodes");
 
@@ -79,7 +95,7 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
       .data(data)
       .enter()
       .append("g")
-      .filter((d: any) => !d.isFamily);
+      .filter((d: any) => !d.isFamily && !d.isFake);
 
     g.attr(
       "transform",
@@ -106,15 +122,6 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
       });
     g.append("path").attr("d", gearIcon);
     g.append("path").attr("d", plusIcon);
-    g.append("g")
-      .attr("transform", `translate(${192}, ${60})scale(1.5)`)
-      .append("path")
-      .attr("d", deleteIcon)
-      .on("click", (event: any, d: any) => {
-        console.log("DELETE");
-        console.log(d);
-        this.props.onNodeDelete(d.id);
-      });
     g.append("text")
       .attr("x", 10)
       .attr("y", 100)
@@ -131,6 +138,16 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
         return text;
       });
 
+    const nodesThatCanBeDeleted = g.filter((d: any) => d.data.canBeDeleted);
+
+    nodesThatCanBeDeleted
+      .append("g")
+      .attr("transform", `translate(${192}, ${60})scale(1.5)`)
+      .append("path")
+      .attr("d", deleteIcon)
+      .on("click", (event: any, d: any) => {
+        this.props.onNodeDelete(d.id);
+      });
     nodes.selectAll("circle.node").data(data).enter();
 
     return nodes;
@@ -144,6 +161,9 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
       .enter()
       .each(function (this: any, d: any) {
         var link = d;
+        if (link.source.isFake || link.target.isFake) {
+          return;
+        }
         var points = [
           [parseInt(link.source.x), parseInt(link.source.y)],
           [parseInt(link.target.x), parseInt(link.target.y)],
@@ -157,12 +177,6 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
           .attr("stroke", "#000")
           .attr("stroke-width", 1);
       });
-
-    // for (const key in linkAttributes) {
-    //   if (Object.prototype.hasOwnProperty.call(linkAttributes, key)) {
-    //     linksSelector = linksSelector.attr(key, linkAttributes[key]);
-    //   }
-    // }
     return links;
   };
   componentDidMount = () => {
