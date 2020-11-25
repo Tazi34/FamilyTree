@@ -5,11 +5,11 @@ import Navbar from "../navbar/Navbar.jsx";
 
 const useStyles = makeStyles((theme: Theme) => ({
   lightBackground: {
-    flex: 0.85,
+    flex: 1,
     background: theme.palette.primary.light,
   },
   darkBackground: {
-    flex: 0.15,
+    flex: 0,
     background: theme.palette.primary.dark,
   },
   backgroundContainer: {
@@ -28,7 +28,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   mainPanel: {
     height: "100%",
-    background: "#f4f4f4",
+  },
+  filler: {
+    width: "100%",
   },
 }));
 
@@ -47,15 +49,7 @@ export default (props: { children?: React.ReactNode }) => {
       alignItems="stretch"
     >
       <Navbar></Navbar>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="stretch"
-        className={classes.backgroundContainer}
-      >
-        <div className={classes.lightBackground}></div>
-        <div className={classes.darkBackground}></div>
-      </Box>
+      <div className={classes.filler}></div>
       {props.children}
     </Box>
   );

@@ -21,7 +21,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     maxWidth: 300,
     maxHeight: 450,
     width: "90%",
-    margin: "0 auto",
+    margin: "100px 10px",
+    position: "fixed",
     padding: "10px 5px",
   },
   flexGrow: {
@@ -35,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "80%",
   },
   flexBox: {
-    height: "100%",
+    height: "400px",
   },
   title: {
     color: theme.palette.primary.dark,
@@ -46,7 +47,7 @@ const UserTreePanel = (props: any) => {
   const classes = useStyles();
   return (
     <Box display="flex" flexDirection="column" className={classes.container}>
-      <div className={classes.flexGrow}></div>
+      {/* <div className={classes.flexGrow}></div> */}
       <Paper className={classes.paper}>
         <Box
           display="flex"
