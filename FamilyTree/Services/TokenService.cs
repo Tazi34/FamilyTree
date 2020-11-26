@@ -18,10 +18,10 @@ namespace FamilyTree.Services
     }
     public class TokenService : ITokenService
     {
-        private byte[] _key;
+        private byte[] key;
         public TokenService(IOptions<AppSettings> appsettings)
         {
-            _key = Encoding.ASCII.GetBytes(appsettings.Value.Secret);
+            key = Encoding.ASCII.GetBytes(appsettings.Value.Secret);
         }
         public string GetToken(int userId)
         {
@@ -33,7 +33,7 @@ namespace FamilyTree.Services
                     new Claim(ClaimTypes.Name, userId.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(_key), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);

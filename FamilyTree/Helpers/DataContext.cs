@@ -14,6 +14,7 @@ namespace FamilyTree.Helpers
         public DbSet<Tree> Trees { get; set; }
         public DbSet<Node> Nodes { get; set; }
         public DbSet<Child> Children { get; set; }
+        public DbSet<Post> Posts { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)

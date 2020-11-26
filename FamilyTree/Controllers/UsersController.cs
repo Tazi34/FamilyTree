@@ -17,34 +17,28 @@ namespace FamilyTree.Controllers
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
-        private DataContext db_context;
-        private AppSettings app_settings;
-        private TokenService token_service;
-        private UserService user_service;
-        public UsersController(DataContext context, IOptions<AppSettings> _appsettings, ITokenService token_serv, IUserService user_serv)
+        private UserService userService;
+        public UsersController(IUserService userService)
         {
-            db_context = context;
-            app_settings = _appsettings.Value;
-            token_service = (TokenService)token_serv;
-            user_service = (UserService)user_serv;
+            this.userService = (UserService)userService;
         }
         [HttpGet]
         [Route("")]
         public ActionResult<AuthenticateResponse> GetJWT (AuthenticateRequest model)
         {
-            var request = user_service.Authenticate(model);
+            var request = userService.Authenticate(model);
             if (request == null)
                 return Unauthorized();
             return Ok(request);
         }
         [HttpPost]
         [Route("")]
-        public ActionResult<AuthenticateResponse> Post(CreateUserRequest model)
+        public ActionResult<AuthenticateResponse> Post([FromQuery]CreateUserRequest model)
         {
-            var new_user = user_service.CreateUser(model);
-            if (new_user == null)
+            var newUser = userService.CreateUser(model);
+            if (newUser == null)
                 return BadRequest("Not unique email");
-            return new_user;
+            return newUser;
         }
         [HttpGet]
         [Route("facebook")]

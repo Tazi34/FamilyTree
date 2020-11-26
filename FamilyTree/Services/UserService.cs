@@ -10,26 +10,25 @@ namespace FamilyTree.Services
 {
     public interface IUserService
     {
-        AuthenticateResponse Authenticate(AuthenticateRequest auth_request);
-        User GetById(int user_id);
+        AuthenticateResponse Authenticate(AuthenticateRequest authenticationRequest);
+        User GetById(int userId);
         AuthenticateResponse CreateUser(CreateUserRequest model);
         AuthenticateResponse Modify(ModifyUserRequest model);
         AuthenticateResponse ChangePassword(ChangePasswordRequest model);
     }
     public class UserService:IUserService
     {
-        private DataContext _context;
-        private ITokenService _token_service;
+        private DataContext context;
+        private ITokenService tokenService;
 
-        public UserService(DataContext context, ITokenService token_service)
+        public UserService(DataContext dataContext, ITokenService tokenService)
         {
-            _context = context;
-            _token_service = token_service;
+            context = dataContext;
+            this.tokenService = tokenService;
         }
         public AuthenticateResponse Authenticate(AuthenticateRequest model)
         {
-            //var user = _context.Users.SingleOrDefault(x => x.Email == model.Email);
-            var user = _context.Users.Include(x => x.PrevSurnames).SingleOrDefault(x => x.Email.Equals(model.Email));
+            var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(x => x.Email.Equals(model.Email));
 
             if (user == null)
                 return null;
@@ -43,7 +42,7 @@ namespace FamilyTree.Services
                 Name = user.Name,
                 Surname = user.Surname,
                 UserId = user.UserId,
-                Token = _token_service.GetToken(user.UserId),
+                Token = tokenService.GetToken(user.UserId),
                 Role = user.Role,
                 PreviousSurnames = user.PrevSurnames.Select(x => x.Surname).ToList()
             };
@@ -51,13 +50,13 @@ namespace FamilyTree.Services
 
         public AuthenticateResponse ChangePassword(ChangePasswordRequest model)
         {
-            var user = _context.Users.SingleOrDefault(u => u.UserId == model.UserId && u.Email.Equals(model.Email) && u.PasswordHash.Equals(model.OldPassword));
+            var user = context.Users.SingleOrDefault(u => u.UserId == model.UserId && u.Email.Equals(model.Email) && u.PasswordHash.Equals(model.OldPassword));
             if (user == null)
                 return null;
 
             user.PasswordHash = model.Password;
-            _context.Users.Update(user);
-            _context.SaveChanges();
+            context.Users.Update(user);
+            context.SaveChanges();
             return Authenticate(new AuthenticateRequest
             {
                 Email = model.Email,
@@ -67,15 +66,15 @@ namespace FamilyTree.Services
 
         public AuthenticateResponse CreateUser(CreateUserRequest model)
         {
-            var same_email_user = _context.Users.SingleOrDefault(u => u.Email.Equals(model.Email));
-            if (same_email_user != null)
+            var sameEmailUser = context.Users.SingleOrDefault(u => u.Email.Equals(model.Email));
+            if (sameEmailUser != null)
                 return null;
-            var prev_surnames = new List<PreviousSurname>();
+            var previousSurnames = new List<PreviousSurname>();
             if(model.PreviousSurnames != null)
             {
                 foreach (string surname in model.PreviousSurnames)
                 {
-                    prev_surnames.Add(new PreviousSurname
+                    previousSurnames.Add(new PreviousSurname
                     {
                         Surname = surname
                     });
@@ -89,10 +88,10 @@ namespace FamilyTree.Services
                 PasswordHash = model.Password,
                 Role = Role.User,
                 Birthday = model.Birthday,
-                PrevSurnames = prev_surnames
+                PrevSurnames = previousSurnames
             };
-            _context.Users.Add(user1);
-            _context.SaveChanges();
+            context.Users.Add(user1);
+            context.SaveChanges();
             return Authenticate(new AuthenticateRequest
             {
                 Email = model.Email,
@@ -100,20 +99,20 @@ namespace FamilyTree.Services
             });
         }
 
-        public User GetById(int user_id)
+        public User GetById(int userId)
         {
-            return _context.Users.SingleOrDefault(x => x.UserId == user_id);
+            return context.Users.SingleOrDefault(x => x.UserId == userId);
         }
 
         public AuthenticateResponse Modify(ModifyUserRequest model)
         {
-            var user = _context.Users.Include(x => x.PrevSurnames).SingleOrDefault(u => u.UserId == model.UserId);
+            var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(u => u.UserId == model.UserId);
             if (user == null)
                 return null;
 
             if (!string.IsNullOrWhiteSpace(model.Email) && model.Email != user.Email)
             {
-                if (_context.Users.Any(x => x.Email.Equals(model.Email)))
+                if (context.Users.Any(x => x.Email.Equals(model.Email)))
                     return null;
 
                 user.Email = model.Email;
@@ -129,16 +128,16 @@ namespace FamilyTree.Services
             {
                 foreach(string surname in model.PreviousSurnames)
                 {
-                    bool add_surname = true;
+                    bool newSurname = true;
                     foreach(PreviousSurname s in user.PrevSurnames)
                     {
                         if (s.Surname.Equals(surname))
                         {
-                            add_surname = false;
+                            newSurname = false;
                             break;
                         }
                     }
-                    if (add_surname)
+                    if (newSurname)
                     {
                         user.PrevSurnames.Add(new PreviousSurname
                         {
@@ -148,8 +147,8 @@ namespace FamilyTree.Services
                 }
             }
 
-            _context.Users.Update(user);
-            _context.SaveChanges();
+            context.Users.Update(user);
+            context.SaveChanges();
             return Authenticate(new AuthenticateRequest
             {
                 Email = user.Email,

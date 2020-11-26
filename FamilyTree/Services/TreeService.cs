@@ -21,15 +21,15 @@ namespace FamilyTree.Services
     }
     public class TreeService : ITreeService
     {
-        private DataContext _context;
-        public TreeService(DataContext data_context)
+        private DataContext context;
+        public TreeService(DataContext dataContext)
         {
-            _context = data_context;
+            context = dataContext;
         }
 
         public TreeResponse CreateNode(int userId, CreateNodeRequest model)
         {
-            var tree = _context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == model.TreeId);
+            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == model.TreeId);
             if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
                 return null;
 
@@ -54,13 +54,13 @@ namespace FamilyTree.Services
                 Description = model.Description
             };
             tree.Nodes.Add(node);
-            _context.SaveChanges();
+            context.SaveChanges();
             return GetTree(model.TreeId, userId);
         }
 
         public TreeResponse CreateTree(int userId, CreateTreeRequest model)
         {
-            var user = _context.Users.SingleOrDefault(user => user.UserId == userId);
+            var user = context.Users.SingleOrDefault(user => user.UserId == userId);
             if (user == null)
                 return null;
             Node node = new Node
@@ -81,17 +81,17 @@ namespace FamilyTree.Services
                 IsPrivate = model.IsPrivate,
                 Nodes = new List<Node>() { node }
             };
-            _context.Trees.Add(tree);
-            _context.SaveChanges();
+            context.Trees.Add(tree);
+            context.SaveChanges();
             return GetTree(tree.TreeId, user.UserId);
         }
 
         public NodeResponse GetNode(int id, int userId)
         {
-            var node = _context.Nodes.Include(x => x.Children).SingleOrDefault(node => node.NodeId == id);
+            var node = context.Nodes.Include(x => x.Children).SingleOrDefault(node => node.NodeId == id);
             if (node == null)
                 return null;
-            var tree = _context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == node.TreeId);
+            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == node.TreeId);
             if (tree != null && (!tree.IsPrivate || IsUserInTree(tree, userId)))
             {
                 return new NodeResponse(node);
@@ -101,7 +101,7 @@ namespace FamilyTree.Services
 
         public TreeResponse GetTree(int id, int userId)
         {
-            var tree = _context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == id);
+            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == id);
             if(tree != null && (!tree.IsPrivate || IsUserInTree(tree, userId)))
             {
                 return new TreeResponse(tree);
@@ -111,18 +111,18 @@ namespace FamilyTree.Services
 
         public TreeUserResponse GetUserTrees(int id, int claimId)
         {
-            var trees = _context.Trees.Include(x => x.Nodes).Where(tree => tree.Nodes.Any(node => node.UserId == id));
+            var trees = context.Trees.Include(x => x.Nodes).Where(tree => tree.Nodes.Any(node => node.UserId == id));
             if (trees == null)
                 return null;
-            var valid_trees = new List<FlatTree>();
+            var authorizedTrees = new List<FlatTree>();
             foreach(Tree tree in trees)
             {
                 if (!tree.IsPrivate || IsUserInTree(tree, claimId))
-                    valid_trees.Add(new FlatTree(tree));
+                    authorizedTrees.Add(new FlatTree(tree));
             }
             return new TreeUserResponse
             {
-                Trees = valid_trees
+                Trees = authorizedTrees
             };
         }
 
@@ -138,7 +138,7 @@ namespace FamilyTree.Services
 
         public TreeResponse ModifyNode(int userId, ModifyNodeRequest model)
         {
-            var tree = _context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == model.TreeId);
+            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == model.TreeId);
             if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
                 return null;
             var node = tree.Nodes.SingleOrDefault(n => n.NodeId == model.NodeId);
@@ -158,27 +158,27 @@ namespace FamilyTree.Services
             {
                 foreach(int child in model.Children)
                 {
-                    var current_child = node.Children.SingleOrDefault(c => c.ChildPointer == child);
-                    if (current_child == null)
+                    var currentChild = node.Children.SingleOrDefault(c => c.ChildPointer == child);
+                    if (currentChild == null)
                         node.Children.Add(new Child { ChildPointer = child });
                 }
             }
             node.MotherId = model.MotherId;
             node.FatherId = model.FatherId;
             node.UserId = model.UserId;
-            _context.SaveChanges();
+            context.SaveChanges();
             return GetTree(model.TreeId, userId);
         }
 
         public TreeResponse ModifyTree(int userId, ModifyTreeRequest model)
         {
-            var tree = _context.Trees.Include(x => x.Nodes).SingleOrDefault(tree => tree.TreeId == model.TreeId);
+            var tree = context.Trees.Include(x => x.Nodes).SingleOrDefault(tree => tree.TreeId == model.TreeId);
             if (!IsUserInTree(tree, userId))
                 return null;
             tree.Name = model.Name;
             tree.IsPrivate = model.IsPrivate;
-            _context.Trees.Update(tree);
-            _context.SaveChanges();
+            context.Trees.Update(tree);
+            context.SaveChanges();
             return GetTree(model.TreeId, userId);
         }
         private bool ValidateNode(CreateNodeRequest node, Tree tree)

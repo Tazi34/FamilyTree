@@ -15,12 +15,10 @@ namespace FamilyTree.Controllers
     [ApiController]
     public class EditUsersController : ControllerBase
     {
-        private DataContext _context;
-        private UserService _user_service;
-        public EditUsersController(DataContext context, IUserService user_service)
+        private UserService userService;
+        public EditUsersController(DataContext context, IUserService userService)
         {
-            _context = context;
-            _user_service = (UserService)user_service;
+            this.userService = (UserService)userService;
         }
         [HttpPut]
         [Route("")]
@@ -29,19 +27,19 @@ namespace FamilyTree.Controllers
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             if (userId != model.UserId)
                 return Unauthorized();
-            var result = _user_service.Modify(model);
+            var result = userService.Modify(model);
             if (result == null)
                 return BadRequest();
             return result;
         }
         [HttpPut]
-        [Route("password_change")]
+        [Route("passwordChange")]
         public ActionResult<AuthenticateResponse> ChangePassword(ChangePasswordRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             if (userId != model.UserId)
                 return Unauthorized();
-            var result = _user_service.ChangePassword(model);
+            var result = userService.ChangePassword(model);
             if (result == null)
                 return BadRequest();
             return result;

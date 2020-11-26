@@ -15,40 +15,40 @@ namespace FamilyTree.Controllers
     [ApiController]
     public class TreeController : ControllerBase
     {
-        private ITreeService _tree_service;
-        public TreeController(ITreeService tree_service)
+        private ITreeService treeService;
+        public TreeController(ITreeService treeService)
         {
-            _tree_service = tree_service;
+            this.treeService = treeService;
         }
         [HttpGet]
-        [Route("{tree_id:int}")]
-        public ActionResult<TreeResponse> GetTree(int tree_id)
+        [Route("{treeId:int}")]
+        public ActionResult<TreeResponse> GetTree(int treeId)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-            var tree = _tree_service.GetTree(tree_id, userId);
+            var tree = treeService.GetTree(treeId, userId);
             if (tree == null)
                 return BadRequest("no such tree, or tree is private");
             return Ok(tree);
         }
         [HttpGet]
-        [Route("node/{node_id:int}")]
-        public ActionResult<NodeResponse> GetNode(int node_id)
+        [Route("node/{nodeId:int}")]
+        public ActionResult<NodeResponse> GetNode(int nodeId)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-            var node = _tree_service.GetNode(node_id, userId);
+            var node = treeService.GetNode(nodeId, userId);
             if (node == null)
                 return BadRequest("no such node, or tree is private");
             return Ok(node);
         }
         [HttpGet]
-        [Route("user/{user_id:int}")]
-        public ActionResult<TreeUserResponse> GetUserTrees(int user_id)
+        [Route("user/{userId:int}")]
+        public ActionResult<TreeUserResponse> GetUserTrees(int userId)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userIdFromClaim = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-            var trees = _tree_service.GetUserTrees(user_id, userIdFromClaim);
+            var trees = treeService.GetUserTrees(userId, userIdFromClaim);
             if (trees == null)
                 return BadRequest("no such user, or sth");
             return Ok(trees);
@@ -58,7 +58,7 @@ namespace FamilyTree.Controllers
         public ActionResult<TreeResponse> CreateTree(CreateTreeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = _tree_service.CreateTree(userId, model);
+            var tree = treeService.CreateTree(userId, model);
             if (tree == null)
                 return BadRequest("Error occured");
             return Ok(tree);
@@ -68,27 +68,27 @@ namespace FamilyTree.Controllers
         public ActionResult<TreeResponse> ModifyTree(ModifyTreeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = _tree_service.ModifyTree(userId, model);
+            var tree = treeService.ModifyTree(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
         }
         [HttpPost]
-        [Route("node/{tree_id:int}")]
+        [Route("node")]
         public ActionResult<TreeResponse> CreateNode(CreateNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = _tree_service.CreateNode(userId, model);
+            var tree = treeService.CreateNode(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
         }
         [HttpPut]
-        [Route("node/{tree_id:int}")]
+        [Route("node")]
         public ActionResult<TreeResponse> ModifyNode(ModifyNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = _tree_service.ModifyNode(userId, model);
+            var tree = treeService.ModifyNode(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);

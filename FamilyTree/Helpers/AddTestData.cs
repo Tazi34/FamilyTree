@@ -286,6 +286,24 @@ namespace FamilyTree.Helpers
             testTree1.Nodes.Add(node9);
             context.Trees.Add(testTree1);
             #endregion
+            #region blog
+            var testPost1 = new Post
+            {
+                CreationTime = DateTime.Now,
+                UserId = 1,
+                Title = "Tytuł testowy",
+                Text = "Ala ma kota Marcina"
+            };
+            var testPost2 = new Post
+            {
+                CreationTime = DateTime.Now,
+                UserId = 1,
+                Title = "Tytuł testowy 2",
+                Text = "Marcin wielkim poetą był"
+            };
+            context.Posts.Add(testPost1);
+            context.Posts.Add(testPost2);
+            #endregion
             context.SaveChanges();
         }
     }
