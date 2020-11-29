@@ -254,7 +254,6 @@ class MultipleTreesRenderer extends React.Component {
     });
   };
   deleteFamilyConnectionsIfNeeded = (family, removedNode) => {
-    console.log(family);
     if (
       (!family.firstParent && !family.secondParent) ||
       family.children.length == 0
@@ -266,6 +265,7 @@ class MultipleTreesRenderer extends React.Component {
         ...family.children.map((c) => getLinkId(family.id, c)),
       ];
 
+      this.selectNode(family.id).remove();
       this.selectLinks()
         .selectAll("g")
         .filter((a) => linksToDelete.includes(a.id))
