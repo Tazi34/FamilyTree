@@ -7,7 +7,7 @@ import {
   RECT_HEIGHT,
   RECT_WIDTH,
 } from "../../d3/RectMapper";
-
+import data from "../../samples/multipleDisconnectedGraphs.js";
 import {
   emptyNodeAttributs,
   rectangleAttributes,
@@ -127,7 +127,9 @@ class TreeRenderer extends React.Component<TreeRendererProps, {}> {
     g.append("text")
       .attr("x", 10)
       .attr("y", 100)
-      .text((d: any) => (d.isFamily ? "" : "23 May, 1956"));
+      .text((d: any) => {
+        return d.isFamily ? "" : d.data.information.id + "  23 May, 1956";
+      });
     g.append("text")
       .attr("x", 72)
       .attr("y", 25)

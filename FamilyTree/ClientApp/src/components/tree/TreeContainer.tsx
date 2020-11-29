@@ -1,11 +1,16 @@
 import React from "react";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
-import { generateTreeStructure } from "../../d3/treeStructureGenerator";
-import data from "../../samples/simpleArticulationPoints.json";
+import {
+  generateTreeStructure,
+  generateTreeStructures,
+  GetTreeStructures,
+} from "../../d3/treeStructureGenerator";
+import data from "../../samples/multipleDisconnectedGraphs.js";
 import data2 from "../../samples/complex.json";
 
 import TreeRenderer from "./TreeRenderer";
 import { ZoomContainer } from "./Zoom";
+import MultipleTreesRenderer from "./MultipleTreesRenderer";
 
 const Context = React.createContext(null);
 
@@ -38,17 +43,18 @@ class TreeContainer extends React.Component<{}, TreeContainerState> {
   };
 
   render() {
-    const treeStructure = generateTreeStructure(this.state.familyTreeEntries);
+    var treeStructures = GetTreeStructures(this.state.familyTreeEntries);
+    console.log(treeStructures);
     return (
       <svg ref={this.svgRef} width={"100%"} height={"100%"}>
         <ZoomContainer getSvg={this.getSvg}>
-          <TreeRenderer
+          <MultipleTreesRenderer
+            trees={treeStructures}
             onNodeDelete={this.handleNodeDelete}
-            treeStructure={treeStructure}
             getSvg={this.getSvg}
             rectHeight={RECT_HEIGHT}
             rectWidth={RECT_WIDTH}
-          ></TreeRenderer>
+          ></MultipleTreesRenderer>
         </ZoomContainer>
       </svg>
     );

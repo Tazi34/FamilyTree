@@ -6,6 +6,8 @@ export interface Person {
   canBeDeleted?: boolean;
   children: number[];
   partners: Person[];
+  graph?: number;
+  links?: string[][];
 }
 
 export interface Family {
@@ -31,4 +33,5 @@ export interface PeopleCollection {
 export interface PersonNode {
   id: string;
   neighbours: string[];
+  graph?: number;
 }

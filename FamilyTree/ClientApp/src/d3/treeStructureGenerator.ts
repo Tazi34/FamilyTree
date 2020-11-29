@@ -8,6 +8,153 @@ import {
 import names from "../samples/names.json";
 import surnames from "../samples/surnames.json";
 
+export const GetTreeStructures = (people: Person[]): TreeStructure[] => {
+  //start empty
+  people.forEach((p) => {
+    p.children = [];
+    p.partners = [];
+    p.information.name = names[p.id];
+    p.information.surname = surnames[p.id];
+  });
+  //Categorize partners and children
+  people.forEach((person) => {
+    const { id } = person;
+
+    var firstParent: Person | undefined;
+    var secondParent: Person | undefined;
+    if (person.firstParent) {
+      firstParent = people.find((a) => a.id == person.firstParent);
+      if (!firstParent) {
+        person.firstParent = undefined;
+      } else {
+        firstParent!.children.push(id);
+      }
+    }
+
+    if (person.secondParent) {
+      secondParent = people.find((a) => a.id == person.secondParent);
+      if (!secondParent) {
+        person.secondParent = undefined;
+      } else {
+        secondParent!.children.push(id);
+      }
+    }
+    if (firstParent && secondParent) {
+      if (!firstParent!.partners.includes(secondParent)) {
+        firstParent!.partners.push(secondParent);
+      }
+      if (!secondParent!.partners.includes(firstParent)) {
+        secondParent!.partners.push(firstParent);
+      }
+    }
+  });
+  const personNodes = people.map((p) => personToNode(p));
+  var labeledNodes = LabelGraphs(personNodes);
+
+  for (var i = 0; i < people.length; i++) {
+    people[i].graph = labeledNodes[i].graph;
+  }
+
+  var graphsDict: Dictionary = [];
+
+  people.forEach((p: any) => {
+    const graphIndex = p.graph as number;
+    if (!graphsDict[graphIndex]) {
+      graphsDict[graphIndex] = [];
+    }
+    graphsDict[graphIndex].push(p);
+  });
+
+  const treeStructures: TreeStructure[] = [];
+  for (const graph in graphsDict) {
+    if (Object.prototype.hasOwnProperty.call(graphsDict, graph)) {
+      treeStructures.push(GetTreeStructure(graphsDict[graph]));
+    }
+  }
+  return treeStructures;
+};
+export const GetTreeStructure = (people: Person[]): TreeStructure => {
+  var familyIdCounter = 0;
+  var families: Family[] = [];
+  var links: string[][] = [];
+
+  people.forEach((person) => {
+    const { id } = person;
+
+    const foundFamily = families.find(
+      (family) =>
+        (family.firstParent == person.firstParent &&
+          family.secondParent == person.secondParent) ||
+        (family.secondParent == person.firstParent &&
+          family.firstParent == person.secondParent)
+    );
+    if (foundFamily) {
+      foundFamily.children.push(id);
+    } else {
+      if (person.firstParent || person.secondParent) {
+        const newFamily: Family = {
+          firstParent: person.firstParent,
+          secondParent: person.secondParent,
+          children: [id],
+          id: person.graph + "u" + familyIdCounter++,
+        };
+
+        families.push(newFamily);
+      }
+    }
+  });
+  families.forEach((family) => {
+    if (family.firstParent) {
+      links.push([(family.firstParent as number).toString(), family.id]);
+    }
+    if (family.secondParent) {
+      links.push([(family.secondParent as number).toString(), family.id]);
+    }
+    family.children.forEach((child) =>
+      links.push([family.id, child.toString()])
+    );
+  });
+
+  //uzupelnij rodziny o rodziny bez dzieci
+  people.forEach((p) => {
+    if (p.partners.length > 0) {
+      p.partners.forEach((partner) => {
+        const foundFamily = families.find(
+          (family) =>
+            (family.firstParent == p.id && family.secondParent == partner.id) ||
+            (family.secondParent == p.id && family.firstParent == partner.id)
+        );
+        if (!foundFamily) {
+          const newFamily: Family = {
+            firstParent: p.id,
+            secondParent: partner.id,
+            children: [],
+            id: "u" + familyIdCounter++,
+          };
+
+          families.push(newFamily);
+        }
+      });
+    }
+  });
+
+  const peopleCount = people.length;
+  if (peopleCount == 1) {
+    var person = people[0];
+
+    links = [[person.id.toString(), "fakeNode1"]];
+  } else if (peopleCount == 0) {
+    links = [["fakeNode1", "fakeNode2"]];
+  }
+  const peopleCollection: PeopleCollection = {};
+
+  const personNodes = people.map((p) => personToNode(p));
+  const isAP = AP(personNodes);
+  people.forEach((p) => (p.canBeDeleted = true)); //!isAP[p.id.toString()]));
+
+  people.forEach((p) => (peopleCollection[p.id] = p));
+  return { families, links, people: peopleCollection };
+};
 export const generateTreeStructure = (people: Person[]): TreeStructure => {
   var familyIdCounter = 0;
   var families: Family[] = [];
@@ -65,7 +212,7 @@ export const generateTreeStructure = (people: Person[]): TreeStructure => {
           firstParent: person.firstParent,
           secondParent: person.secondParent,
           children: [id],
-          id: "u" + familyIdCounter++,
+          id: person.graph + "u" + familyIdCounter++,
         };
 
         families.push(newFamily);
@@ -83,13 +230,8 @@ export const generateTreeStructure = (people: Person[]): TreeStructure => {
       links.push([family.id, child.toString()])
     );
   });
-  const peopleCollection: PeopleCollection = {};
-  people.forEach((p) => (peopleCollection[p.id] = p));
 
-  people.forEach((p) => {
-    p.canBeDeleted = canBeDeleted(p);
-  });
-
+  //uzupelnij rodziny o rodziny bez dzieci
   people.forEach((p) => {
     if (p.partners.length > 0) {
       p.partners.forEach((partner) => {
@@ -111,14 +253,69 @@ export const generateTreeStructure = (people: Person[]): TreeStructure => {
       });
     }
   });
+
+  const peopleCollection: PeopleCollection = {};
+
   const personNodes = people.map((p) => personToNode(p));
   const isAP = AP(personNodes);
   people.forEach((p) => (p.canBeDeleted = !isAP[p.id.toString()]));
 
+  people.forEach((p) => (peopleCollection[p.id] = p));
   return { families, links, people: peopleCollection };
 };
 
+export const generateTreeStructures = (people: any): TreeStructure[] => {
+  var graphsDict: Dictionary = [];
+
+  people.forEach((p: any) => {
+    const graphIndex = p.graph as number;
+    if (!graphsDict[graphIndex]) {
+      graphsDict[graphIndex] = [];
+    }
+    graphsDict[graphIndex].push(p);
+  });
+
+  const treeStructures: TreeStructure[] = [];
+  for (const graph in graphsDict) {
+    if (Object.prototype.hasOwnProperty.call(graphsDict, graph)) {
+      treeStructures.push(generateTreeStructure(graphsDict[graph]));
+    }
+  }
+  return treeStructures;
+};
 var time = 0;
+
+const LabelGraphs = (nodes: PersonNode[]): PersonNode[] => {
+  var labelCount = 0;
+  var nodesCollection: NodesCollection = {};
+  nodes.forEach((n) => {
+    n.graph = undefined;
+    nodesCollection[n.id] = n;
+  });
+
+  nodes.forEach((node) => {
+    if (!node.graph) {
+      labelCount++;
+      LabelsRecursive(nodesCollection, node, labelCount);
+    }
+  });
+  return nodes;
+};
+
+const LabelsRecursive = (
+  nodes: NodesCollection,
+  node: PersonNode,
+  label: number
+) => {
+  node.graph = label;
+  node.neighbours.forEach((neighbour) => {
+    var neighbourNode = nodes[neighbour];
+    if (!neighbourNode.graph) {
+      LabelsRecursive(nodes, neighbourNode, label);
+    }
+  });
+};
+
 const AP = (nodes: PersonNode[]): NodesCollection => {
   time = 0;
   var visited: NodesCollection = {};
@@ -174,27 +371,6 @@ const APRecursive = (
     }
   });
 };
-const canBeDeleted = (person: Person): boolean => {
-  const { firstParent, secondParent, children, partners } = person;
-  const hasParents = firstParent || secondParent;
-  const hasPartners = partners.length > 0;
-
-  const noParentsNoPartnerSingleChild =
-    !hasParents && children.length == 1 && !hasPartners;
-
-  const noChildrenNoPartner = children.length == 0 && !hasPartners;
-
-  const noParentsHasSinglePartnerAndChildrenWithHim =
-    !hasParents &&
-    partners.length == 1 &&
-    partners[0].children.every((c) => children.includes(c));
-
-  return (
-    noParentsHasSinglePartnerAndChildrenWithHim ||
-    noChildrenNoPartner ||
-    noParentsNoPartnerSingleChild
-  );
-};
 
 const personToNode = (person: Person): PersonNode => {
   var childrenIds = person.children.map((a) => a.toString());
@@ -205,6 +381,8 @@ const personToNode = (person: Person): PersonNode => {
   if (person.secondParent) {
     neighbours.push(person.secondParent.toString());
   }
+  var partners = person.partners.map((p) => p.id.toString());
+  neighbours = [...neighbours, ...partners];
 
   return {
     id: person.id.toString(),
@@ -213,4 +391,7 @@ const personToNode = (person: Person): PersonNode => {
 };
 export interface NodesCollection {
   [key: string]: any;
+}
+export interface Dictionary {
+  [key: number]: any;
 }
