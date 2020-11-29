@@ -61,9 +61,10 @@ export const renderFamilyNode = (nodes) => {
     .attr("fill", "white")
     .attr("fill-opacity", 0);
 
-  //   nodes
-  //     .append("circle")
-  //     .attr("r", 2)
-  //     .attr("stroke", "black")
-  //     .attr("fill", "black");
+  nodes
+    .append("circle")
+    .attr("r", 5)
+    .attr("stroke", "black")
+    .attr("fill", "black")
+    .attr("class", "visibleCircle");
 };

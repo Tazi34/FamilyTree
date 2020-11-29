@@ -143,8 +143,45 @@ class MultipleTreesRenderer extends React.Component {
     this.initializeNodes(nodesCanvas, nodes);
     this.initializeLinks(linksCanvas, links);
   }
-  hideSubnodes = (familyNode) => {
-    familyNode.each((node) => console.log(node.id));
+  changeVisibility = (familyNode) => {
+    if (familyNode.isHidden) {
+      console.log("PROBUJE WLACZYC");
+      familyNode.each((node, i) => {
+        var links = [...node.targetLinks, ...node.sourceLinks];
+
+        this.selectNode(node.id).attr("display", "");
+
+        if (i == 0) {
+          this.selectNode(node.id)
+            .select(".visibleCircle")
+            .attr("fill", "black");
+        }
+        links.forEach((link) => this.selectLink(link.id).attr("display", ""));
+        familyNode.isHidden = false;
+      });
+    } else {
+      familyNode.each((node, i) => {
+        var links = [...node.sourceLinks];
+
+        //zeby nie usuwac galazki piewrwszej
+        if (i != 0 && i != 1) {
+          links = [...links, ...node.targetLinks];
+        }
+
+        familyNode.isHidden = true;
+        if (i == 0) {
+          this.selectNode(node.id)
+            .select(".visibleCircle")
+            .attr("fill", "white");
+        } else {
+          this.selectNode(node.id).attr("display", "none");
+        }
+
+        links.forEach((link) =>
+          this.selectLink(link.id).attr("display", "none")
+        );
+      });
+    }
   };
   initializeNodes = (nodes, data) => {
     var nodesSvg = nodes
@@ -170,7 +207,7 @@ class MultipleTreesRenderer extends React.Component {
     dragHandler(familyNodes);
     familyNodes.attr("transform", (d) => `translate(${d.x},${d.y})`);
 
-    familyNodes.on("click", (e, d) => this.hideSubnodes(d));
+    familyNodes.on("click", (e, d) => this.changeVisibility(d));
     renderFamilyNodes(familyNodes);
     renderNodeCards(nonEmptyNodes);
     const nodesThatCanBeDeleted = nonEmptyNodes.filter(

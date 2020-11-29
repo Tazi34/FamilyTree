@@ -9,7 +9,6 @@ export const createLinks = (links) => {
 
     var pathData = createPath(link);
 
-    console.log(pathData);
     d3.select(this)
       .append("g")
       .attr("class", "link")
@@ -33,12 +32,6 @@ export const createLinks = (links) => {
 };
 
 export const createPath = (link) => {
-  var lineGenerator = d3.line().curve(d3.curveNatural);
-
-  var points = [
-    [parseInt(link.source.x), parseInt(link.source.y)],
-    [parseInt(link.target.x), parseInt(link.target.y)],
-  ];
   var yDif = link.target.y - link.source.y;
   var xDif = link.target.x - link.source.x;
 
