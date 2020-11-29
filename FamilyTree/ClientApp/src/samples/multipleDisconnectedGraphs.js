@@ -66,4 +66,26 @@ export default [
     secondParent: null,
     graph: 3,
   },
+  {
+    id: 7,
+    information: {
+      name: "Pablo",
+      surname: "Picasson",
+      birthDate: "20-05-1454",
+    },
+    firstParent: 2,
+    secondParent: null,
+    graph: 3,
+  },
+  {
+    id: 8,
+    information: {
+      name: "Pablo",
+      surname: "Picasson",
+      birthDate: "20-05-1454",
+    },
+    firstParent: 2,
+    secondParent: null,
+    graph: 3,
+  },
 ];

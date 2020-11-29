@@ -7,7 +7,7 @@ export interface Person {
   children: number[];
   partners: Person[];
   graph?: number;
-  links?: string[][];
+  families?: Family[];
 }
 
 export interface Family {

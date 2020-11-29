@@ -1,23 +1,18 @@
 import * as React from "react";
-import { TreeStructure } from "../../model/TreeStructureInterfaces";
-import {
-  deleteIcon,
-  gearIcon,
-  plusIcon,
-  RECT_HEIGHT,
-  RECT_WIDTH,
-} from "../../d3/RectMapper";
+import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+
 import {
   getLinkId,
-  getNodeId,
   getLinkIdSelector,
+  getNodeId,
   getNodeIdSelector,
 } from "./treeLogic/idHelpers";
-import data from "../../samples/multipleDisconnectedGraphs.js";
+import { createLinks, createPath } from "./treeLogic/linkCreationHelpers";
 import {
-  emptyNodeAttributs,
-  rectangleAttributes,
-} from "../../d3/NodeAttributes";
+  addDeleteIcon,
+  renderFamilyNode as renderFamilyNodes,
+  renderNodeCards,
+} from "./treeLogic/nodeCreationHelpers";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -58,7 +53,7 @@ class MultipleTreesRenderer extends React.Component {
         });
 
       const dag = d3.dagConnect()(linksData);
-      var root = d3tree(dag);
+      d3tree(dag);
       var nodes = dag.descendants();
       roots.push(nodes.find((a) => a.layer == 0));
       links = [...links, ...tree.links];
@@ -81,8 +76,8 @@ class MultipleTreesRenderer extends React.Component {
     var linksData = structure.links;
 
     console.log(structure);
-    const conatiner = this.selectContainer();
-    conatiner.attr("transform", "translate(-500,0)");
+    const container = this.selectContainer();
+    container.attr("transform", "translate(-500,0)");
     var x_sep = rectWidth + 50,
       y_sep = rectHeight + 100;
 
@@ -97,17 +92,22 @@ class MultipleTreesRenderer extends React.Component {
       });
 
     const dag = d3.dagConnect()(linksData);
-    var root = tree(dag);
-    var nodes = dag.descendants();
+    tree(dag);
+    var d3Nodes = dag.descendants();
+    var d3Links = dag.links();
 
-    nodes.forEach((n) => {
+    d3Nodes.forEach((n) => {
       var data = structure.people[n.id];
+      n.targetLinks = [];
+      n.sourceLinks = [];
       if (data) {
         n.data = data;
         n.isFamily = false;
       } else {
-        if (structure.families.some((a) => a.id == n.id)) {
+        var family = structure.families.find((a) => a.id == n.id);
+        if (family) {
           n.isFamily = true;
+          n.family = family;
         } else {
           n.isFamily = false;
           n.isFake = true;
@@ -115,7 +115,13 @@ class MultipleTreesRenderer extends React.Component {
       }
     });
 
-    this.updateNodesAndLinks(root.descendants(), root.links());
+    d3Links.forEach((l) => {
+      l.id = getLinkId(l.source.id, l.target.id);
+      l.source.sourceLinks.push(l);
+      l.target.targetLinks.push(l);
+    });
+
+    this.updateNodesAndLinks(d3Nodes, d3Links);
   };
 
   appendStartGroups = () => {
@@ -130,7 +136,6 @@ class MultipleTreesRenderer extends React.Component {
     this.appendStartGroups();
     this.allNodes = nodes;
     this.allLinks = links;
-
     var containerGroup = d3.select(this.container.current);
     var linksCanvas = containerGroup.select(`#${linksGroupId}`);
     var nodesCanvas = containerGroup.select(`#${nodesGroupId}`);
@@ -138,110 +143,45 @@ class MultipleTreesRenderer extends React.Component {
     this.initializeNodes(nodesCanvas, nodes);
     this.initializeLinks(linksCanvas, links);
   }
-
+  hideSubnodes = (familyNode) => {
+    familyNode.each((node) => console.log(node.id));
+  };
   initializeNodes = (nodes, data) => {
-    var g = nodes
+    var nodesSvg = nodes
       .selectAll()
       .data(data)
       .enter()
       .append("g")
       .attr("class", "node")
-      .attr("id", (d) => getNodeId(d.id))
-      .filter((d) => !d.isFamily && !d.isFake);
+      .attr("id", (d) => getNodeId(d.id));
+
+    var nonEmptyNodes = nodesSvg.filter((d) => !d.isFamily && !d.isFake);
+    var familyNodes = nodesSvg.filter((d) => d.isFamily);
+
     var dragHandler = d3.drag().on("drag", (e, d) => {
       this.moveNode(e, d);
     });
-    dragHandler(g);
-    g.attr(
+    dragHandler(nonEmptyNodes);
+    nonEmptyNodes.attr(
       "transform",
       (d) => `translate(${d.x - RECT_WIDTH / 2},${d.y - RECT_HEIGHT / 2})`
-    ).on("drag", this.moveNode);
+    );
 
-    g.append("image")
-      .attr(
-        "href",
-        "https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png"
-      )
-      .attr("height", 30)
-      .attr("width", 30);
-    g.append("rect").each(function (d) {
-      var u = d3.select(this);
-      const attributes = d.isFamily ? emptyNodeAttributs : rectangleAttributes;
-      for (const key in attributes) {
-        u = u.attr(key, attributes[key]);
-      }
-    });
-    g.append("path").attr("d", gearIcon);
-    g.append("path").attr("d", plusIcon);
-    g.append("text")
-      .attr("x", 10)
-      .attr("y", 100)
-      .text((d) => (d.isFamily ? "" : `${d.data.id}____23 May, 1956`));
-    g.append("text")
-      .attr("x", 72)
-      .attr("y", 25)
-      .text((d) => {
-        var text = "";
-        if (d.data.information) {
-          const { name, surname } = d.data.information;
-          text = `${name} ${surname}`;
-        }
-        return text;
-      });
+    dragHandler(familyNodes);
+    familyNodes.attr("transform", (d) => `translate(${d.x},${d.y})`);
 
-    const nodesThatCanBeDeleted = g.filter((d) => d.data.canBeDeleted);
-
-    nodesThatCanBeDeleted
-      .append("g")
-      .attr("transform", `translate(${192}, ${60})scale(1.5)`)
-      .append("path")
-      .attr("d", deleteIcon)
-      .on("click", (event, d) => {
-        this.deleteNode(d);
-      });
-    nodes.selectAll("circle.node").data(data).enter();
-
-    return nodes;
+    familyNodes.on("click", (e, d) => this.hideSubnodes(d));
+    renderFamilyNodes(familyNodes);
+    renderNodeCards(nonEmptyNodes);
+    const nodesThatCanBeDeleted = nonEmptyNodes.filter(
+      (d) => d.data.canBeDeleted
+    );
+    addDeleteIcon(nodesThatCanBeDeleted, this.deleteNode);
+    //addHideIcon();
   };
   initializeLinks = (links, data) => {
-    var lineGenerator = d3.line();
-
-    links
-      .selectAll("line.link")
-      .data(data)
-      .enter()
-      .each(function (d) {
-        var link = d;
-        if (link.source.isFake || link.target.isFake) {
-          return;
-        }
-        var points = [
-          [parseInt(link.source.x), parseInt(link.source.y)],
-          [parseInt(link.target.x), parseInt(link.target.y)],
-        ];
-
-        var pathData = lineGenerator(points);
-
-        d3.select(this)
-          .append("g")
-          .attr("class", "link")
-          .attr("id", (link) => {
-            return getLinkId(link.source.id, link.target.id);
-          })
-          .append("path")
-          .attr("d", pathData)
-          .attr("stroke", (d) => {
-            var graphIndex = 3;
-
-            var graphIndex = link.source.data.graph
-              ? link.source.data.graph
-              : link.target.data.graph;
-
-            return colorArray[graphIndex - 1];
-          })
-          .attr("stroke-width", 1);
-      });
-    return links;
+    var linksSelector = links.selectAll("line.link").data(data).enter();
+    createLinks(linksSelector);
   };
   selectContainer = () => {
     return d3.select(this.container.current);
@@ -256,26 +196,66 @@ class MultipleTreesRenderer extends React.Component {
   selectNode = (id) => {
     return this.selectNodes().select(getNodeIdSelector(id));
   };
-  moveNode = (e, node) => {
-    node.x += e.dx;
-    node.y += e.dy;
 
-    this.selectNode(node.id).attr(
-      "transform",
-      (d) => `translate(${node.x - RECT_WIDTH / 2},${node.y - RECT_HEIGHT / 2})`
-    );
+  selectLink = (sourceId, targetId = null) => {
+    return this.selectLinks().select(getLinkIdSelector(sourceId, targetId));
   };
 
   deleteNode = (node) => {
     const { id } = node;
-    console.log(node);
-    this.updateNodesAndLinks(
-      this.allNodes.filter((n) => n != node),
-      this.allLinks
-    );
-    //this.selectNodes().select(getNodeIdSelector(id)).remove();
-  };
 
+    console.log(node);
+    this.selectNode(id).remove();
+    var links = [...node.sourceLinks, ...node.targetLinks];
+    links.forEach((link) => {
+      this.selectLink(link.id).remove();
+      var targetedFamily =
+        node.id == link.source.id ? link.target : link.source;
+      removeNodeFromFamily(targetedFamily.family, node.id);
+
+      this.deleteFamilyConnectionsIfNeeded(targetedFamily.family, node.id);
+    });
+  };
+  deleteFamilyConnectionsIfNeeded = (family, removedNode) => {
+    console.log(family);
+    if (
+      (!family.firstParent && !family.secondParent) ||
+      family.children.length == 0
+    ) {
+      var linksToDelete = [
+        getLinkId(removedNode, family.id),
+        getLinkId(family.firstParent, family.id),
+        getLinkId(family.secondParent, family.id),
+        ...family.children.map((c) => getLinkId(family.id, c)),
+      ];
+
+      this.selectLinks()
+        .selectAll("g")
+        .filter((a) => linksToDelete.includes(a.id))
+        .remove();
+    }
+  };
+  moveNode = (e, node) => {
+    node.x += e.dx;
+    node.y += e.dy;
+
+    var svgNode = this.selectNode(node.id);
+
+    var x = node.x;
+    var y = node.y;
+    if (!node.isFamily) {
+      x = x - RECT_WIDTH / 2;
+      y = y - RECT_HEIGHT / 2;
+    }
+
+    svgNode.attr("transform", (d) => `translate(${x},${y})`);
+    var allLinks = [...node.sourceLinks, ...node.targetLinks];
+    allLinks.forEach((link) => {
+      var path = createPath(link);
+      var svgLink = this.selectLink(link.id);
+      svgLink.select("path").attr("d", path);
+    });
+  };
   componentDidMount = () => {
     this.initializeTree();
   };
@@ -288,4 +268,13 @@ class MultipleTreesRenderer extends React.Component {
 }
 
 export default MultipleTreesRenderer;
-var colorArray = ["black", "red", "blue", "green", "purple", "pink"];
+
+export const removeNodeFromFamily = (family, id) => {
+  if (family.firstParent == id) {
+    family.firstParent = null;
+  } else if (family.secondParent == id) {
+    family.secondParent = null;
+  } else {
+    family.children = family.children.filter((a) => a != id);
+  }
+};

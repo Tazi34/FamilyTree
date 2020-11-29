@@ -12,6 +12,7 @@ export const GetTreeStructures = (people: Person[]): TreeStructure[] => {
   //start empty
   people.forEach((p) => {
     p.children = [];
+    p.families = [];
     p.partners = [];
     p.information.name = names[p.id];
     p.information.surname = surnames[p.id];
@@ -77,31 +78,32 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
   var familyIdCounter = 0;
   var families: Family[] = [];
   var links: string[][] = [];
-
+  var family: Family | undefined;
   people.forEach((person) => {
     const { id } = person;
 
-    const foundFamily = families.find(
+    family = families.find(
       (family) =>
         (family.firstParent == person.firstParent &&
           family.secondParent == person.secondParent) ||
         (family.secondParent == person.firstParent &&
           family.firstParent == person.secondParent)
     );
-    if (foundFamily) {
-      foundFamily.children.push(id);
+    if (family) {
+      family.children.push(id);
     } else {
       if (person.firstParent || person.secondParent) {
-        const newFamily: Family = {
+        family = {
           firstParent: person.firstParent,
           secondParent: person.secondParent,
           children: [id],
           id: person.graph + "u" + familyIdCounter++,
         };
 
-        families.push(newFamily);
+        families.push(family);
       }
     }
+    person.families!.push(family as Family);
   });
   families.forEach((family) => {
     if (family.firstParent) {
