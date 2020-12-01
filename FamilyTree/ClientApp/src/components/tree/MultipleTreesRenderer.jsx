@@ -1,6 +1,5 @@
 import * as React from "react";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
-
 import {
   getLinkId,
   getLinkIdSelector,
@@ -13,6 +12,7 @@ import {
   renderFamilyNode as renderFamilyNodes,
   renderNodeCards,
 } from "./treeLogic/nodeCreationHelpers";
+
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -26,6 +26,9 @@ class MultipleTreesRenderer extends React.Component {
     this.container = React.createRef();
     this.allNodes = [];
     this.allLinks = [];
+    this.state = {
+      isInConnectingMode: false,
+    };
   }
 
   initializeTree = () => {
@@ -66,7 +69,7 @@ class MultipleTreesRenderer extends React.Component {
     console.log(roots);
 
     roots.forEach((root) => {
-      links.push(["fakerinio", root.id]);
+      links.push(["connecting_node", root.id]);
     });
     var structure = {
       people,
@@ -143,15 +146,29 @@ class MultipleTreesRenderer extends React.Component {
     this.initializeNodes(nodesCanvas, nodes);
     this.initializeLinks(linksCanvas, links);
   }
+
+  //Leave everything after inital render to d3
+  shouldComponentUpdate = () => {
+    return false;
+  };
   changeVisibility = (familyNode) => {
     if (familyNode.isHidden) {
-      console.log("PROBUJE WLACZYC");
       familyNode.each((node, i) => {
         var links = [...node.targetLinks, ...node.sourceLinks];
 
-        this.selectNode(node.id).attr("display", "");
+        //Do refactoringu
+        var nodesToShow = [node.id];
+        if (node.isFamily) {
+          nodesToShow = [
+            ...nodesToShow,
+            node.family.firstParent,
+            node.family.secondParent,
+          ];
+        }
+        nodesToShow.forEach((n) => this.selectNode(n).attr("display", ""));
 
         if (i == 0) {
+          //zapelnij kolko na galezi
           this.selectNode(node.id)
             .select(".visibleCircle")
             .attr("fill", "black");
@@ -174,7 +191,17 @@ class MultipleTreesRenderer extends React.Component {
             .select(".visibleCircle")
             .attr("fill", "white");
         } else {
-          this.selectNode(node.id).attr("display", "none");
+          var nodesToHide = [node.id];
+          if (node.isFamily) {
+            nodesToHide = [
+              ...nodesToHide,
+              node.family.firstParent,
+              node.family.secondParent,
+            ];
+          }
+          nodesToHide.forEach((n) => {
+            this.selectNode(n).attr("display", "none");
+          });
         }
 
         links.forEach((link) =>
@@ -197,8 +224,13 @@ class MultipleTreesRenderer extends React.Component {
 
     var dragHandler = d3.drag().on("drag", (e, d) => {
       this.moveNode(e, d);
+
+      //close menu if open
+      this.props.onAddNodeMenuClose(e);
     });
     dragHandler(nonEmptyNodes);
+    nonEmptyNodes.on("contextmenu", this.props.onAddNodeMenuOpen);
+
     nonEmptyNodes.attr(
       "transform",
       (d) => `translate(${d.x - RECT_WIDTH / 2},${d.y - RECT_HEIGHT / 2})`
@@ -214,8 +246,9 @@ class MultipleTreesRenderer extends React.Component {
       (d) => d.data.canBeDeleted
     );
     addDeleteIcon(nodesThatCanBeDeleted, this.deleteNode);
-    //addHideIcon();
   };
+  addChild = (parent) => {};
+
   initializeLinks = (links, data) => {
     var linksSelector = links.selectAll("line.link").data(data).enter();
     createLinks(linksSelector);
@@ -246,11 +279,14 @@ class MultipleTreesRenderer extends React.Component {
     var links = [...node.sourceLinks, ...node.targetLinks];
     links.forEach((link) => {
       this.selectLink(link.id).remove();
+      console.log(link);
       var targetedFamily =
         node.id == link.source.id ? link.target : link.source;
-      removeNodeFromFamily(targetedFamily.family, node.id);
 
-      this.deleteFamilyConnectionsIfNeeded(targetedFamily.family, node.id);
+      if (targetedFamily.id != "connecting_node") {
+        removeNodeFromFamily(targetedFamily.family, node.id);
+        this.deleteFamilyConnectionsIfNeeded(targetedFamily.family, node.id);
+      }
     });
   };
   deleteFamilyConnectionsIfNeeded = (family, removedNode) => {
@@ -296,9 +332,7 @@ class MultipleTreesRenderer extends React.Component {
   componentDidMount = () => {
     this.initializeTree();
   };
-  componentDidUpdate = () => {
-    this.initializeTree();
-  };
+  componentDidUpdate = () => {};
   render() {
     return <g ref={this.container} key={Math.random().toString()}></g>;
   }

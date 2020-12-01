@@ -5,7 +5,7 @@ import * as ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { ConnectedRouter } from "connected-react-router";
 import { createBrowserHistory } from "history";
-import configureStore from "./store/configureStore";
+import configureStore from "./helpers/configureStore";
 import App from "./App";
 import registerServiceWorker from "./registerServiceWorker";
 import "./index.css";

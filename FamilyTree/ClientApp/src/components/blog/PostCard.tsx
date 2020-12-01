@@ -28,9 +28,10 @@ const useStyles = makeStyles({
 });
 type PostCardProps = {
   post: Post;
+  onPostDelete: Function;
 };
 
-const PostCard = ({ post }: PostCardProps) => {
+const PostCard = ({ post, onPostDelete }: PostCardProps) => {
   const classes = useStyles();
   return (
     <Card>
@@ -51,6 +52,13 @@ const PostCard = ({ post }: PostCardProps) => {
       <CardActions>
         <Button size="small" color="primary">
           Read More
+        </Button>
+        <Button
+          onClick={() => onPostDelete(post.id)}
+          size="small"
+          color="secondary"
+        >
+          Delete
         </Button>
       </CardActions>
     </Card>

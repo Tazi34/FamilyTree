@@ -11,11 +11,24 @@ import data2 from "../../samples/complex.json";
 import TreeRenderer from "./TreeRenderer";
 import { ZoomContainer } from "./Zoom";
 import MultipleTreesRenderer from "./MultipleTreesRenderer";
+import {
+  ClickAwayListener,
+  makeStyles,
+  Menu,
+  MenuItem,
+  MenuList,
+  Paper,
+  Theme,
+} from "@material-ui/core";
+import { Console } from "console";
 
 const Context = React.createContext(null);
 
 type TreeContainerState = {
   familyTreeEntries: any;
+  isAddMenuOpen: boolean;
+  addMenuX: number;
+  addMenuY: number;
 };
 
 class TreeContainer extends React.Component<{}, TreeContainerState> {
@@ -25,6 +38,9 @@ class TreeContainer extends React.Component<{}, TreeContainerState> {
     super(props);
 
     this.state = {
+      addMenuX: 0,
+      addMenuY: 0,
+      isAddMenuOpen: true,
       familyTreeEntries: data2,
     };
     this.svgRef = React.createRef();
@@ -42,22 +58,76 @@ class TreeContainer extends React.Component<{}, TreeContainerState> {
     });
   };
 
+  handleNodeAdd = (event: any) => {
+    event.preventDefault();
+    console.log(event);
+    this.setState({
+      isAddMenuOpen: !this.state.isAddMenuOpen,
+      addMenuX: event.x,
+      addMenuY: event.y,
+    });
+  };
+  handleCloseMenu = (e: any) => {
+    if (this.state.isAddMenuOpen) {
+      this.setState({ isAddMenuOpen: false });
+    }
+  };
+  handleConnectChild = () => {};
   render() {
     var treeStructures = GetTreeStructures(this.state.familyTreeEntries);
     console.log(treeStructures);
     return (
-      <svg ref={this.svgRef} width={"100%"} height={"100%"}>
-        <ZoomContainer getSvg={this.getSvg}>
-          <MultipleTreesRenderer
-            trees={treeStructures}
-            onNodeDelete={this.handleNodeDelete}
+      <div style={{ width: "100%", height: "100%" }}>
+        <svg ref={this.svgRef} width={"100%"} height={"100%"}>
+          <ZoomContainer
             getSvg={this.getSvg}
-            rectHeight={RECT_HEIGHT}
-            rectWidth={RECT_WIDTH}
-          ></MultipleTreesRenderer>
-        </ZoomContainer>
-      </svg>
+            onMouseMove={this.handleCloseMenu}
+          >
+            <MultipleTreesRenderer
+              trees={treeStructures}
+              onNodeDelete={this.handleNodeDelete}
+              getSvg={this.getSvg}
+              onAddNodeMenuOpen={this.handleNodeAdd}
+              onAddNodeMenuClose={this.handleCloseMenu}
+              rectHeight={RECT_HEIGHT}
+              rectWidth={RECT_WIDTH}
+            ></MultipleTreesRenderer>
+          </ZoomContainer>
+        </svg>
+        <ClickAwayListener
+          onClickAway={this.handleCloseMenu}
+          mouseEvent="onClick"
+          touchEvent="onTouchStart"
+        >
+          <Paper
+            id="contextMenu"
+            style={{
+              position: "absolute",
+              left: this.state.addMenuX + "px",
+              top: this.state.addMenuY + "px",
+
+              display: this.state.isAddMenuOpen ? "" : "none",
+            }}
+          >
+            <MenuList>
+              <MenuItem>Add parent</MenuItem>
+              <MenuItem>Connect parent</MenuItem>
+              <MenuItem>Add child</MenuItem>
+              <MenuItem onClick={this.handleConnectChild}>
+                Connect child
+              </MenuItem>
+            </MenuList>
+          </Paper>
+        </ClickAwayListener>
+      </div>
     );
+  }
+  componentDidMount() {
+    document.addEventListener("mousedown", this.handleCloseMenu);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("mousedown", this.handleCloseMenu);
   }
 }
 

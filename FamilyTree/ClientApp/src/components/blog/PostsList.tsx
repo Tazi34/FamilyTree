@@ -12,14 +12,17 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 type PostsListProps = {
   posts: Post[];
+  onPostAdd: Function;
+  onPostDelete: Function;
 };
-const PostsList = ({ posts }: PostsListProps) => {
+const PostsList = ({ posts, onPostAdd, onPostDelete }: PostsListProps) => {
   const classes = useStyles();
+
   return (
     <List component={"div"} className={classes.root}>
       {posts.map((p: Post) => (
         <div className={classes.postCard}>
-          <PostCard post={p} />
+          <PostCard onPostDelete={onPostDelete} post={p} />
         </div>
       ))}
     </List>

@@ -249,5 +249,15 @@
     },
     "firstParent": 21,
     "secondParent": 22
+  },
+  {
+    "id": 26,
+    "information": {
+      "name": "Pablo",
+      "surname": "Picasson",
+      "birthDate": "20-05-1454"
+    },
+    "firstParent": null,
+    "secondParent": null
   }
 ]

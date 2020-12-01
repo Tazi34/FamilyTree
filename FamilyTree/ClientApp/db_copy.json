@@ -1,0 +1,59 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "publicationDate": "20-05-2020",
+      "title": "Test",
+      "text": "Test",
+      "author": {
+        "id": 1,
+        "name": "Name",
+        "surname": "Surname"
+      }
+    },
+    {
+      "id": 2,
+      "publicationDate": "20-05-2020",
+      "title": "Test",
+      "text": "Test",
+      "author": {
+        "id": 1,
+        "name": "Name",
+        "surname": "Surname"
+      }
+    },
+    {
+      "id": 3,
+      "publicationDate": "20-05-2020",
+      "title": "Test",
+      "text": "Test",
+      "author": {
+        "id": 1,
+        "name": "Name",
+        "surname": "Surname"
+      }
+    },
+    {
+      "id": 4,
+      "publicationDate": "20-05-2020",
+      "title": "Test",
+      "text": "Test",
+      "author": {
+        "id": 1,
+        "name": "Name",
+        "surname": "Surname"
+      }
+    },
+    {
+      "id": 5,
+      "publicationDate": "20-05-2020",
+      "title": "Test",
+      "text": "Test",
+      "author": {
+        "id": 1,
+        "name": "Name",
+        "surname": "Surname"
+      }
+    }
+  ]
+}

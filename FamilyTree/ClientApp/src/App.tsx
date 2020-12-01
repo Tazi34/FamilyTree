@@ -23,6 +23,9 @@ import {
   LOGIN_PAGE_URI,
   TREE_PAGE_URI,
 } from "./applicationRouting";
+import { Provider } from "react-redux";
+import { createStore } from "redux";
+import configureStore from "./helpers/configureStore";
 
 export const theme = createMuiTheme({
   palette: {
@@ -37,6 +40,7 @@ const notLoggedInURIs = [HOME_PAGE_URI, LOGIN_PAGE_URI];
 export default () => {
   const history = useHistory();
   const isLogged = loggedInURIs.includes(history.location.pathname);
+  console.log("XDD");
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />

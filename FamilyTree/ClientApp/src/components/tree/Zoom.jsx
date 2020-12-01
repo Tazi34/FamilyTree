@@ -8,6 +8,9 @@ export function ZoomContainer(props) {
     svgElement = props.getSvg();
     const svg = d3.select(svgElement);
     const zoom = d3.zoom().on("zoom", function (event, d) {
+      if (event.sourceEvent.type == "mousemove") {
+        props.onMouseMove(event);
+      }
       setTransform(event.transform);
       return;
     });
