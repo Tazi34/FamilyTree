@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "information": {
+      "name": "Pablo",
+      "surname": "Picasson",
+      "birthDate": "20-05-1454"
+    },
+    "partners": [],
+    "children": [],
+    "firstParent": null,
+    "secondParent": null
+  },
+  {
+    "id": 2,
+    "information": {
+      "name": "Pablo",
+      "surname": "Picasson",
+      "birthDate": "20-05-1454"
+    },
+    "partners": [],
+    "children": [],
+    "firstParent": 1,
+    "secondParent": null
+  },
+  {
+    "id": 3,
+    "information": {
+      "name": "Pablo",
+      "surname": "Picasson",
+      "birthDate": "20-05-1454"
+    },
+    "partners": [],
+    "children": [],
+    "firstParent": 2,
+    "secondParent": null
+  },
+  {
+    "id": 4,
+    "information": {
+      "name": "Pablo",
+      "surname": "Picasson",
+      "birthDate": "20-05-1454"
+    },
+    "partners": [],
+    "children": [],
+    "firstParent": 3,
+    "secondParent": null
+  }
+]
