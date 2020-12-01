@@ -20,6 +20,11 @@ namespace FamilyTree.Controllers
         {
             this.userService = (UserService)userService;
         }
+        /// <summary>
+        /// Modyfikacja informacji o użytkowniku
+        /// </summary>
+        /// <param name="model">ModifyUserRequest</param>
+        /// <returns>Zwraca token i zmodyfikowane informacje o użytkowniku</returns>
         [HttpPut]
         [Route("")]
         public ActionResult<AuthenticateResponse> ModifyUser(ModifyUserRequest model)
@@ -32,6 +37,11 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return result;
         }
+        /// <summary>
+        /// Zmiana hasła
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>Zwraca token i informacje o użytkowniku</returns>
         [HttpPut]
         [Route("passwordChange")]
         public ActionResult<AuthenticateResponse> ChangePassword(ChangePasswordRequest model)
@@ -44,18 +54,27 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return result;
         }
+        /// <summary>
+        /// TODO
+        /// </summary>
         [HttpPost]
         [Route("picture")]
         public void SetUserPicture()
         {
 
         }
+        /// <summary>
+        /// TODO
+        /// </summary>
         [HttpPut]
         [Route("picture")]
         public void ChangeUserPicture()
         {
 
         }
+        /// <summary>
+        /// TODO
+        /// </summary>
         [HttpGet]
         [Route("picture/{UserId}")]
         public void ChangeUserPicture(int UserId)

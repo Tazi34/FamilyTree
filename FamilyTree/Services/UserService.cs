@@ -10,7 +10,7 @@ namespace FamilyTree.Services
 {
     public interface IUserService
     {
-        AuthenticateResponse Authenticate(AuthenticateRequest authenticationRequest);
+        AuthenticateResponse Authenticate(string email, string password);
         User GetById(int userId);
         AuthenticateResponse CreateUser(CreateUserRequest model);
         AuthenticateResponse Modify(ModifyUserRequest model);
@@ -26,14 +26,14 @@ namespace FamilyTree.Services
             context = dataContext;
             this.tokenService = tokenService;
         }
-        public AuthenticateResponse Authenticate(AuthenticateRequest model)
+        public AuthenticateResponse Authenticate(string email, string password)
         {
-            var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(x => x.Email.Equals(model.Email));
+            var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(x => x.Email.Equals(email));
 
             if (user == null)
                 return null;
 
-            if (user.PasswordHash != model.Password)
+            if (user.PasswordHash != password)
                 return null;
 
             return new AuthenticateResponse
@@ -57,11 +57,7 @@ namespace FamilyTree.Services
             user.PasswordHash = model.Password;
             context.Users.Update(user);
             context.SaveChanges();
-            return Authenticate(new AuthenticateRequest
-            {
-                Email = model.Email,
-                Password = model.Password
-            });
+            return Authenticate(model.Email, model.Password);
         }
 
         public AuthenticateResponse CreateUser(CreateUserRequest model)
@@ -92,11 +88,7 @@ namespace FamilyTree.Services
             };
             context.Users.Add(user1);
             context.SaveChanges();
-            return Authenticate(new AuthenticateRequest
-            {
-                Email = model.Email,
-                Password = model.Password
-            });
+            return Authenticate(model.Email, model.Password);
         }
 
         public User GetById(int userId)
@@ -149,11 +141,7 @@ namespace FamilyTree.Services
 
             context.Users.Update(user);
             context.SaveChanges();
-            return Authenticate(new AuthenticateRequest
-            {
-                Email = user.Email,
-                Password = user.PasswordHash
-            });
+            return Authenticate(user.Email, user.PasswordHash);
         }
     }
 }

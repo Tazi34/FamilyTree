@@ -19,6 +19,11 @@ namespace FamilyTree.Controllers
         {
             this.blogService = blogService;
         }
+        /// <summary>
+        /// Zwraca listę wszystkich id postów użytkownika wraz z datami utworzenia
+        /// </summary>
+        /// <param name="userId">Id użytkwnika</param>
+        /// <returns></returns>
         [Route("{userId:int}")]
         [HttpGet]
         public ActionResult<BlogListResponse> GetBlogList(int userId)
@@ -26,6 +31,11 @@ namespace FamilyTree.Controllers
             var resultList = blogService.GetPostsList(userId);
             return Ok(resultList);
         }
+        /// <summary>
+        /// Zwraca post o podanym Id
+        /// </summary>
+        /// <param name="postId">Id posta</param>
+        /// <returns>Z</returns>
         [Route("post/{postId:int}")]
         [HttpGet]
         public ActionResult<PostResponse> GetPost(int postId)
@@ -35,6 +45,11 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return Ok(post);
         }
+        /// <summary>
+        /// Dodaje post dla użytkownika z JWT
+        /// </summary>
+        /// <param name="model">JSON CreatePostRequest</param>
+        /// <returns>Zwraca nowo dodany post</returns>
         [Route("")]
         [HttpPost]
         public ActionResult<PostResponse> CreatePost(CreatePostRequest model)
@@ -45,6 +60,11 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return Ok(newPost);
         }
+        /// <summary>
+        /// Modyfikuje post użytkownika z JWT
+        /// </summary>
+        /// <param name="model">JSON ModifyPostRequest</param>
+        /// <returns>Zwraca zmodyfikowany post</returns>
         [Route("")]
         [HttpPut]
         public ActionResult<PostResponse> ModifyPost(ModifyPostRequest model)

@@ -20,6 +20,11 @@ namespace FamilyTree.Controllers
         {
             this.treeService = treeService;
         }
+        /// <summary>
+        /// Zwraca drzewo o danym Id
+        /// </summary>
+        /// <param name="treeId">Id drzewa</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("{treeId:int}")]
         public ActionResult<TreeResponse> GetTree(int treeId)
@@ -31,6 +36,11 @@ namespace FamilyTree.Controllers
                 return BadRequest("no such tree, or tree is private");
             return Ok(tree);
         }
+        /// <summary>
+        /// Zwraca node o danym Id
+        /// </summary>
+        /// <param name="nodeId">Id node-a</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("node/{nodeId:int}")]
         public ActionResult<NodeResponse> GetNode(int nodeId)
@@ -42,6 +52,11 @@ namespace FamilyTree.Controllers
                 return BadRequest("no such node, or tree is private");
             return Ok(node);
         }
+        /// <summary>
+        /// Zwraca listę drzew użytkownika do wyświetlenia na profilu (drzewa publiczne + drzewa prywatne w których jest użytkownik z JWT)
+        /// </summary>
+        /// <param name="userId">Id użytkownika</param>
+        /// <returns></returns>
         [HttpGet]
         [Route("user/{userId:int}")]
         public ActionResult<TreeUserResponse> GetUserTrees(int userId)
@@ -53,6 +68,11 @@ namespace FamilyTree.Controllers
                 return BadRequest("no such user, or sth");
             return Ok(trees);
         }
+        /// <summary>
+        /// Tworzy nowe drzewo z jednym nodem, w którym jest umieszczany użytkownik
+        /// </summary>
+        /// <param name="model">CreateTreeRequest</param>
+        /// <returns>Zwraca stworzone drzewo</returns>
         [HttpPost]
         [Route("")]
         public ActionResult<TreeResponse> CreateTree(CreateTreeRequest model)
@@ -63,6 +83,11 @@ namespace FamilyTree.Controllers
                 return BadRequest("Error occured");
             return Ok(tree);
         }
+        /// <summary>
+        /// Modyfikuje drzewo (nazwa drzewa, czy prywatne)
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>Zwraca całe zmodyfikowane drzewo</returns>
         [HttpPut]
         [Route("")]
         public ActionResult<TreeResponse> ModifyTree(ModifyTreeRequest model)
@@ -73,6 +98,11 @@ namespace FamilyTree.Controllers
                 return BadRequest("No authorization or other error");
             return Ok(tree);
         }
+        /// <summary>
+        /// Tworzy nowy node
+        /// </summary>
+        /// <param name="model">CreateNodeRequest</param>
+        /// <returns>Zwraca całe drzewo</returns>
         [HttpPost]
         [Route("node")]
         public ActionResult<TreeResponse> CreateNode(CreateNodeRequest model)
@@ -83,6 +113,11 @@ namespace FamilyTree.Controllers
                 return BadRequest("No authorization or other error");
             return Ok(tree);
         }
+        /// <summary>
+        /// Modyfikuje node
+        /// </summary>
+        /// <param name="model">ModifyNodeRequest</param>
+        /// <returns>Zwraca całe drzewo</returns>
         [HttpPut]
         [Route("node")]
         public ActionResult<TreeResponse> ModifyNode(ModifyNodeRequest model)
