@@ -33,13 +33,13 @@ namespace FamilyTree.Services
             if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
                 return null;
 
-            var children = new List<Child>();
+            var children = new List<Node>();
             foreach(int child in model.Children)
             {
-                children.Add(new Child
-                {
-                    ChildPointer = child
-                });
+                var child_node = context.Nodes.SingleOrDefault(n => n.NodeId == child);
+                if (child_node == null)
+                    return null;
+                children.Add(child_node);
             }
             var node = new Node
             {
@@ -70,7 +70,7 @@ namespace FamilyTree.Services
                 Surname = user.Surname,
                 UserId = user.UserId,
                 PictureUrl = user.PictureUrl,
-                Children = new List<Child>(),
+                Children = new List<Node>(),
                 FatherId = 0,
                 MotherId = 0,
                 Description = ""
@@ -158,9 +158,9 @@ namespace FamilyTree.Services
             {
                 foreach(int child in model.Children)
                 {
-                    var currentChild = node.Children.SingleOrDefault(c => c.ChildPointer == child);
+                    var currentChild = node.Children.SingleOrDefault(c => c.NodeId == child);
                     if (currentChild == null)
-                        node.Children.Add(new Child { ChildPointer = child });
+                        node.Children.Add(currentChild);
                 }
             }
             node.MotherId = model.MotherId;

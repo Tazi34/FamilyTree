@@ -13,7 +13,6 @@ namespace FamilyTree.Helpers
         public DbSet<PreviousSurname> PreviousSurnames { get; set; }
         public DbSet<Tree> Trees { get; set; }
         public DbSet<Node> Nodes { get; set; }
-        public DbSet<Child> Children { get; set; }
         public DbSet<Post> Posts { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options)

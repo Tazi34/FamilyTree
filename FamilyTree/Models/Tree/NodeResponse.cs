@@ -34,7 +34,7 @@ namespace FamilyTree.Models
             Children = new List<int>();
             foreach(var child in node.Children)
             {
-                Children.Add(child.ChildPointer);
+                Children.Add(child.NodeId);
             }
         }
     }

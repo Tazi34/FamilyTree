@@ -34,7 +34,10 @@ namespace FamilyTree
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase(databaseName: "Test"));
+            //services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase(databaseName: "Test"));
+            services.AddDbContext<DataContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("DataContext")));
+
             services.AddControllersWithViews();
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
@@ -114,8 +117,7 @@ namespace FamilyTree
                 app.UseHsts();
             }
 
-            //var context = app.ApplicationServices.GetService<DataContext>();
-            AddTestData.AddData(context);
+            //AddTestData.AddData(context);
 
             app.UseSwagger();
 
