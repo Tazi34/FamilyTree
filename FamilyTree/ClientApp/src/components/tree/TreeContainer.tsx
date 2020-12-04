@@ -135,7 +135,6 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
 
     document.addEventListener("mousedown", this.handleCloseMenu);
   }
-  componentDidUpdate() {}
 
   componentWillUnmount() {
     document.removeEventListener("mousedown", this.handleCloseMenu);

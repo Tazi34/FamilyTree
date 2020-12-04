@@ -16,6 +16,14 @@ export const addDeleteIcon = (nodes, handler) => {
     });
 };
 
+export const addPlusIcon = (nodes, handler) => {
+  nodes
+    .append("g")
+    .append("path")
+    .attr("d", plusIcon)
+    .on("click", (event, d) => handler(d));
+};
+
 export const renderNodeCards = (node) => {
   node
     .append("image")
@@ -33,7 +41,6 @@ export const renderNodeCards = (node) => {
     }
   });
   node.append("path").attr("d", gearIcon);
-  node.append("path").attr("d", plusIcon);
   //TODO weryfikacja id
   node
     .append("text")

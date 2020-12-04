@@ -1,18 +1,12 @@
-import {
-  familyNodesAdapter,
-  linksAdapter,
-  peopleAdapter,
-} from "./../components/tree/neww/model/treeReducer";
 import { EntityState } from "@reduxjs/toolkit";
+import { mapCollectionToEntity } from "../helpers/helpers";
 import {
   Family,
-  PeopleCollection,
   Person,
   PersonNode,
   TreeStructure,
 } from "../model/TreeStructureInterfaces";
-import { mapCollectionToEntity } from "../helpers/helpers";
-import { getLinkId } from "../components/tree/treeLogic/idHelpers";
+import { peopleAdapter } from "./../components/tree/neww/model/treeReducer";
 
 export const GetTreeStructures = (
   people: EntityState<Person>
@@ -24,23 +18,12 @@ export const GetTreeStructures = (
   if (allPeopleEntities.length == 0) {
     return [
       {
-        links: {
-          ids: ["lfakeNode1_fakeNode2"],
-          entities: {
-            lfakeNode1_fakeNode2: {
-              id: "lfakeNode1_fakeNode2",
-              relation: ["fakeNode1", "fakeNode2"],
-            },
-          },
-        },
+        links: [["lfakeNode1_fakeNode2"]],
         people: {
           ids: [],
           entities: {},
         },
-        families: {
-          ids: [],
-          entities: {},
-        },
+        families: [],
       },
     ];
   }
@@ -77,9 +60,7 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
   var family: Family | undefined;
   people.forEach((person) => {
     const { id } = person;
-    if (id == 6) {
-      var a = 512;
-    }
+
     family = families.find(
       (family) =>
         (family.firstParent == person.firstParent &&
@@ -152,16 +133,11 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
 
   const personNodes = people.map((p) => personToNode(p));
   //const isAP = AP(personNodes);
-  people.forEach((p) => (p.canBeDeleted = true)); //!isAP[p.id.toString()]));
-  var linkEntities = links.map((link) => ({
-    relation: link,
-    id: getLinkId(link[0], link[1]),
-  }));
 
   return {
-    families: mapCollectionToEntity(families, familyNodesAdapter),
+    families,
     people: mapCollectionToEntity(people, peopleAdapter),
-    links: mapCollectionToEntity(linkEntities, linksAdapter),
+    links,
   };
 };
 // export const generateTreeStructure = (people: Person[]): TreeStructure => {

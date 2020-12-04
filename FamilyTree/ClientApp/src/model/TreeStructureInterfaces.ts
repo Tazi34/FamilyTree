@@ -3,10 +3,9 @@ import { FamilyNode, Link } from "../components/tree/neww/model/treeReducer";
 
 export interface Person {
   id: number;
-  firstParent?: number;
-  secondParent?: number;
+  firstParent: number | null;
+  secondParent: number | null;
   information: PersonData;
-  canBeDeleted?: boolean;
   children: number[];
   partners: number[];
   graph?: number;
@@ -14,8 +13,8 @@ export interface Person {
 }
 
 export interface Family {
-  firstParent?: number;
-  secondParent?: number;
+  firstParent: number | null;
+  secondParent: number | null;
   children: number[];
   id: string;
 }
@@ -26,8 +25,8 @@ export interface PersonData {
 }
 export interface TreeStructure {
   people: EntityState<Person>;
-  links: EntityState<Link>;
-  families: EntityState<FamilyNode>;
+  links: string[][];
+  families: Family[];
 }
 export interface PeopleCollection {
   [key: number]: Person;

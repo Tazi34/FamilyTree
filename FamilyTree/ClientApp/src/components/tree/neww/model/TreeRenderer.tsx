@@ -1,36 +1,45 @@
+import { D3DragEvent } from "d3";
 import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import { RECT_HEIGHT, RECT_WIDTH } from "../../../../d3/RectMapper";
+import { ApplicationState } from "../../../../helpers";
+import { Person } from "../../../../model/TreeStructureInterfaces";
 import {
   getLinkId,
   getLinkIdSelector,
   getNodeId,
   getNodeIdSelector,
 } from "../../treeLogic/idHelpers";
-import { createLinks, createPath } from "../../treeLogic/linkCreationHelpers";
+import { createPath } from "../../treeLogic/linkCreationHelpers";
 import {
   addDeleteIcon,
+  addPlusIcon,
   renderFamilyNode as renderFamilyNodes,
   renderNodeCards,
 } from "../../treeLogic/nodeCreationHelpers";
 import {
+  addParent,
   deleteNode,
   FamilyNode,
+  getLinkNodes,
+  getNodeById,
   Link,
+  moveTreeNode,
+  Node,
   TreeNode,
-  selectAllFamilies,
-  selectAllLinks,
-  selectAllNodes,
-  selectAllPeopleInCurrentTree,
+  TreeState,
 } from "./treeReducer";
-import { ApplicationState } from "../../../../helpers";
+
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
 
 const nodesGroupId = "nodes_group";
 const linksGroupId = "links_group";
+//TODO PRZENIESC
+interface IDictionary<TValue> {
+  [id: string]: TValue;
+}
 
 export interface TreeRendererProps {
   onAddNodeMenuClose: Function;
@@ -38,15 +47,19 @@ export interface TreeRendererProps {
   onAddMenuOpen: Function;
   rectHeight: number;
   links: Link[];
-  nodes: Node[];
+  nodes: TreeNode[];
   families: FamilyNode[];
 }
+// const getNode = (id: number | string): FamilyNode | TreeNode | undefined => {
+//   return useSelector((state: ApplicationState) => getNodeById(state, id));
+// };
 
 const TreeRenderer = (props: TreeRendererProps) => {
   const container = useRef(null);
   const dispatch = useDispatch();
-  const state = useSelector((state: ApplicationState) => state.tree);
-
+  const treeState = useSelector<ApplicationState, TreeState>(
+    (state) => state.tree
+  );
   const effect = useEffect(() => {
     initializeTree();
   }, [props.nodes, props.links, props.families]);
@@ -75,7 +88,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
     var containerGroup = d3.select(container.current);
     var linksCanvas = containerGroup.select(`#${linksGroupId}`);
     var nodesCanvas = containerGroup.select(`#${nodesGroupId}`);
-    links.forEach((l: Link) => console.log(l.relation));
+
     initializeNodes(nodesCanvas, nodes, familyNodes);
     initializeLinks(linksCanvas, links);
   };
@@ -83,7 +96,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
   const changeVisibility = (familyNode: any) => {
     if (familyNode.isHidden) {
       familyNode.each((node: any, i: any) => {
-        var links = [...node.targetLinks, ...node.sourceLinks];
+        var links = [...node.incomingLinks, ...node.outboundLinks];
 
         //Do refactoringu
         var nodesToShow = [node.id];
@@ -105,11 +118,11 @@ const TreeRenderer = (props: TreeRendererProps) => {
       });
     } else {
       familyNode.each((node: any, i: any) => {
-        var links = [...node.sourceLinks];
+        var links = [...node.outboundLinks];
 
         //zeby nie usuwac galazki piewrwszej
         if (i != 0 && i != 1) {
-          links = [...links, ...node.targetLinks];
+          links = [...links, ...node.incomingLinks];
         }
 
         familyNode.isHidden = true;
@@ -117,6 +130,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
           selectNode(node.id).select(".visibleCircle").attr("fill", "white");
         } else {
           var nodesToHide = [node.id];
+          //TODO POPRAWIC
           if (node.isFamily) {
             nodesToHide = [
               ...nodesToHide,
@@ -138,6 +152,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
     nodes: TreeNode[],
     familyNodes: FamilyNode[]
   ) => {
+    console.log("RERENDER");
     var allNodes = [...nodes, ...familyNodes];
 
     if (allNodes.length == 0) {
@@ -154,12 +169,16 @@ const TreeRenderer = (props: TreeRendererProps) => {
     var peopleNodesSelector = allNodesSelector.filter((s: any) => !s.isFamily);
     var familyNodesSelector = allNodesSelector.filter((s: any) => s.isFamily);
 
-    var dragHandler = d3.drag().on("drag", (e: any, d: any) => {
-      moveNode(e, d);
-
-      //close context menu if open
-      props.onAddNodeMenuClose(e);
-    });
+    var dragHandler = d3
+      .drag()
+      .on("drag", (e: any, d: any) => {
+        moveNodeOnCanvas(e, d);
+        //close context menu if open
+        props.onAddNodeMenuClose(e);
+      })
+      .on("end", (e: D3DragEvent<any, any, Node>, node: Node) => {
+        dispatch(moveTreeNode(node, e.x, e.y));
+      });
     dragHandler(allNodesSelector);
     dragHandler(familyNodesSelector);
     peopleNodesSelector.on("contextmenu", props.onAddMenuOpen);
@@ -181,11 +200,64 @@ const TreeRenderer = (props: TreeRendererProps) => {
     addDeleteIcon(peopleNodesSelector, (node: TreeNode) => {
       dispatch(deleteNode(node));
     });
+    const usedIds = nodes.map((n) => n.id);
+    const newFakePerson = Math.max(...usedIds) + 100;
+    const newPerson: Person = {
+      id: newFakePerson,
+      information: {
+        name: "New",
+        surname: "Node",
+        birthDate: "20-05-1454",
+      },
+      firstParent: null,
+      secondParent: null,
+      children: [],
+      partners: [],
+    };
+
+    addPlusIcon(peopleNodesSelector, (node: TreeNode) => {
+      dispatch(addParent(node, newPerson));
+    });
   };
 
   const initializeLinks = (linksCanvas: any, data: Link[]) => {
     var linksSelector = linksCanvas.selectAll("line.link").data(data).enter();
-    createLinks(linksSelector);
+    createLinks(linksCanvas, linksSelector);
+  };
+  const createLinks = (linksCanvas: any, linksSelector: any) => {
+    linksSelector.each(function (link: Link) {
+      const { sourceNode, targetNode } = getLinkNodes(treeState, link);
+
+      if (!sourceNode || !targetNode) {
+        return;
+      }
+      if (!sourceNode.isVisible || !targetNode.isVisible) {
+        return;
+      }
+
+      var pathData = createPath(
+        sourceNode.x,
+        sourceNode.y,
+        targetNode.x,
+        targetNode.y
+      );
+
+      linksCanvas
+        .append("g")
+        .attr("class", "link")
+        .attr("id", (link: Link) => {
+          return getLinkId(sourceNode.id, targetNode.id);
+        })
+        .append("path")
+        .attr("d", pathData)
+        .attr("fill", "none")
+        .attr("stroke", (d: Link) => {
+          //TODO
+
+          return "black";
+        })
+        .attr("stroke-width", 1);
+    });
   };
   const selectContainer = () => {
     return d3.select(container.current);
@@ -205,29 +277,46 @@ const TreeRenderer = (props: TreeRendererProps) => {
     return selectLinks().select(getLinkIdSelector(sourceId, targetId));
   };
 
-  const moveNode = (e: any, node: any) => {
-    node.x += e.dx;
-    node.y += e.dy;
-
+  const moveNodeOnCanvas = (e: any, node: any) => {
     var svgNode = selectNode(node.id);
 
-    var x = node.x;
-    var y = node.y;
+    var x = e.x;
+    var y = e.y;
     if (!node.isFamily) {
-      x = x - RECT_WIDTH / 2;
-      y = y - RECT_HEIGHT / 2;
+      x -= RECT_WIDTH / 2;
+      y -= RECT_HEIGHT / 2;
     }
 
+    //move svg without moving node in redux store
     svgNode.attr("transform", (d: any) => `translate(${x},${y})`);
-    var allLinks = [...node.sourceLinks, ...node.targetLinks];
-    allLinks.forEach((link) => {
-      var path = createPath(link);
-      var svgLink = selectLink(link.id);
-      svgLink.select("path").attr("d", path);
-    });
-    console.log(e);
-  };
 
+    node.outboundLinks.forEach((link: Link) => {
+      const otherNodelocation = getNodeById(treeState, link.target);
+      if (otherNodelocation) {
+        var path = createPath(
+          e.x,
+          e.y,
+          otherNodelocation.x,
+          otherNodelocation.y
+        );
+        var svgLink = selectLink(link.id);
+        svgLink.select("path").attr("d", path);
+      }
+    });
+    node.incomingLinks.forEach((link: Link) => {
+      const otherNodelocation = getNodeById(treeState, link.source);
+      if (otherNodelocation) {
+        var path = createPath(
+          otherNodelocation.x,
+          otherNodelocation.y,
+          e.x,
+          e.y
+        );
+        var svgLink = selectLink(link.id);
+        svgLink.select("path").attr("d", path);
+      }
+    });
+  };
   return <g ref={container} key={Math.random().toString()}></g>;
 };
 

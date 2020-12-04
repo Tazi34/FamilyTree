@@ -6,7 +6,7 @@ import {
   getNodeId,
   getNodeIdSelector,
 } from "./treeLogic/idHelpers";
-import { createLinks, createPath } from "./treeLogic/linkCreationHelpers";
+import { createLinks, createLinkPath } from "./treeLogic/linkCreationHelpers";
 import {
   addDeleteIcon,
   renderFamilyNode as renderFamilyNodes,
@@ -101,8 +101,8 @@ class MultipleTreesRenderer extends React.Component {
 
     d3Nodes.forEach((n) => {
       var data = structure.people[n.id];
-      n.targetLinks = [];
-      n.sourceLinks = [];
+      n.incomingLinks = [];
+      n.outboundLinks = [];
       if (data) {
         n.data = data;
         n.isFamily = false;
@@ -120,8 +120,8 @@ class MultipleTreesRenderer extends React.Component {
 
     d3Links.forEach((l) => {
       l.id = getLinkId(l.source.id, l.target.id);
-      l.source.sourceLinks.push(l);
-      l.target.targetLinks.push(l);
+      l.source.outboundLinks.push(l);
+      l.target.incomingLinks.push(l);
     });
 
     this.updateNodesAndLinks(d3Nodes, d3Links);
@@ -154,7 +154,7 @@ class MultipleTreesRenderer extends React.Component {
   changeVisibility = (familyNode) => {
     if (familyNode.isHidden) {
       familyNode.each((node, i) => {
-        var links = [...node.targetLinks, ...node.sourceLinks];
+        var links = [...node.incomingLinks, ...node.outboundLinks];
 
         //Do refactoringu
         var nodesToShow = [node.id];
@@ -178,11 +178,11 @@ class MultipleTreesRenderer extends React.Component {
       });
     } else {
       familyNode.each((node, i) => {
-        var links = [...node.sourceLinks];
+        var links = [...node.outboundLinks];
 
         //zeby nie usuwac galazki piewrwszej
         if (i != 0 && i != 1) {
-          links = [...links, ...node.targetLinks];
+          links = [...links, ...node.incomingLinks];
         }
 
         familyNode.isHidden = true;
@@ -276,7 +276,7 @@ class MultipleTreesRenderer extends React.Component {
 
     console.log(node);
     this.selectNode(id).remove();
-    var links = [...node.sourceLinks, ...node.targetLinks];
+    var links = [...node.outboundLinks, ...node.incomingLinks];
     links.forEach((link) => {
       this.selectLink(link.id).remove();
       console.log(link);
@@ -322,9 +322,9 @@ class MultipleTreesRenderer extends React.Component {
     }
 
     svgNode.attr("transform", (d) => `translate(${x},${y})`);
-    var allLinks = [...node.sourceLinks, ...node.targetLinks];
+    var allLinks = [...node.outboundLinks, ...node.incomingLinks];
     allLinks.forEach((link) => {
-      var path = createPath(link);
+      var path = createLinkPath(link);
       var svgLink = this.selectLink(link.id);
       svgLink.select("path").attr("d", path);
     });
