@@ -34,6 +34,7 @@ export const renderNodeCards = (node) => {
   });
   node.append("path").attr("d", gearIcon);
   node.append("path").attr("d", plusIcon);
+  //TODO weryfikacja id
   node
     .append("text")
     .attr("x", 10)

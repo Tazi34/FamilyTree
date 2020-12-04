@@ -1,4 +1,8 @@
 import {
+  treeReducer,
+  TreeState,
+} from "../components/tree/neww/model/treeReducer";
+import {
   postsReducer,
   PostsState,
 } from "./../components/blog/redux/postsReducer";
@@ -6,6 +10,7 @@ import {
 // The top-level state object
 export interface ApplicationState {
   posts: PostsState;
+  tree: TreeState;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -13,6 +18,7 @@ export interface ApplicationState {
 // acts on the corresponding ApplicationState property type.
 export const reducers = {
   posts: postsReducer,
+  tree: treeReducer,
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

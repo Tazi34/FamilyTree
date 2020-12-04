@@ -1,28 +1,30 @@
-import React from "react";
-import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
-import {
-  generateTreeStructure,
-  generateTreeStructures,
-  GetTreeStructures,
-} from "../../d3/treeStructureGenerator";
-import data from "../../samples/multipleDisconnectedGraphs.js";
-import data2 from "../../samples/complex.json";
-
-import TreeRenderer from "./TreeRenderer";
-import { ZoomContainer } from "./Zoom";
-import MultipleTreesRenderer from "./MultipleTreesRenderer";
 import {
   ClickAwayListener,
-  makeStyles,
-  Menu,
   MenuItem,
   MenuList,
   Paper,
-  Theme,
 } from "@material-ui/core";
-import { Console } from "console";
-
-const Context = React.createContext(null);
+import React from "react";
+import { connect } from "react-redux";
+import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+import { GetTreeStructures } from "../../d3/treeStructureGenerator";
+import TreeRenderer from "./neww/model/TreeRenderer";
+import { ZoomContainer } from "./Zoom";
+import {
+  createD3TreeInstance,
+  FamilyNode,
+  getTreePeople,
+  Link,
+  selectAllFamilies,
+  selectAllLinks,
+  selectAllNodes,
+  selectAllPeopleInCurrentTree,
+} from "./neww/model/treeReducer";
+import data from "../../samples/multipleDisconnectedGraphs.js";
+import data2 from "../../samples/complex.json";
+import { ApplicationState } from "../../helpers";
+import { dispatch } from "d3";
+import { log } from "console";
 
 type TreeContainerState = {
   familyTreeEntries: any;
@@ -31,7 +33,7 @@ type TreeContainerState = {
   addMenuY: number;
 };
 
-class TreeContainer extends React.Component<{}, TreeContainerState> {
+class TreeContainer extends React.Component<any, TreeContainerState> {
   private svgRef: React.RefObject<any>;
 
   constructor(props: any) {
@@ -74,8 +76,8 @@ class TreeContainer extends React.Component<{}, TreeContainerState> {
   };
   handleConnectChild = () => {};
   render() {
-    var treeStructures = GetTreeStructures(this.state.familyTreeEntries);
-    console.log(treeStructures);
+    if (this.props.isLoading) return null;
+
     return (
       <div style={{ width: "100%", height: "100%" }}>
         <svg ref={this.svgRef} width={"100%"} height={"100%"}>
@@ -83,15 +85,15 @@ class TreeContainer extends React.Component<{}, TreeContainerState> {
             getSvg={this.getSvg}
             onMouseMove={this.handleCloseMenu}
           >
-            <MultipleTreesRenderer
-              trees={treeStructures}
-              onNodeDelete={this.handleNodeDelete}
-              getSvg={this.getSvg}
-              onAddNodeMenuOpen={this.handleNodeAdd}
+            <TreeRenderer
+              nodes={this.props.nodes}
+              links={this.props.links}
+              families={this.props.families}
+              onAddMenuOpen={this.handleNodeAdd}
               onAddNodeMenuClose={this.handleCloseMenu}
               rectHeight={RECT_HEIGHT}
               rectWidth={RECT_WIDTH}
-            ></MultipleTreesRenderer>
+            ></TreeRenderer>
           </ZoomContainer>
         </svg>
         <ClickAwayListener
@@ -123,16 +125,33 @@ class TreeContainer extends React.Component<{}, TreeContainerState> {
     );
   }
   componentDidMount() {
+    this.props.getTreePeople(1).then((a: any) => {
+      this.props.createD3TreeInstance(
+        this.props.people,
+        RECT_WIDTH,
+        RECT_HEIGHT
+      );
+    });
+
     document.addEventListener("mousedown", this.handleCloseMenu);
   }
+  componentDidUpdate() {}
 
   componentWillUnmount() {
     document.removeEventListener("mousedown", this.handleCloseMenu);
   }
 }
 
-export function useSvg() {
-  return React.useContext(Context);
-}
+const mapDispatch = {
+  getTreePeople,
+  createD3TreeInstance,
+};
+const mapState = (state: ApplicationState) => ({
+  people: state.tree.people,
+  nodes: selectAllNodes(state),
+  isLoading: state.tree.isLoading,
+  families: selectAllFamilies(state),
+  links: selectAllLinks(state),
+});
 
-export default TreeContainer;
+export default connect(mapState, mapDispatch)(TreeContainer);

@@ -2,6 +2,7 @@ import {
   ActionReducerMapBuilder,
   AsyncThunk,
   createAction,
+  EntityState,
 } from "@reduxjs/toolkit";
 function withPayloadType<T>() {
   return (t: T) => ({ payload: t });
@@ -48,4 +49,21 @@ export const addThunkWithStatusHandlers = <R, A, S>(
         rejectedHandler(state, action);
       }
     });
+};
+
+export const mapCollectionToEntity = <T>(
+  entities: T[],
+  adapter: any
+): EntityState<T> => {
+  const state: EntityState<T> = {
+    ids: [],
+    entities: {},
+  };
+
+  entities.forEach((entity) => {
+    const id = (entity as any).id;
+    state.ids.push(id);
+    state.entities[id] = entity;
+  });
+  return state;
 };
