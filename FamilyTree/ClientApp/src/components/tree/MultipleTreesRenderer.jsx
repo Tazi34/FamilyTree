@@ -58,6 +58,7 @@ class MultipleTreesRenderer extends React.Component {
       const dag = d3.dagConnect()(linksData);
       d3tree(dag);
       var nodes = dag.descendants();
+
       roots.push(nodes.find((a) => a.layer == 0));
       links = [...links, ...tree.links];
       people = {
@@ -78,7 +79,6 @@ class MultipleTreesRenderer extends React.Component {
     };
     var linksData = structure.links;
 
-    console.log(structure);
     const container = this.selectContainer();
     container.attr("transform", "translate(-500,0)");
     var x_sep = rectWidth + 50,

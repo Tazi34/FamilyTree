@@ -1,64 +1,60 @@
 import {
+  familyNodesAdapter,
+  linksAdapter,
+  peopleAdapter,
+} from "./../components/tree/neww/model/treeReducer";
+import { EntityState } from "@reduxjs/toolkit";
+import {
   Family,
   PeopleCollection,
   Person,
   PersonNode,
   TreeStructure,
 } from "../model/TreeStructureInterfaces";
-import names from "../samples/names.json";
-import surnames from "../samples/surnames.json";
+import { mapCollectionToEntity } from "../helpers/helpers";
+import { getLinkId } from "../components/tree/treeLogic/idHelpers";
 
-export const GetTreeStructures = (people: Person[]): TreeStructure[] => {
-  //start empty
-  people.forEach((p) => {
-    p.children = [];
-    p.families = [];
-    p.partners = [];
-    p.information.name = names[p.id];
-    p.information.surname = surnames[p.id];
-  });
-  //Categorize partners and children
-  people.forEach((person) => {
-    const { id } = person;
+export const GetTreeStructures = (
+  people: EntityState<Person>
+): TreeStructure[] => {
+  var allPeopleEntities = people.ids.map(
+    (id) => people.entities[id]
+  ) as Person[];
 
-    var firstParent: Person | undefined;
-    var secondParent: Person | undefined;
-    if (person.firstParent) {
-      firstParent = people.find((a) => a.id == person.firstParent);
-      if (!firstParent) {
-        person.firstParent = undefined;
-      } else {
-        firstParent!.children.push(id);
-      }
-    }
-
-    if (person.secondParent) {
-      secondParent = people.find((a) => a.id == person.secondParent);
-      if (!secondParent) {
-        person.secondParent = undefined;
-      } else {
-        secondParent!.children.push(id);
-      }
-    }
-    if (firstParent && secondParent) {
-      if (!firstParent!.partners.includes(secondParent)) {
-        firstParent!.partners.push(secondParent);
-      }
-      if (!secondParent!.partners.includes(firstParent)) {
-        secondParent!.partners.push(firstParent);
-      }
-    }
-  });
-  const personNodes = people.map((p) => personToNode(p));
+  if (allPeopleEntities.length == 0) {
+    return [
+      {
+        links: {
+          ids: ["lfakeNode1_fakeNode2"],
+          entities: {
+            lfakeNode1_fakeNode2: {
+              id: "lfakeNode1_fakeNode2",
+              relation: ["fakeNode1", "fakeNode2"],
+            },
+          },
+        },
+        people: {
+          ids: [],
+          entities: {},
+        },
+        families: {
+          ids: [],
+          entities: {},
+        },
+      },
+    ];
+  }
+  const personNodes = allPeopleEntities.map((p) => personToNode(p));
   var labeledNodes = LabelGraphs(personNodes);
 
-  for (var i = 0; i < people.length; i++) {
-    people[i].graph = labeledNodes[i].graph;
+  for (var i = 0; i < allPeopleEntities.length; i++) {
+    allPeopleEntities[i] = Object.assign({}, allPeopleEntities[i]);
+    allPeopleEntities[i].graph = labeledNodes[i].graph;
   }
 
   var graphsDict: Dictionary = [];
 
-  people.forEach((p: any) => {
+  allPeopleEntities.forEach((p: any) => {
     const graphIndex = p.graph as number;
     if (!graphsDict[graphIndex]) {
       graphsDict[graphIndex] = [];
@@ -81,7 +77,9 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
   var family: Family | undefined;
   people.forEach((person) => {
     const { id } = person;
-
+    if (id == 6) {
+      var a = 512;
+    }
     family = families.find(
       (family) =>
         (family.firstParent == person.firstParent &&
@@ -103,7 +101,10 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
         families.push(family);
       }
     }
-    person.families!.push(family as Family);
+    if (family) {
+      person.families = Object.assign([], person.families);
+      person.families!.push(family!.id);
+    }
   });
   families.forEach((family) => {
     if (family.firstParent) {
@@ -123,13 +124,13 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
       p.partners.forEach((partner) => {
         const foundFamily = families.find(
           (family) =>
-            (family.firstParent == p.id && family.secondParent == partner.id) ||
-            (family.secondParent == p.id && family.firstParent == partner.id)
+            (family.firstParent == p.id && family.secondParent == partner) ||
+            (family.secondParent == p.id && family.firstParent == partner)
         );
         if (!foundFamily) {
           const newFamily: Family = {
             firstParent: p.id,
-            secondParent: partner.id,
+            secondParent: partner,
             children: [],
             id: "u" + familyIdCounter++,
           };
@@ -148,143 +149,149 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
   } else if (peopleCount == 0) {
     links = [["fakeNode1", "fakeNode2"]];
   }
-  const peopleCollection: PeopleCollection = {};
 
   const personNodes = people.map((p) => personToNode(p));
-  const isAP = AP(personNodes);
+  //const isAP = AP(personNodes);
   people.forEach((p) => (p.canBeDeleted = true)); //!isAP[p.id.toString()]));
+  var linkEntities = links.map((link) => ({
+    relation: link,
+    id: getLinkId(link[0], link[1]),
+  }));
 
-  people.forEach((p) => (peopleCollection[p.id] = p));
-  return { families, links, people: peopleCollection };
+  return {
+    families: mapCollectionToEntity(families, familyNodesAdapter),
+    people: mapCollectionToEntity(people, peopleAdapter),
+    links: mapCollectionToEntity(linkEntities, linksAdapter),
+  };
 };
-export const generateTreeStructure = (people: Person[]): TreeStructure => {
-  var familyIdCounter = 0;
-  var families: Family[] = [];
-  var links: string[][] = [];
+// export const generateTreeStructure = (people: Person[]): TreeStructure => {
+//   var familyIdCounter = 0;
+//   var families: Family[] = [];
+//   var links: string[][] = [];
 
-  people.forEach((p) => {
-    p.children = [];
-    p.partners = [];
-    p.information.name = names[p.id];
-    p.information.surname = surnames[p.id];
-  });
+//   people.forEach((p) => {
+//     p.children = [];
+//     p.partners = [];
+//     p.information.name = names[p.id];
+//     p.information.surname = surnames[p.id];
+//   });
 
-  people.forEach((person) => {
-    const { id } = person;
+//   people.forEach((person) => {
+//     const { id } = person;
 
-    var firstParent: Person | undefined;
-    var secondParent: Person | undefined;
-    if (person.firstParent) {
-      firstParent = people.find((a) => a.id == person.firstParent);
-      if (!firstParent) {
-        person.firstParent = undefined;
-      } else {
-        firstParent!.children.push(id);
-      }
-    }
+//     var firstParent: Person | undefined;
+//     var secondParent: Person | undefined;
+//     if (person.firstParent) {
+//       firstParent = people.find((a) => a.id == person.firstParent);
+//       if (!firstParent) {
+//         person.firstParent = undefined;
+//       } else {
+//         firstParent!.children.push(id);
+//       }
+//     }
 
-    if (person.secondParent) {
-      secondParent = people.find((a) => a.id == person.secondParent);
-      if (!secondParent) {
-        person.secondParent = undefined;
-      }
-    }
+//     if (person.secondParent) {
+//       secondParent = people.find((a) => a.id == person.secondParent);
+//       if (!secondParent) {
+//         person.secondParent = undefined;
+//       }
+//     }
 
-    if (firstParent && secondParent) {
-      if (!firstParent!.partners.includes(secondParent)) {
-        firstParent!.partners.push(secondParent);
-      }
-      if (!secondParent!.partners.includes(firstParent)) {
-        secondParent!.partners.push(firstParent);
-      }
-    }
+//     if (firstParent && secondParent) {
+//       if (!firstParent!.partners.includes(secondParent)) {
+//         firstParent!.partners.push(secondParent);
+//       }
+//       if (!secondParent!.partners.includes(firstParent)) {
+//         secondParent!.partners.push(firstParent);
+//       }
+//     }
 
-    const foundFamily = families.find(
-      (family) =>
-        (family.firstParent == person.firstParent &&
-          family.secondParent == person.secondParent) ||
-        (family.secondParent == person.firstParent &&
-          family.firstParent == person.secondParent)
-    );
-    if (foundFamily) {
-      foundFamily.children.push(id);
-    } else {
-      if (person.firstParent || person.secondParent) {
-        const newFamily: Family = {
-          firstParent: person.firstParent,
-          secondParent: person.secondParent,
-          children: [id],
-          id: person.graph + "u" + familyIdCounter++,
-        };
+//     const foundFamily = families.find(
+//       (family) =>
+//         (family.firstParent == person.firstParent &&
+//           family.secondParent == person.secondParent) ||
+//         (family.secondParent == person.firstParent &&
+//           family.firstParent == person.secondParent)
+//     );
+//     if (foundFamily) {
+//       foundFamily.children.push(id);
+//     } else {
+//       if (person.firstParent || person.secondParent) {
+//         const newFamily: Family = {
+//           firstParent: person.firstParent,
+//           secondParent: person.secondParent,
+//           children: [id],
+//           id: person.graph + "u" + familyIdCounter++,
+//         };
 
-        families.push(newFamily);
-      }
-    }
-  });
-  families.forEach((family) => {
-    if (family.firstParent) {
-      links.push([(family.firstParent as number).toString(), family.id]);
-    }
-    if (family.secondParent) {
-      links.push([(family.secondParent as number).toString(), family.id]);
-    }
-    family.children.forEach((child) =>
-      links.push([family.id, child.toString()])
-    );
-  });
+//         families.push(newFamily);
+//       }
+//     }
+//   });
+//   families.forEach((family) => {
+//     if (family.firstParent) {
+//       links.push([(family.firstParent as number).toString(), family.id]);
+//     }
+//     if (family.secondParent) {
+//       links.push([(family.secondParent as number).toString(), family.id]);
+//     }
+//     family.children.forEach((child) =>
+//       links.push([family.id, child.toString()])
+//     );
+//   });
 
-  //uzupelnij rodziny o rodziny bez dzieci
-  people.forEach((p) => {
-    if (p.partners.length > 0) {
-      p.partners.forEach((partner) => {
-        const foundFamily = families.find(
-          (family) =>
-            (family.firstParent == p.id && family.secondParent == partner.id) ||
-            (family.secondParent == p.id && family.firstParent == partner.id)
-        );
-        if (!foundFamily) {
-          const newFamily: Family = {
-            firstParent: p.id,
-            secondParent: partner.id,
-            children: [],
-            id: "u" + familyIdCounter++,
-          };
+//   //uzupelnij rodziny o rodziny bez dzieci
+//   people.forEach((p) => {
+//     if (p.partners.length > 0) {
+//       p.partners.forEach((partner) => {
+//         const foundFamily = families.find(
+//           (family) =>
+//             (family.firstParent == p.id && family.secondParent == partner.id) ||
+//             (family.secondParent == p.id && family.firstParent == partner.id)
+//         );
+//         if (!foundFamily) {
+//           const newFamily: Family = {
+//             firstParent: p.id,
+//             secondParent: partner.id,
+//             children: [],
+//             id: "u" + familyIdCounter++,
+//           };
 
-          families.push(newFamily);
-        }
-      });
-    }
-  });
+//           families.push(newFamily);
+//         }
+//       });
+//     }
+//   });
 
-  const peopleCollection: PeopleCollection = {};
+//   const peopleCollection: PeopleCollection = {};
 
-  const personNodes = people.map((p) => personToNode(p));
-  const isAP = AP(personNodes);
-  people.forEach((p) => (p.canBeDeleted = !isAP[p.id.toString()]));
+//   const personNodes = people.map((p) => personToNode(p));
+//   const isAP = AP(personNodes);
+//   people.forEach((p) => (p.canBeDeleted = !isAP[p.id.toString()]));
 
-  people.forEach((p) => (peopleCollection[p.id] = p));
-  return { families, links, people: peopleCollection };
-};
+//   people.forEach((p) => (peopleCollection[p.id] = p));
+// //   return { families, links, people: peopleCollection };
+// // };
 
-export const generateTreeStructures = (people: any): TreeStructure[] => {
-  var graphsDict: Dictionary = [];
+// // export const generateTreeStructures = (people: any): TreeStructure[] => {
+//   var graphsDict: Dictionary = [];
 
-  people.forEach((p: any) => {
-    const graphIndex = p.graph as number;
-    if (!graphsDict[graphIndex]) {
-      graphsDict[graphIndex] = [];
-    }
-    graphsDict[graphIndex].push(p);
-  });
+//   people.forEach((p: any) => {
+//     const graphIndex = p.graph as number;
+//     if (!graphsDict[graphIndex]) {
+//       graphsDict[graphIndex] = [];
+//     }
+//     graphsDict[graphIndex].push(p);
+//   });
 
-  const treeStructures: TreeStructure[] = [];
-  for (const graph in graphsDict) {
-    if (Object.prototype.hasOwnProperty.call(graphsDict, graph)) {
-      treeStructures.push(generateTreeStructure(graphsDict[graph]));
-    }
-  }
-  return treeStructures;
-};
+//   const treeStructures: TreeStructure[] = [];
+//   for (const graph in graphsDict) {
+//     if (Object.prototype.hasOwnProperty.call(graphsDict, graph)) {
+//       treeStructures.push(generateTreeStructure(graphsDict[graph]));
+//     }
+//   }
+//   return treeStructures;
+// };
 var time = 0;
 
 const LabelGraphs = (nodes: PersonNode[]): PersonNode[] => {
@@ -383,7 +390,7 @@ const personToNode = (person: Person): PersonNode => {
   if (person.secondParent) {
     neighbours.push(person.secondParent.toString());
   }
-  var partners = person.partners.map((p) => p.id.toString());
+  var partners = person.partners.map((p) => p.toString());
   neighbours = [...neighbours, ...partners];
 
   return {

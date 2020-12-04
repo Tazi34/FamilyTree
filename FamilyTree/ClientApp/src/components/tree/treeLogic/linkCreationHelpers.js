@@ -1,9 +1,8 @@
 import * as d3 from "d3";
-import { path } from "d3";
 import { getLinkId } from "./idHelpers";
 export const createLinks = (links) => {
   links.each(function (link) {
-    if (link.source.isFake || link.target.isFake) {
+    if (!link.source.isVisible || !link.target.isVisible) {
       return;
     }
 
@@ -20,12 +19,12 @@ export const createLinks = (links) => {
       .attr("fill", "none")
       .attr("stroke", (d) => {
         var graphIndex = 3;
-
+        //TODO
         var graphIndex = link.source.data.graph
           ? link.source.data.graph
           : link.target.data.graph;
 
-        return colorArray[graphIndex - 1];
+        return "black";
       })
       .attr("stroke-width", 1);
   });

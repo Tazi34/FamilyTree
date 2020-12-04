@@ -1,3 +1,6 @@
+import { EntityState } from "@reduxjs/toolkit";
+import { FamilyNode, Link } from "../components/tree/neww/model/treeReducer";
+
 export interface Person {
   id: number;
   firstParent?: number;
@@ -5,9 +8,9 @@ export interface Person {
   information: PersonData;
   canBeDeleted?: boolean;
   children: number[];
-  partners: Person[];
+  partners: number[];
   graph?: number;
-  families?: Family[];
+  families?: string[];
 }
 
 export interface Family {
@@ -22,9 +25,9 @@ export interface PersonData {
   birthDate: string;
 }
 export interface TreeStructure {
-  people: PeopleCollection;
-  links: string[][];
-  families: Family[];
+  people: EntityState<Person>;
+  links: EntityState<Link>;
+  families: EntityState<FamilyNode>;
 }
 export interface PeopleCollection {
   [key: number]: Person;

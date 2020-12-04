@@ -3,12 +3,13 @@ import { History } from "history";
 import { applyMiddleware, combineReducers, compose, createStore } from "redux";
 import thunk from "redux-thunk";
 import { ApplicationState, reducers } from ".";
+import logger from "redux-logger";
 
 export default function configureStore(
   history: History,
   initialState?: ApplicationState
 ) {
-  const middleware = [thunk, routerMiddleware(history)];
+  const middleware = [thunk, routerMiddleware(history), logger];
 
   const rootReducer = combineReducers({
     ...reducers,

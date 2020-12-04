@@ -1,11 +1,6 @@
-import React, { useRef } from "react";
-import { useDispatch } from "react-redux";
-import { TreeNode } from "../../../../model/TreeInterfaces";
-import {
-  Family,
-  Person,
-  TreeStructure,
-} from "../../../../model/TreeStructureInterfaces";
+import React, { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import { RECT_HEIGHT, RECT_WIDTH } from "../../../../d3/RectMapper";
 import {
   getLinkId,
@@ -19,7 +14,17 @@ import {
   renderFamilyNode as renderFamilyNodes,
   renderNodeCards,
 } from "../../treeLogic/nodeCreationHelpers";
-import { Link } from "./treeReducer";
+import {
+  deleteNode,
+  FamilyNode,
+  Link,
+  TreeNode,
+  selectAllFamilies,
+  selectAllLinks,
+  selectAllNodes,
+  selectAllPeopleInCurrentTree,
+} from "./treeReducer";
+import { ApplicationState } from "../../../../helpers";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -32,104 +37,24 @@ export interface TreeRendererProps {
   rectWidth: number;
   onAddMenuOpen: Function;
   rectHeight: number;
-  trees: TreeStructure[];
+  links: Link[];
+  nodes: Node[];
+  families: FamilyNode[];
 }
 
 const TreeRenderer = (props: TreeRendererProps) => {
   const container = useRef(null);
   const dispatch = useDispatch();
+  const state = useSelector((state: ApplicationState) => state.tree);
+
+  const effect = useEffect(() => {
+    initializeTree();
+  }, [props.nodes, props.links, props.families]);
 
   const initializeTree = () => {
-    const { rectWidth, rectHeight, trees } = props;
-
-    var roots: any = [];
-    console.log(trees);
-    var links: Link[] = [];
-    var people: Person[] = [];
-    var families: Family[] = [];
-    trees.forEach((tree) => {
-      var linksData = tree.links;
-      var d3tree = d3
-        .sugiyama()
-        .nodeSize([100, 100])
-        .layering(d3.layeringSimplex())
-        .decross(d3.decrossOpt)
-        .coord(d3.coordVert())
-        .separation((a: any, b: any) => {
-          return 1;
-        });
-
-      const dag = d3.dagConnect()(linksData);
-      d3tree(dag);
-      var nodes = dag.descendants();
-
-      roots.push(nodes.find((a: any) => a.layer == 0));
-      links = [...links, ...tree.links];
-      people = {
-        ...people,
-        ...tree.people,
-      };
-      families = [...families, ...tree.families];
-    });
-    console.log(roots);
-
-    roots.forEach((root: any) => {
-      links.push(["connecting_node", root.id]);
-    });
-    var structure = {
-      people,
-      families,
-      links,
-    };
-    var linksData = structure.links;
-
     const container = selectContainer();
     container.attr("transform", "translate(-500,0)");
-    var x_sep = rectWidth + 50,
-      y_sep = rectHeight + 100;
-
-    var tree = d3
-      .sugiyama()
-      .nodeSize([x_sep, y_sep])
-      .layering(d3.layeringSimplex())
-      .decross(d3.decrossOpt)
-      .coord(d3.coordVert())
-      .separation((a: any, b: any) => {
-        return 1;
-      });
-
-    const dag = d3.dagConnect()(linksData);
-    tree(dag);
-    var d3Nodes = dag.descendants();
-    var d3Links = dag.links();
-
-    d3Nodes.forEach((n: any) => {
-      var data = structure.people[n.id];
-      n.targetLinks = [];
-      n.sourceLinks = [];
-      if (data) {
-        n.data = data;
-
-        n.isFamily = false;
-      } else {
-        var family = structure.families.find((a) => a.id == n.id);
-        if (family) {
-          n.isFamily = true;
-          n.family = family;
-        } else {
-          n.isFamily = false;
-          n.isFake = true;
-        }
-      }
-    });
-
-    d3Links.forEach((l: any) => {
-      l.id = getLinkId(l.source.id, l.target.id);
-      l.source.sourceLinks.push(l);
-      l.target.targetLinks.push(l);
-    });
-
-    updateNodesAndLinks(d3Nodes, d3Links);
+    updateNodesAndLinks(props.nodes, props.families, props.links);
   };
 
   const appendStartGroups = () => {
@@ -140,22 +65,21 @@ const TreeRenderer = (props: TreeRendererProps) => {
     containerGroup.append("g").attr("id", nodesGroupId);
   };
 
-  const updateNodesAndLinks = (nodes: any, links: any) => {
+  const updateNodesAndLinks = (
+    nodes: TreeNode[],
+    familyNodes: FamilyNode[],
+    links: Link[]
+  ) => {
     appendStartGroups();
-    const allNodes = nodes;
-    const allLinks = links;
+
     var containerGroup = d3.select(container.current);
     var linksCanvas = containerGroup.select(`#${linksGroupId}`);
     var nodesCanvas = containerGroup.select(`#${nodesGroupId}`);
-
-    initializeNodes(nodesCanvas, nodes);
+    links.forEach((l: Link) => console.log(l.relation));
+    initializeNodes(nodesCanvas, nodes, familyNodes);
     initializeLinks(linksCanvas, links);
   };
 
-  //Leave everything after inital render to d3
-  const shouldComponentUpdate = () => {
-    return false;
-  };
   const changeVisibility = (familyNode: any) => {
     if (familyNode.isHidden) {
       familyNode.each((node: any, i: any) => {
@@ -209,46 +133,58 @@ const TreeRenderer = (props: TreeRendererProps) => {
       });
     }
   };
-  const initializeNodes = (nodes: any, data: any) => {
-    var nodesSvg = nodes
+  const initializeNodes = (
+    nodesCanvas: any,
+    nodes: TreeNode[],
+    familyNodes: FamilyNode[]
+  ) => {
+    var allNodes = [...nodes, ...familyNodes];
+
+    if (allNodes.length == 0) {
+      return;
+    }
+    var allNodesSelector = nodesCanvas
       .selectAll()
-      .data(data)
+      .data(allNodes)
       .enter()
       .append("g")
       .attr("class", "node")
       .attr("id", (d: any) => getNodeId(d.id));
 
-    var nonEmptyNodes = nodesSvg.filter((d: any) => !d.isFamily && !d.isFake);
-    var familyNodes = nodesSvg.filter((d: any) => d.isFamily);
+    var peopleNodesSelector = allNodesSelector.filter((s: any) => !s.isFamily);
+    var familyNodesSelector = allNodesSelector.filter((s: any) => s.isFamily);
 
     var dragHandler = d3.drag().on("drag", (e: any, d: any) => {
       moveNode(e, d);
 
-      //close menu if open
+      //close context menu if open
       props.onAddNodeMenuClose(e);
     });
-    dragHandler(nonEmptyNodes);
-    nonEmptyNodes.on("contextmenu", props.onAddMenuOpen);
+    dragHandler(allNodesSelector);
+    dragHandler(familyNodesSelector);
+    peopleNodesSelector.on("contextmenu", props.onAddMenuOpen);
 
-    nonEmptyNodes.attr(
+    peopleNodesSelector.attr(
       "transform",
       (d: any) => `translate(${d.x - RECT_WIDTH / 2},${d.y - RECT_HEIGHT / 2})`
     );
 
-    dragHandler(familyNodes);
-    familyNodes.attr("transform", (d: any) => `translate(${d.x},${d.y})`);
-
-    familyNodes.on("click", (e: any, d: any) => changeVisibility(d));
-    renderFamilyNodes(familyNodes);
-    renderNodeCards(nonEmptyNodes);
-    const nodesThatCanBeDeleted = nonEmptyNodes.filter(
-      (d: any) => d.data.canBeDeleted
+    familyNodesSelector.attr(
+      "transform",
+      (d: any) => `translate(${d.x},${d.y})`
     );
-    addDeleteIcon(nodesThatCanBeDeleted, deleteNode);
+
+    familyNodesSelector.on("click", (e: any, d: any) => changeVisibility(d));
+    renderFamilyNodes(familyNodesSelector);
+    renderNodeCards(peopleNodesSelector);
+
+    addDeleteIcon(peopleNodesSelector, (node: TreeNode) => {
+      dispatch(deleteNode(node));
+    });
   };
 
-  const initializeLinks = (links: any, data: any) => {
-    var linksSelector = links.selectAll("line.link").data(data).enter();
+  const initializeLinks = (linksCanvas: any, data: Link[]) => {
+    var linksSelector = linksCanvas.selectAll("line.link").data(data).enter();
     createLinks(linksSelector);
   };
   const selectContainer = () => {
@@ -269,43 +205,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
     return selectLinks().select(getLinkIdSelector(sourceId, targetId));
   };
 
-  const deleteNode = (node: any) => {
-    const { id } = node;
-
-    console.log(node);
-    selectNode(id).remove();
-    var links = [...node.sourceLinks, ...node.targetLinks];
-    links.forEach((link) => {
-      selectLink(link.id).remove();
-      console.log(link);
-      var targetedFamily =
-        node.id == link.source.id ? link.target : link.source;
-
-      if (targetedFamily.id != "connecting_node") {
-        removeNodeFromFamily(targetedFamily.family, node.id);
-        deleteFamilyConnectionsIfNeeded(targetedFamily.family, node.id);
-      }
-    });
-  };
-  const deleteFamilyConnectionsIfNeeded = (family: any, removedNode: any) => {
-    if (
-      (!family.firstParent && !family.secondParent) ||
-      family.children.length == 0
-    ) {
-      var linksToDelete = [
-        getLinkId(removedNode, family.id),
-        getLinkId(family.firstParent, family.id),
-        getLinkId(family.secondParent, family.id),
-        ...family.children.map((c: any) => getLinkId(family.id, c)),
-      ];
-
-      selectNode(family.id).remove();
-      selectLinks()
-        .selectAll("g")
-        .filter((a: any) => linksToDelete.includes(a.id))
-        .remove();
-    }
-  };
   const moveNode = (e: any, node: any) => {
     node.x += e.dx;
     node.y += e.dy;
@@ -326,12 +225,13 @@ const TreeRenderer = (props: TreeRendererProps) => {
       var svgLink = selectLink(link.id);
       svgLink.select("path").attr("d", path);
     });
+    console.log(e);
   };
 
   return <g ref={container} key={Math.random().toString()}></g>;
 };
 
-export default TreeRenderer;
+export default React.memo(TreeRenderer);
 
 export const removeNodeFromFamily = (family: any, id: any) => {
   if (family.firstParent == id) {
