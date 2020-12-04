@@ -239,6 +239,25 @@ namespace FamilyTree.Helpers
 
                 context.SaveChanges();
 
+                var dziadek = context.Nodes.SingleOrDefault(n => n.Name.Equals("Dziadek"));
+                var babcia = context.Nodes.SingleOrDefault(n => n.Name.Equals("Babcia"));
+                var mama = context.Nodes.SingleOrDefault(n => n.Name.Equals("Mama"));
+                var ojciec = context.Nodes.SingleOrDefault(n => n.Name.Equals("Ojciec"));
+                var krzys = context.Nodes.SingleOrDefault(n => n.Name.Equals("Krzys"));
+                var siostra = context.Nodes.SingleOrDefault(n => n.Name.Equals("Siostra"));
+                var brat = context.Nodes.SingleOrDefault(n => n.Name.Equals("Brat"));
+                var dziadek2 = context.Nodes.SingleOrDefault(n => n.Name.Equals("Dziadek2"));
+                var babcia2 = context.Nodes.SingleOrDefault(n => n.Name.Equals("Babcia2"));
+
+                dziadek.Children.Add(ojciec);
+                babcia.Children.Add(ojciec);
+                mama.Children.Add(krzys); mama.Children.Add(siostra); mama.Children.Add(brat);
+                ojciec.Children.Add(krzys); ojciec.Children.Add(siostra); ojciec.Children.Add(brat);
+                dziadek2.Children.Add(mama);
+                babcia2.Children.Add(mama);
+
+                context.SaveChanges();
+
                 context.Posts.AddRange(
                 new Post
                 {
@@ -255,6 +274,7 @@ namespace FamilyTree.Helpers
                     Text = "Marcin wielkim poetą był"
                 }
                 );
+
                 //DODAĆ DZIECI W SEED DRZEWIE ! ! !
                 context.SaveChanges();
             }
