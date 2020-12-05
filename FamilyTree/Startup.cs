@@ -37,6 +37,7 @@ namespace FamilyTree
             //services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase(databaseName: "Test"));
             services.AddDbContext<DataContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DataContext")));
+            services.AddCors();
 
             services.AddControllersWithViews();
 
@@ -130,7 +131,11 @@ namespace FamilyTree
             app.UseStaticFiles();
             //app.UseSpaStaticFiles();
 
-
+            app.UseCors(options =>
+            {
+                //TODO PK: dodac restrykcje dla CORSU - na razie potrzebuje do testowania frontu na szybko
+                options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+            });
 
             app.UseRouting();
             app.UseAuthentication();
