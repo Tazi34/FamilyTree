@@ -1,9 +1,9 @@
+import { WorkPersonNode } from "./../model/TreeStructureInterfaces";
 import { EntityState } from "@reduxjs/toolkit";
 import { mapCollectionToEntity } from "../helpers/helpers";
 import {
   Family,
   Person,
-  PersonNode,
   TreeStructure,
 } from "../model/TreeStructureInterfaces";
 import { peopleAdapter } from "./../components/tree/neww/model/treeReducer";
@@ -270,7 +270,7 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
 // };
 var time = 0;
 
-const LabelGraphs = (nodes: PersonNode[]): PersonNode[] => {
+const LabelGraphs = (nodes: WorkPersonNode[]): WorkPersonNode[] => {
   var labelCount = 0;
   var nodesCollection: NodesCollection = {};
   nodes.forEach((n) => {
@@ -289,7 +289,7 @@ const LabelGraphs = (nodes: PersonNode[]): PersonNode[] => {
 
 const LabelsRecursive = (
   nodes: NodesCollection,
-  node: PersonNode,
+  node: WorkPersonNode,
   label: number
 ) => {
   node.graph = label;
@@ -301,7 +301,7 @@ const LabelsRecursive = (
   });
 };
 
-const AP = (nodes: PersonNode[]): NodesCollection => {
+const AP = (nodes: WorkPersonNode[]): NodesCollection => {
   time = 0;
   var visited: NodesCollection = {};
   var disc: NodesCollection = {};
@@ -325,7 +325,7 @@ const AP = (nodes: PersonNode[]): NodesCollection => {
   return isAp;
 };
 const APRecursive = (
-  node: PersonNode,
+  node: WorkPersonNode,
   visited: NodesCollection,
   disc: NodesCollection,
   low: NodesCollection,
@@ -357,7 +357,7 @@ const APRecursive = (
   });
 };
 
-const personToNode = (person: Person): PersonNode => {
+const personToNode = (person: Person): WorkPersonNode => {
   var childrenIds = person.children.map((a) => a.toString());
   var neighbours = [...childrenIds];
   if (person.firstParent) {

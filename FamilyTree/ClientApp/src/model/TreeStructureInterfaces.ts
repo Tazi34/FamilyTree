@@ -1,5 +1,4 @@
 import { EntityState } from "@reduxjs/toolkit";
-import { FamilyNode, Link } from "../components/tree/neww/model/treeReducer";
 
 export interface Person {
   id: number;
@@ -32,7 +31,7 @@ export interface PeopleCollection {
   [key: number]: Person;
 }
 
-export interface PersonNode {
+export interface WorkPersonNode {
   id: string;
   neighbours: string[];
   graph?: number;

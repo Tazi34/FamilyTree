@@ -46,15 +46,15 @@ export const renderNodeCards = (node) => {
     .append("text")
     .attr("x", 10)
     .attr("y", 100)
-    .text((d) => (d.isFamily ? "" : `${d.data.id}____23 May, 1956`));
+    .text((d) => (d.isFamily ? "" : `${d.id}____23 May, 1956`));
   node
     .append("text")
     .attr("x", 72)
     .attr("y", 25)
     .text((d) => {
       var text = "";
-      if (d.data.information) {
-        const { name, surname } = d.data.information;
+      if (d.personDetails) {
+        const { name, surname } = d.personDetails;
         text = `${name} ${surname}`;
       }
       return text;

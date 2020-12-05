@@ -7,24 +7,16 @@ import {
 import React from "react";
 import { connect } from "react-redux";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
-import { GetTreeStructures } from "../../d3/treeStructureGenerator";
-import TreeRenderer from "./neww/model/TreeRenderer";
-import { ZoomContainer } from "./Zoom";
+import { ApplicationState } from "../../helpers";
+import data2 from "../../samples/complex.json";
 import {
-  createD3TreeInstance,
-  FamilyNode,
-  getTreePeople,
-  Link,
+  getTree,
   selectAllFamilies,
   selectAllLinks,
   selectAllNodes,
-  selectAllPeopleInCurrentTree,
 } from "./neww/model/treeReducer";
-import data from "../../samples/multipleDisconnectedGraphs.js";
-import data2 from "../../samples/complex.json";
-import { ApplicationState } from "../../helpers";
-import { dispatch } from "d3";
-import { log } from "console";
+import TreeRenderer from "./neww/model/TreeRenderer";
+import { ZoomContainer } from "./Zoom";
 
 type TreeContainerState = {
   familyTreeEntries: any;
@@ -59,7 +51,15 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
       ),
     });
   };
+  componentDidMount() {
+    this.props.getTree(1);
 
+    document.addEventListener("mousedown", this.handleCloseMenu);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("mousedown", this.handleCloseMenu);
+  }
   handleNodeAdd = (event: any) => {
     event.preventDefault();
     console.log(event);
@@ -124,29 +124,12 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
       </div>
     );
   }
-  componentDidMount() {
-    this.props.getTreePeople(1).then((a: any) => {
-      this.props.createD3TreeInstance(
-        this.props.people,
-        RECT_WIDTH,
-        RECT_HEIGHT
-      );
-    });
-
-    document.addEventListener("mousedown", this.handleCloseMenu);
-  }
-
-  componentWillUnmount() {
-    document.removeEventListener("mousedown", this.handleCloseMenu);
-  }
 }
 
 const mapDispatch = {
-  getTreePeople,
-  createD3TreeInstance,
+  getTree,
 };
 const mapState = (state: ApplicationState) => ({
-  people: state.tree.people,
   nodes: selectAllNodes(state),
   isLoading: state.tree.isLoading,
   families: selectAllFamilies(state),

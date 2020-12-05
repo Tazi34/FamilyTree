@@ -330,6 +330,16 @@
           },
           "firstParent": null,
           "secondParent": null
+        },
+        {
+          "id": 28,
+          "information": {
+            "name": "Pablo",
+            "surname": "Picasson",
+            "birthDate": "20-05-1454"
+          },
+          "firstParent": 27,
+          "secondParent": null
         }
       ]
     }

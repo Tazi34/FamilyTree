@@ -17,16 +17,19 @@ import {
   renderFamilyNode as renderFamilyNodes,
   renderNodeCards,
 } from "../../treeLogic/nodeCreationHelpers";
+import { FamilyNode } from "./nodes/FamilyNode";
+import { Node } from "./nodes/NodeClass";
+import { PersonNode } from "./nodes/PersonNode";
 import {
   addParent,
   deleteNode,
-  FamilyNode,
+  getIncomingLinks,
   getLinkNodes,
   getNodeById,
+  getNodeLinks,
+  getOutboundLinks,
   Link,
-  moveTreeNode,
-  Node,
-  TreeNode,
+  moveNode,
   TreeState,
 } from "./treeReducer";
 
@@ -47,10 +50,10 @@ export interface TreeRendererProps {
   onAddMenuOpen: Function;
   rectHeight: number;
   links: Link[];
-  nodes: TreeNode[];
+  nodes: PersonNode[];
   families: FamilyNode[];
 }
-// const getNode = (id: number | string): FamilyNode | TreeNode | undefined => {
+// const getNode = (id: number | string): FamilyNode | PersonNode | undefined => {
 //   return useSelector((state: ApplicationState) => getNodeById(state, id));
 // };
 
@@ -79,7 +82,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
   };
 
   const updateNodesAndLinks = (
-    nodes: TreeNode[],
+    nodes: PersonNode[],
     familyNodes: FamilyNode[],
     links: Link[]
   ) => {
@@ -96,7 +99,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
   const changeVisibility = (familyNode: any) => {
     if (familyNode.isHidden) {
       familyNode.each((node: any, i: any) => {
-        var links = [...node.incomingLinks, ...node.outboundLinks];
+        var links = getNodeLinks(treeState, node);
 
         //Do refactoringu
         var nodesToShow = [node.id];
@@ -117,12 +120,13 @@ const TreeRenderer = (props: TreeRendererProps) => {
         familyNode.isHidden = false;
       });
     } else {
+      //TODO visibility
       familyNode.each((node: any, i: any) => {
-        var links = [...node.outboundLinks];
+        var links = getOutboundLinks(treeState, node);
 
         //zeby nie usuwac galazki piewrwszej
         if (i != 0 && i != 1) {
-          links = [...links, ...node.incomingLinks];
+          links = [...links, ...getIncomingLinks(treeState, node)];
         }
 
         familyNode.isHidden = true;
@@ -149,7 +153,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
   };
   const initializeNodes = (
     nodesCanvas: any,
-    nodes: TreeNode[],
+    nodes: PersonNode[],
     familyNodes: FamilyNode[]
   ) => {
     console.log("RERENDER");
@@ -171,13 +175,14 @@ const TreeRenderer = (props: TreeRendererProps) => {
 
     var dragHandler = d3
       .drag()
+      .subject((e: any, node: Node) => node.location)
       .on("drag", (e: any, d: any) => {
         moveNodeOnCanvas(e, d);
         //close context menu if open
         props.onAddNodeMenuClose(e);
       })
       .on("end", (e: D3DragEvent<any, any, Node>, node: Node) => {
-        dispatch(moveTreeNode(node, e.x, e.y));
+        dispatch(moveNode(node, e.x, e.y));
       });
     dragHandler(allNodesSelector);
     dragHandler(familyNodesSelector);
@@ -185,23 +190,27 @@ const TreeRenderer = (props: TreeRendererProps) => {
 
     peopleNodesSelector.attr(
       "transform",
-      (d: any) => `translate(${d.x - RECT_WIDTH / 2},${d.y - RECT_HEIGHT / 2})`
+      (d: any) =>
+        `translate(${d.location.x - RECT_WIDTH / 2},${
+          d.location.y - RECT_HEIGHT / 2
+        })`
     );
 
     familyNodesSelector.attr(
       "transform",
-      (d: any) => `translate(${d.x},${d.y})`
+      (d: any) => `translate(${d.location.x},${d.location.y})`
     );
 
     familyNodesSelector.on("click", (e: any, d: any) => changeVisibility(d));
     renderFamilyNodes(familyNodesSelector);
     renderNodeCards(peopleNodesSelector);
 
-    addDeleteIcon(peopleNodesSelector, (node: TreeNode) => {
+    addDeleteIcon(peopleNodesSelector, (node: PersonNode) => {
       dispatch(deleteNode(node));
     });
     const usedIds = nodes.map((n) => n.id);
-    const newFakePerson = Math.max(...usedIds) + 100;
+    //TODO ID
+    const newFakePerson = Math.floor(Math.random() * 1000000 + 10000) + 100;
     const newPerson: Person = {
       id: newFakePerson,
       information: {
@@ -215,8 +224,8 @@ const TreeRenderer = (props: TreeRendererProps) => {
       partners: [],
     };
 
-    addPlusIcon(peopleNodesSelector, (node: TreeNode) => {
-      dispatch(addParent(node, newPerson));
+    addPlusIcon(peopleNodesSelector, (node: PersonNode) => {
+      dispatch(addParent(node.id as number, newPerson));
     });
   };
 
@@ -236,10 +245,10 @@ const TreeRenderer = (props: TreeRendererProps) => {
       }
 
       var pathData = createPath(
-        sourceNode.x,
-        sourceNode.y,
-        targetNode.x,
-        targetNode.y
+        sourceNode.location.x,
+        sourceNode.location.y,
+        targetNode.location.x,
+        targetNode.location.y
       );
 
       linksCanvas
@@ -277,38 +286,47 @@ const TreeRenderer = (props: TreeRendererProps) => {
     return selectLinks().select(getLinkIdSelector(sourceId, targetId));
   };
 
-  const moveNodeOnCanvas = (e: any, node: any) => {
+  const moveNodeOnCanvas = (e: DragEvent, node: Node) => {
     var svgNode = selectNode(node.id);
 
     var x = e.x;
     var y = e.y;
+    console.log(e);
+    console.log(`${e.x} ${e.y}`);
+    console.log(`WIDTH: ${RECT_WIDTH / 2} HEIGHT: ${RECT_HEIGHT / 2}`);
+
     if (!node.isFamily) {
       x -= RECT_WIDTH / 2;
       y -= RECT_HEIGHT / 2;
     }
-
+    console.log(node.location);
     //move svg without moving node in redux store
+    console.log(svgNode.attr("transform"));
     svgNode.attr("transform", (d: any) => `translate(${x},${y})`);
 
-    node.outboundLinks.forEach((link: Link) => {
+    const outbondLinks = getOutboundLinks(treeState, node);
+
+    outbondLinks.forEach((link: Link) => {
       const otherNodelocation = getNodeById(treeState, link.target);
       if (otherNodelocation) {
         var path = createPath(
           e.x,
           e.y,
-          otherNodelocation.x,
-          otherNodelocation.y
+          otherNodelocation.location.x,
+          otherNodelocation.location.y
         );
         var svgLink = selectLink(link.id);
         svgLink.select("path").attr("d", path);
       }
     });
-    node.incomingLinks.forEach((link: Link) => {
+    const incomingLinks = getIncomingLinks(treeState, node);
+
+    incomingLinks.forEach((link: Link) => {
       const otherNodelocation = getNodeById(treeState, link.source);
       if (otherNodelocation) {
         var path = createPath(
-          otherNodelocation.x,
-          otherNodelocation.y,
+          otherNodelocation.location.x,
+          otherNodelocation.location.y,
           e.x,
           e.y
         );
