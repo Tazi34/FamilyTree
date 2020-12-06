@@ -1,6 +1,9 @@
 import { Box, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
+import { useSelector } from "react-redux";
+import { ApplicationState } from "../../helpers/index.js";
+import { AuthenticationState } from "../loginPage/authenticationReducer.js";
 import Navbar from "../navbar/Navbar.jsx";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -41,6 +44,12 @@ export interface LayoutPanelProperties {
 
 export default (props: { children?: React.ReactNode }) => {
   const classes = useStyles();
+  const authenticationState = useSelector<
+    ApplicationState,
+    AuthenticationState
+  >((state) => state.authentication);
+
+  const isLoggedIn = authenticationState.user != null;
   return (
     <Box
       display="flex"
@@ -48,7 +57,7 @@ export default (props: { children?: React.ReactNode }) => {
       flexDirection="column"
       alignItems="stretch"
     >
-      <Navbar></Navbar>
+      <Navbar isLoggedIn={isLoggedIn}></Navbar>
       <div className={classes.filler}></div>
       {props.children}
     </Box>

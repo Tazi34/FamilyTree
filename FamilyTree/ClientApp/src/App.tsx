@@ -1,31 +1,37 @@
+import DateFnsUtils from "@date-io/date-fns";
 import {
-  colors,
   createMuiTheme,
   CssBaseline,
   MuiThemeProvider,
-  ThemeProvider,
 } from "@material-ui/core";
 import { lightGreen, lime } from "@material-ui/core/colors";
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import * as React from "react";
-import { Route, useHistory } from "react-router";
-import BlogPage from "./components/blog/BlogPage";
-import FriendsPanel from "./components/friendList/FriendsPanel";
-import EmptyLayout from "./components/layout/EmptyLayout";
-import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
-import LoginPage from "./components/loginPage/LoginPage";
-import { Theme } from "@material-ui/core/styles";
-import Tree from "./components/tree/Tree";
-import UserTreePanel from "./components/userTreeList/UserTreePanel";
-import HomePage from "./components/homePage/HomePage";
+import { useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import { Route, Switch } from "react-router-dom";
 import {
   BLOG_PAGE_URI,
   HOME_PAGE_URI,
   LOGIN_PAGE_URI,
+  LOGOUT_PAGE_URI,
+  REGISTER_PAGE_URI,
   TREE_PAGE_URI,
 } from "./applicationRouting";
-import { Provider } from "react-redux";
-import { createStore } from "redux";
-import configureStore from "./helpers/configureStore";
+import { withAlertMessage } from "./components/alerts/withAlert";
+import BlogPage from "./components/blog/BlogPage";
+import HomePage from "./components/homePage/HomePage";
+import EmptyLayout from "./components/layout/EmptyLayout";
+import LayoutRoute from "./components/layout/LayoutRoute";
+import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
+import { Logout } from "./components/loginPage/API/Logout";
+import { AuthenticationState } from "./components/loginPage/authenticationReducer";
+import AuthorizedPrivateRoute from "./components/loginPage/AuthorizedPrivateRoute";
+import LoginPage from "./components/loginPage/UI/LoginPage";
+import GuestRoute from "./components/navigation/GuestRoute";
+import Registration from "./components/registration/Registration";
+import Tree from "./components/tree/Tree";
+import { ApplicationState } from "./helpers";
 
 export const theme = createMuiTheme({
   palette: {
@@ -34,32 +40,56 @@ export const theme = createMuiTheme({
   },
 });
 
-const loggedInURIs = [TREE_PAGE_URI, BLOG_PAGE_URI];
-const notLoggedInURIs = [HOME_PAGE_URI, LOGIN_PAGE_URI];
+const App = (props: any) => {
+  const authenticationState = useSelector<
+    ApplicationState,
+    AuthenticationState
+  >((state) => state.authentication);
+  const loggedUser = authenticationState.user;
 
-export default () => {
-  const history = useHistory();
-  const isLogged = loggedInURIs.includes(history.location.pathname);
-  console.log("XDD");
+  const { alertSuccess, alertError, alertInfo } = props;
   return (
     <MuiThemeProvider theme={theme}>
-      <CssBaseline />
-      {isLogged && (
-        <ThreeColumnLayout
-          rightPanel={<FriendsPanel></FriendsPanel>}
-          leftPanel={<UserTreePanel></UserTreePanel>}
-        >
-          <Route exact path="/tree" component={Tree} />
-          <Route exact path="/blog" component={BlogPage} />
-        </ThreeColumnLayout>
-      )}
-      {!isLogged && (
-        <EmptyLayout>
-          <Route exact path="/tree" component={Tree} />
-          <Route exact path="/" component={HomePage} />
-          <Route path="/login" component={LoginPage} />
-        </EmptyLayout>
-      )}
+      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <CssBaseline />
+
+        <Switch>
+          <AuthorizedPrivateRoute
+            path={TREE_PAGE_URI}
+            component={Tree}
+            layout={ThreeColumnLayout}
+            user={loggedUser}
+          />
+          <AuthorizedPrivateRoute
+            path={BLOG_PAGE_URI}
+            component={BlogPage}
+            layout={ThreeColumnLayout}
+            user={loggedUser}
+          />
+          <LayoutRoute
+            path={LOGIN_PAGE_URI}
+            component={LoginPage}
+            layout={EmptyLayout}
+            user={loggedUser}
+          />
+          <GuestRoute
+            path={REGISTER_PAGE_URI}
+            component={Registration}
+            onSuccess={alertSuccess}
+            onError={alertError}
+            layout={EmptyLayout}
+          />
+          <Route path={LOGOUT_PAGE_URI} component={Logout} />
+          <LayoutRoute
+            exact
+            path="/"
+            component={HomePage}
+            layout={EmptyLayout}
+          />
+        </Switch>
+      </MuiPickersUtilsProvider>
     </MuiThemeProvider>
   );
 };
+
+export default withAlertMessage(App);

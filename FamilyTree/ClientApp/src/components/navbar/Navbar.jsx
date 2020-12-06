@@ -1,4 +1,11 @@
-import { Button, Icon } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Icon,
+  IconButton,
+  Paper,
+} from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import InputBase from "@material-ui/core/InputBase";
 import { createStyles, fade, makeStyles } from "@material-ui/core/styles";
@@ -7,6 +14,7 @@ import Typography from "@material-ui/core/Typography";
 import SearchIcon from "@material-ui/icons/Search";
 import { loadCSS } from "fg-loadcss";
 import * as React from "react";
+import { useHistory } from "react-router";
 import { ApplicationName } from "../../ApplicationData";
 import {
   HOME_PAGE_URI,
@@ -15,6 +23,8 @@ import {
   TREE_PAGE_URI,
 } from "../../applicationRouting";
 import { RedirectButton } from "../UI/RedirectButton";
+import AuthenticatedNavbar from "./AuthenticatedNavbar";
+import GuestNavbar from "./GuestNavbar";
 const useStyles = makeStyles((theme) =>
   createStyles({
     grow: {
@@ -27,6 +37,7 @@ const useStyles = makeStyles((theme) =>
       },
     },
     search: {
+      borderWidth: 2,
       position: "relative",
       borderRadius: theme.shape.borderRadius,
       backgroundColor: fade(theme.palette.common.white, 0.15),
@@ -66,11 +77,14 @@ const useStyles = makeStyles((theme) =>
     sectionDesktop: {
       display: "flex",
     },
+    toolbar: {
+      borderRadius: 0,
+    },
   })
 );
-export default function PrimarySearchAppBar() {
+export default function PrimarySearchAppBar({ isLoggedIn }) {
   const classes = useStyles();
-
+  const history = useHistory();
   React.useEffect(() => {
     const node = loadCSS(
       "https://use.fontawesome.com/releases/v5.12.0/css/all.css",
@@ -84,12 +98,15 @@ export default function PrimarySearchAppBar() {
 
   return (
     <AppBar position="fixed">
-      <Toolbar>
-        <Icon className="fas fa-tree"></Icon>
-        <Typography className={classes.title} variant="h6" noWrap>
-          {ApplicationName}
-        </Typography>
-        <div className={classes.search}>
+      <Toolbar component={Paper} className={classes.toolbar}>
+        <RedirectButton color="primary" to={"/"}>
+          <Icon className="fas fa-tree"></Icon>
+          <Typography className={classes.title} variant="h6" noWrap>
+            {ApplicationName}
+          </Typography>
+        </RedirectButton>
+
+        <Box border={1} borderColor="primary.main" className={classes.search}>
           <div className={classes.searchIcon}>
             <SearchIcon />
           </div>
@@ -101,13 +118,10 @@ export default function PrimarySearchAppBar() {
             }}
             inputProps={{ "aria-label": "search" }}
           />
-        </div>
+        </Box>
         <div className={classes.grow} />
         <div className={classes.sectionDesktop}>
-          <RedirectButton to={BLOG_PAGE_URI}>Blog</RedirectButton>
-          <RedirectButton to={HOME_PAGE_URI}>Home</RedirectButton>
-          <RedirectButton to={TREE_PAGE_URI}>Tree</RedirectButton>
-          <RedirectButton to={LOGIN_PAGE_URI}>Login</RedirectButton>
+          {isLoggedIn ? <AuthenticatedNavbar /> : <GuestNavbar />}
         </div>
       </Toolbar>
     </AppBar>
