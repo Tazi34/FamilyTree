@@ -1,6 +1,7 @@
 import { Box, Grid, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
+import ChatsContainer from "../chat/ChatsContainer";
 import FriendsPanel from "../friendList/FriendsPanel";
 import UserTreePanel from "../userTreeList/UserTreePanel";
 import LayoutBase from "./LayoutBase";
@@ -10,6 +11,11 @@ const useStyles = makeStyles((theme: Theme) => ({
   column: {
     maring: 0,
     padding: 0,
+  },
+  bottomFixed: {
+    bottom: 0,
+    position: "fixed",
+    right: 0,
   },
 }));
 
@@ -33,6 +39,9 @@ export default (props: { children?: React.ReactNode }) => {
           <FriendsPanel />
         </Grid>
       </Grid>
+      <div className={classes.bottomFixed}>
+        <ChatsContainer />
+      </div>
     </LayoutBase>
   );
 };

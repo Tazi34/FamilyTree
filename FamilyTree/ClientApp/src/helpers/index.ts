@@ -1,3 +1,4 @@
+import { chatReducer } from "./../components/chat/chatReducer";
 import { authenticationReducer } from "./../components/loginPage/authenticationReducer";
 import {
   connectionReducer,
@@ -13,6 +14,7 @@ import {
   PostsState,
 } from "./../components/blog/redux/postsReducer";
 import { AuthenticationState } from "../components/loginPage/authenticationReducer";
+import { ChatsState } from "../components/chat/chatReducer";
 
 // The top-level state object
 export interface ApplicationState {
@@ -20,6 +22,7 @@ export interface ApplicationState {
   tree: TreeState;
   connection: ConnectionState;
   authentication: AuthenticationState;
+  chats: ChatsState;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -30,6 +33,7 @@ export const reducers = {
   tree: treeReducer,
   connection: connectionReducer,
   authentication: authenticationReducer,
+  chats: chatReducer,
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

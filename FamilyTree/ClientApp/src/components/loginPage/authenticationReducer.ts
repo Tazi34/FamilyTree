@@ -1,26 +1,29 @@
 import {
-  addAuthorizationToken,
-  removeAuthorizationToken,
-} from "./tokenService";
-import { ApplicationState } from "../../helpers/index";
-import { authenticationURL, baseURL } from "./../../helpers/apiHelpers";
-import jwt_decode from "jwt-decode";
-import {
   createAction,
   createAsyncThunk,
   createDraftSafeSelector,
   createReducer,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
+import jwt_decode from "jwt-decode";
+import { addThunkWithStatusHandlers } from "../../helpers/helpers";
+import { ApplicationState } from "../../helpers/index";
+import { AUTHENTICATION_API_URL, baseURL } from "./../../helpers/apiHelpers";
+import { StatusState } from "./../../helpers/helpers";
 import {
   CreateUserRequestData,
   CreateUserSuccessResponse,
 } from "./API/createUser";
 import { LoginUserRequestData } from "./API/loginUser";
+import {
+  addAuthorizationToken,
+  removeAuthorizationToken,
+} from "./tokenService";
 
 export type AuthenticationState = {
   isLoggedIn: boolean;
   user: User | null;
+  status: StatusState;
 };
 
 export type User = {
@@ -39,7 +42,7 @@ export const createUser = createAsyncThunk(
     registrationData: CreateUserRequestData,
     tunkAPI
   ): Promise<AxiosResponse> => {
-    return await Axios.post(authenticationURL, registrationData);
+    return await Axios.post(AUTHENTICATION_API_URL, registrationData);
   }
 );
 
@@ -62,6 +65,10 @@ export const logoutUser = createAction("users/userLoggedout");
 const initialState: AuthenticationState = {
   isLoggedIn: false,
   user: null,
+  status: {
+    error: null,
+    loading: false,
+  },
 };
 export const authenticationReducer = createReducer(initialState, (builder) => {
   builder
@@ -83,9 +90,19 @@ export const authenticationReducer = createReducer(initialState, (builder) => {
       };
       addAuthorizationToken(userData.token);
     })
-    .addCase(loginUser.fulfilled, (state: AuthenticationState, action) => {
+    .addCase(logoutUser, (state) => {
+      state.user = null;
+      state.isLoggedIn = false;
+      removeAuthorizationToken();
+    });
+
+  addThunkWithStatusHandlers(
+    builder,
+    loginUser,
+    (state: AuthenticationState, action: any) => {
       const userToken = action.payload.data.accessToken;
       var decoded: any = jwt_decode(userToken);
+      console.log(decoded);
       var userId = decoded.sub;
       var email = decoded.email;
       addAuthorizationToken(userToken);
@@ -99,17 +116,14 @@ export const authenticationReducer = createReducer(initialState, (builder) => {
         name: "Pablo",
         surname: "Picasso",
       };
-    })
-    .addCase(loginUser.rejected, (state: AuthenticationState, action) => {
+    },
+    undefined,
+    (state: AuthenticationState, action: any) => {
       state.isLoggedIn = false;
       state.user = null;
       removeAuthorizationToken();
-    })
-    .addCase(logoutUser, (state) => {
-      state.user = null;
-      state.isLoggedIn = false;
-      removeAuthorizationToken();
-    });
+    }
+  );
 });
 
 //selectors

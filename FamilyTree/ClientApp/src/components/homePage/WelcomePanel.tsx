@@ -1,6 +1,8 @@
 import { Box, Button, makeStyles, Paper, Typography } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
+import { REGISTER_PAGE_URI } from "../../applicationRouting";
+import { RedirectButton } from "../UI/RedirectButton";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -49,9 +51,14 @@ const WelcomePanel = (props: any) => {
         justifyContent="center"
         className={classes.buttonContainer}
       >
-        <Button variant="contained" color="default" className={classes.button}>
+        <RedirectButton
+          to={REGISTER_PAGE_URI}
+          variant="contained"
+          color="default"
+          className={classes.button}
+        >
           Join community
-        </Button>
+        </RedirectButton>
       </Box>
     </Paper>
   );

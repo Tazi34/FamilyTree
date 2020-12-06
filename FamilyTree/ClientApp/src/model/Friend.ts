@@ -1,6 +1,6 @@
 export interface Friend {
   id: number;
-  image: any;
+  image: string;
   name: string;
   surname: string;
 }

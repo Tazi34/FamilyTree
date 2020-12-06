@@ -1,10 +1,10 @@
 import Axios from "axios";
 
-const authorizationHeader = "Authorization";
+const authorizationHeader = "Token";
 const tokenLocalStorageKey = "userToken";
 
 const appendAuthorizationTokenToRequests = (token: string) => {
-  Axios.defaults.headers.common[authorizationHeader] = `Bearer ${token}`;
+  Axios.defaults.headers.common[authorizationHeader] = `${token}`;
 };
 const removeTokenFromRequestHeaders = () => {
   Axios.defaults.headers.common[authorizationHeader] = ``;

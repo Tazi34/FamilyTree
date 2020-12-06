@@ -46,7 +46,11 @@ const App = (props: any) => {
     AuthenticationState
   >((state) => state.authentication);
   const loggedUser = authenticationState.user;
+  const isVerifyingUser = authenticationState.status.loading;
 
+  if (loggedUser && isVerifyingUser) {
+    return null;
+  }
   const { alertSuccess, alertError, alertInfo } = props;
   return (
     <MuiThemeProvider theme={theme}>
@@ -70,6 +74,8 @@ const App = (props: any) => {
             path={LOGIN_PAGE_URI}
             component={LoginPage}
             layout={EmptyLayout}
+            onSuccess={alertSuccess}
+            onError={alertError}
             user={loggedUser}
           />
           <GuestRoute

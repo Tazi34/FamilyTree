@@ -80,6 +80,10 @@ const useStyles = makeStyles((theme) =>
     toolbar: {
       borderRadius: 0,
     },
+    logo: {
+      borderRadius: "20",
+      " &:focus": { outline: "none" },
+    },
   })
 );
 export default function PrimarySearchAppBar({ isLoggedIn }) {
@@ -99,7 +103,7 @@ export default function PrimarySearchAppBar({ isLoggedIn }) {
   return (
     <AppBar position="fixed">
       <Toolbar component={Paper} className={classes.toolbar}>
-        <RedirectButton color="primary" to={"/"}>
+        <RedirectButton className={classes.logo} color="primary" to={"/"}>
           <Icon className="fas fa-tree"></Icon>
           <Typography className={classes.title} variant="h6" noWrap>
             {ApplicationName}
