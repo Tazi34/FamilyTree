@@ -1,11 +1,4 @@
-import {
-  ActionCreatorWithPreparedPayload,
-  AnyAction,
-  createReducer,
-} from "@reduxjs/toolkit";
-import { AnyNaptrRecord } from "dns";
-import { Reducer } from "redux";
-import { createActionWithPayload, StatusState } from "../../../helpers/helpers";
+import { createActionWithPayload } from "../../../helpers/helpers";
 
 interface StatusReducerCreator {
   // stopLoading: ActionCreatorWithPreparedPayload<{}[], any, string>;

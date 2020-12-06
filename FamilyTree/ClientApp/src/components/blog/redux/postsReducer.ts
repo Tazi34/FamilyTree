@@ -73,7 +73,6 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
       //TODO zmienic na action.payload.data jak bedzie backend
       var entity = JSON.parse(JSON.stringify(action.meta.arg));
       entity.id = action.payload.data.id;
-      console.log(entity);
       postsAdapter.addOne(state, entity);
     }
   );
@@ -89,7 +88,6 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
     builder,
     deletePost,
     (state: PostsState, action: any) => {
-      console.log(action);
       postsAdapter.removeOne(state, action.meta.arg);
     }
   );
