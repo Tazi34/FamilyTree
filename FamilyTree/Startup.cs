@@ -41,6 +41,7 @@ namespace FamilyTree
                 //options.EnableSensitiveDataLogging();
             }
             );
+            services.AddCors();
 
             services.AddControllersWithViews();
 
@@ -134,7 +135,11 @@ namespace FamilyTree
             app.UseStaticFiles();
             //app.UseSpaStaticFiles();
 
-
+            app.UseCors(options =>
+            {
+                //TODO PK: dodac restrykcje dla CORSU - na razie potrzebuje do testowania frontu na szybko
+                options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+            });
 
             app.UseRouting();
             app.UseAuthentication();
