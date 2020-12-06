@@ -47,12 +47,18 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const LoginPage = (props: any) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
+  const dispatch: any = useDispatch();
   const loggedIn = useSelector(isLoggedIn);
 
   const location = props.location;
   const handleLoginUser = (userData: LoginUserRequestData) => {
-    dispatch(loginUser(userData));
+    dispatch(loginUser(userData)).then((data: any) => {
+      if (data.error) {
+        props.onError("Could not verify your identity. ");
+      } else {
+        props.onSuccess("Logged in.");
+      }
+    });
   };
 
   const previousPage = location.state;
@@ -84,10 +90,7 @@ const LoginPage = (props: any) => {
                 alignItems="center"
                 flexDirection="column"
               >
-                <LoginForm
-                  onLoginUser={handleLoginUser}
-                  onRegisterUser={() => {}}
-                ></LoginForm>
+                <LoginForm onLoginUser={handleLoginUser}></LoginForm>
                 <Typography align="center">Or</Typography>
                 <SocialMediaLoginPanel></SocialMediaLoginPanel>
               </Box>

@@ -4,25 +4,19 @@ import {
   Checkbox,
   FormControlLabel,
   Grid,
-  IconButton,
-  Input,
-  InputAdornment,
-  InputLabel,
   makeStyles,
   TextField,
-  Typography,
 } from "@material-ui/core";
-import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import { Theme } from "@material-ui/core/styles";
-import { AccountCircle, Visibility, VisibilityOff } from "@material-ui/icons";
-import * as React from "react";
+import { AccountCircle } from "@material-ui/icons";
+import CheckBoxIcon from "@material-ui/icons/CheckBox";
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
-import { loginData } from "../../tree/treeLogic/loginData";
 import { Formik } from "formik";
-import PasswordField from "./PasswordField";
-import { TypographyLink } from "../../navigation/TypographyLink";
+import * as React from "react";
 import { REGISTER_PAGE_URI } from "../../../applicationRouting";
+import { TypographyLink } from "../../navigation/TypographyLink";
+import PasswordField from "./PasswordField";
 
 interface State {
   password: string;
@@ -32,7 +26,6 @@ interface State {
 
 interface Props {
   onLoginUser: Function;
-  onRegisterUser: Function;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -53,12 +46,13 @@ const LoginForm = ({ onLoginUser }: Props) => {
   const classes = useStyles();
   return (
     <Formik
-      onSubmit={(values, { setSubmitting }) => {
-        setTimeout(() => {
-          onLoginUser(values);
+      onSubmit={(values, { setSubmitting, resetForm }) => {
+        onLoginUser(values);
+        values.password = "";
 
+        setTimeout(() => {
           setSubmitting(false);
-        }, 400);
+        }, 1000);
       }}
       initialValues={{ email: "", password: "" }}
     >
@@ -103,6 +97,7 @@ const LoginForm = ({ onLoginUser }: Props) => {
                     autoComplete="email"
                     name="email"
                     label="Email"
+                    value={values.email}
                     fullWidth
                     onChange={change.bind(null, "email")}
                   />
@@ -121,6 +116,7 @@ const LoginForm = ({ onLoginUser }: Props) => {
                   <PasswordField
                     autoComplete="current-password"
                     name="password"
+                    value={values.password}
                     label="Password"
                     onChange={change.bind(null, "password")}
                   />
