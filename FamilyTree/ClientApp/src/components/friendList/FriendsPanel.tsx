@@ -9,7 +9,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100%",
   },
   background: {
-    maxWidth: 50,
     padding: 7,
     margin: "200px auto",
     position: "fixed",
