@@ -71,18 +71,11 @@ namespace FamilyTree.Migrations
                     Surname = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PictureUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     FatherId = table.Column<int>(type: "int", nullable: false),
-                    MotherId = table.Column<int>(type: "int", nullable: false),
-                    NodeId1 = table.Column<int>(type: "int", nullable: true)
+                    MotherId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Nodes", x => x.NodeId);
-                    table.ForeignKey(
-                        name: "FK_Nodes_Nodes_NodeId1",
-                        column: x => x.NodeId1,
-                        principalTable: "Nodes",
-                        principalColumn: "NodeId",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Nodes_Trees_TreeId",
                         column: x => x.TreeId,
@@ -111,10 +104,34 @@ namespace FamilyTree.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "NodeNode",
+                columns: table => new
+                {
+                    ChildId = table.Column<int>(type: "int", nullable: false),
+                    ParentId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NodeNode", x => new { x.ParentId, x.ChildId });
+                    table.ForeignKey(
+                        name: "FK_NodeNode_Nodes_ChildId",
+                        column: x => x.ChildId,
+                        principalTable: "Nodes",
+                        principalColumn: "NodeId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_NodeNode_Nodes_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Nodes",
+                        principalColumn: "NodeId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_Nodes_NodeId1",
-                table: "Nodes",
-                column: "NodeId1");
+                name: "IX_NodeNode_ChildId",
+                table: "NodeNode",
+                column: "ChildId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Nodes_TreeId",
@@ -130,7 +147,7 @@ namespace FamilyTree.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Nodes");
+                name: "NodeNode");
 
             migrationBuilder.DropTable(
                 name: "Posts");
@@ -139,10 +156,13 @@ namespace FamilyTree.Migrations
                 name: "PreviousSurnames");
 
             migrationBuilder.DropTable(
-                name: "Trees");
+                name: "Nodes");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Trees");
         }
     }
 }

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FamilyTree.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20201203190021_InitialMigration")]
+    [Migration("20201206144757_InitialMigration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,9 +43,6 @@ namespace FamilyTree.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("NodeId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("PictureUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -60,11 +57,24 @@ namespace FamilyTree.Migrations
 
                     b.HasKey("NodeId");
 
-                    b.HasIndex("NodeId1");
-
                     b.HasIndex("TreeId");
 
                     b.ToTable("Nodes");
+                });
+
+            modelBuilder.Entity("FamilyTree.Entities.NodeNode", b =>
+                {
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChildId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ParentId", "ChildId");
+
+                    b.HasIndex("ChildId");
+
+                    b.ToTable("NodeNode");
                 });
 
             modelBuilder.Entity("FamilyTree.Entities.Post", b =>
@@ -167,15 +177,30 @@ namespace FamilyTree.Migrations
 
             modelBuilder.Entity("FamilyTree.Entities.Node", b =>
                 {
-                    b.HasOne("FamilyTree.Entities.Node", null)
-                        .WithMany("Children")
-                        .HasForeignKey("NodeId1");
-
                     b.HasOne("FamilyTree.Entities.Tree", null)
                         .WithMany("Nodes")
                         .HasForeignKey("TreeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FamilyTree.Entities.NodeNode", b =>
+                {
+                    b.HasOne("FamilyTree.Entities.Node", "Child")
+                        .WithMany("Parents")
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FamilyTree.Entities.Node", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Child");
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("FamilyTree.Entities.PreviousSurname", b =>
@@ -190,6 +215,8 @@ namespace FamilyTree.Migrations
             modelBuilder.Entity("FamilyTree.Entities.Node", b =>
                 {
                     b.Navigation("Children");
+
+                    b.Navigation("Parents");
                 });
 
             modelBuilder.Entity("FamilyTree.Entities.Tree", b =>

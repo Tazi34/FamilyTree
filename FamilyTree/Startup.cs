@@ -36,7 +36,11 @@ namespace FamilyTree
         {
             //services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase(databaseName: "Test"));
             services.AddDbContext<DataContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("DataContext")));
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("DataContext"));
+                //options.EnableSensitiveDataLogging();
+            }
+            );
 
             services.AddControllersWithViews();
 

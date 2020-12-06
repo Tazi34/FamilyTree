@@ -33,13 +33,36 @@ namespace FamilyTree.Services
             if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
                 return null;
 
-            var children = new List<Node>();
+            var children = new List<NodeNode>();
             foreach(int child in model.Children)
             {
                 var child_node = context.Nodes.SingleOrDefault(n => n.NodeId == child);
                 if (child_node == null)
                     return null;
-                children.Add(child_node);
+                children.Add(new NodeNode
+                {
+                    Child = child_node,
+                    ChildId = child_node.NodeId
+                });
+            }
+            var parents = new List<NodeNode>();
+            var fatherNode = context.Nodes.SingleOrDefault(n => n.NodeId == model.FatherId);
+            if(fatherNode != null)
+            {
+                parents.Add(new NodeNode
+                {
+                    Parent = fatherNode,
+                    ParentId = fatherNode.NodeId
+                });
+            }
+            var motherNode = context.Nodes.SingleOrDefault(n => n.NodeId == model.MotherId);
+            if (motherNode != null)
+            {
+                parents.Add(new NodeNode
+                {
+                    Parent = motherNode,
+                    ParentId = motherNode.NodeId
+                });
             }
             var node = new Node
             {
@@ -49,6 +72,7 @@ namespace FamilyTree.Services
                 UserId = model.UserId,
                 PictureUrl = model.PictureUrl,
                 Children = children,
+                Parents = parents,
                 FatherId = model.FatherId,
                 MotherId = model.MotherId,
                 Description = model.Description
@@ -70,7 +94,8 @@ namespace FamilyTree.Services
                 Surname = user.Surname,
                 UserId = user.UserId,
                 PictureUrl = user.PictureUrl,
-                Children = new List<Node>(),
+                Children = new List<NodeNode>(),
+                Parents = new List<NodeNode>(),
                 FatherId = 0,
                 MotherId = 0,
                 Description = ""
@@ -156,11 +181,24 @@ namespace FamilyTree.Services
                 node.PictureUrl = model.PictureUrl;
             if (model.Children != null)
             {
-                foreach(int child in model.Children)
+                foreach (int child in model.Children)
                 {
-                    var currentChild = node.Children.SingleOrDefault(c => c.NodeId == child);
+                    var currentChild = node.Children.SingleOrDefault(c => c.ChildId == child);
                     if (currentChild == null)
-                        node.Children.Add(currentChild);
+                    {
+                        var child_node = context.Nodes.SingleOrDefault(n => n.NodeId == child);
+                        if(child_node != null)
+                        {
+                            var rel = new NodeNode
+                            {
+                                ChildId = child_node.NodeId,
+                                Child = child_node,
+                                ParentId = node.NodeId,
+                                Parent = node
+                            };
+                            context.NodeNode.Add(rel);
+                        }
+                    }
                 }
             }
             node.MotherId = model.MotherId;

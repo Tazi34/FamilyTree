@@ -14,6 +14,7 @@ namespace FamilyTree.Helpers
         public DbSet<Tree> Trees { get; set; }
         public DbSet<Node> Nodes { get; set; }
         public DbSet<Post> Posts { get; set; }
+        public DbSet<NodeNode> NodeNode { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
@@ -21,13 +22,16 @@ namespace FamilyTree.Helpers
         }
         protected override void OnModelCreating(ModelBuilder model_builder)
         {
-            //model_builder.Entity<User>(entity => {
-            //    entity.HasIndex(e => e.Email).IsUnique(true);
-            //});
-            //model_builder.Entity<Child>(entity => {
-            //    entity
-            //    .HasNoKey();
-            //});
+            model_builder.Entity<NodeNode>().HasKey(bc => new { bc.ParentId, bc.ChildId });
+            model_builder.Entity<NodeNode>()
+                .HasOne(bc => bc.Parent)
+                .WithMany(b => b.Children)
+                .HasForeignKey(bc => bc.ParentId);
+            model_builder.Entity<NodeNode>()
+                .HasOne(bc => bc.Child)
+                .WithMany(c => c.Parents)
+                .HasForeignKey(bc => bc.ChildId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
