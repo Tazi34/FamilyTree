@@ -1,3 +1,9 @@
+import { authenticationReducer } from "./../components/loginPage/authenticationReducer";
+import {
+  connectionReducer,
+  ConnectionState,
+} from "./../components/tree/neww/connectionReducer";
+import { combineReducers } from "redux";
 import {
   treeReducer,
   TreeState,
@@ -6,11 +12,14 @@ import {
   postsReducer,
   PostsState,
 } from "./../components/blog/redux/postsReducer";
+import { AuthenticationState } from "../components/loginPage/authenticationReducer";
 
 // The top-level state object
 export interface ApplicationState {
   posts: PostsState;
   tree: TreeState;
+  connection: ConnectionState;
+  authentication: AuthenticationState;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -19,6 +28,8 @@ export interface ApplicationState {
 export const reducers = {
   posts: postsReducer,
   tree: treeReducer,
+  connection: connectionReducer,
+  authentication: authenticationReducer,
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are
