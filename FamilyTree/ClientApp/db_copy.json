@@ -1,4 +1,13 @@
 {
+  "users": [
+    {
+      "email": "user@user.com",
+      "name": "Pablo",
+      "surname": "Picasso",
+      "birthday": "2020-12-05T19:46:11.304Z",
+      "password": "$2a$10$v.eY0KENxJD8LZRqHiGlbetes65Z2seuVkC3ko6SJMVEidZJ7f0gy"
+    }
+  ],
   "posts": [
     {
       "id": 1,
