@@ -17,6 +17,7 @@ namespace FamilyTree.Entities
         public string PictureUrl { get; set; }
         public int FatherId { get; set; }
         public int MotherId { get; set; }
-        public List<Node> Children { get; set; }
+        public List<NodeNode> Children { get; set; }
+        public List<NodeNode> Parents { get; set; }
     }
 }

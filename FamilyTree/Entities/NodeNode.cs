@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 
 namespace FamilyTree.Entities
 {
-    public class Child
+    public class NodeNode
     {
         public int ChildId { get; set; }
-        public int NodeId { get; set; }
-        public int ChildPointer { get; set; }
+        public Node Child { get; set; }
+        public int ParentId { get; set; }
+        public Node Parent { get; set; }
     }
 }

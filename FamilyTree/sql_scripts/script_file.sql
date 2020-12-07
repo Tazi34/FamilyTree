@@ -56,9 +56,7 @@ CREATE TABLE [Nodes] (
     [PictureUrl] nvarchar(max) NULL,
     [FatherId] int NOT NULL,
     [MotherId] int NOT NULL,
-    [NodeId1] int NULL,
     CONSTRAINT [PK_Nodes] PRIMARY KEY ([NodeId]),
-    CONSTRAINT [FK_Nodes_Nodes_NodeId1] FOREIGN KEY ([NodeId1]) REFERENCES [Nodes] ([NodeId]) ON DELETE NO ACTION,
     CONSTRAINT [FK_Nodes_Trees_TreeId] FOREIGN KEY ([TreeId]) REFERENCES [Trees] ([TreeId]) ON DELETE CASCADE
 );
 GO
@@ -72,7 +70,16 @@ CREATE TABLE [PreviousSurnames] (
 );
 GO
 
-CREATE INDEX [IX_Nodes_NodeId1] ON [Nodes] ([NodeId1]);
+CREATE TABLE [NodeNode] (
+    [ChildId] int NOT NULL,
+    [ParentId] int NOT NULL,
+    CONSTRAINT [PK_NodeNode] PRIMARY KEY ([ParentId], [ChildId]),
+    CONSTRAINT [FK_NodeNode_Nodes_ChildId] FOREIGN KEY ([ChildId]) REFERENCES [Nodes] ([NodeId]) ON DELETE NO ACTION,
+    CONSTRAINT [FK_NodeNode_Nodes_ParentId] FOREIGN KEY ([ParentId]) REFERENCES [Nodes] ([NodeId]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_NodeNode_ChildId] ON [NodeNode] ([ChildId]);
 GO
 
 CREATE INDEX [IX_Nodes_TreeId] ON [Nodes] ([TreeId]);
@@ -82,7 +89,7 @@ CREATE INDEX [IX_PreviousSurnames_UserId] ON [PreviousSurnames] ([UserId]);
 GO
 
 INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-VALUES (N'20201203190021_InitialMigration', N'5.0.0');
+VALUES (N'20201206144757_InitialMigration', N'5.0.0');
 GO
 
 COMMIT;

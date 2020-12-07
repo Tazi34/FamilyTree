@@ -15,6 +15,7 @@ namespace FamilyTree.Services
         AuthenticateResponse CreateUser(CreateUserRequest model);
         AuthenticateResponse Modify(ModifyUserRequest model);
         AuthenticateResponse ChangePassword(ChangePasswordRequest model);
+        AuthenticateResponse CheckUserId(int userId);
     }
     public class UserService:IUserService
     {
@@ -58,6 +59,14 @@ namespace FamilyTree.Services
             context.Users.Update(user);
             context.SaveChanges();
             return Authenticate(model.Email, model.Password);
+        }
+
+        public AuthenticateResponse CheckUserId(int userId)
+        {
+            var user = context.Users.SingleOrDefault(u => u.UserId == userId);
+            if(user == null)
+                return null;
+            return Authenticate(user.Email, user.PasswordHash);
         }
 
         public AuthenticateResponse CreateUser(CreateUserRequest model)

@@ -121,7 +121,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = context.Users.Single(u => u.Email.Equals("dziadek@kicunmail")).UserId,
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = 0,
                     MotherId = 0,
                 },
@@ -134,7 +135,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = context.Users.Single(u => u.Email.Equals("babcia@kicunmail")).UserId,
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = 0,
                     MotherId = 0
                 },
@@ -147,7 +149,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = 0,
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = 0,
                     MotherId = 0,
                 },
@@ -160,7 +163,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = 0,
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = 0,
                     MotherId = 0,
                 }
@@ -176,7 +180,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = context.Users.Single(u => u.Email.Equals("mama@kicunmail")).UserId,
                     TreeId = context.Trees.FirstOrDefault().TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Dziadek2")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Babcia2")).NodeId
                 },
@@ -189,7 +194,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = context.Users.Single(u => u.Email.Equals("ojciec@kicunmail")).UserId,
                     TreeId = context.Trees.FirstOrDefault().TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Dziadek")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Babcia")).NodeId
                 }
@@ -205,7 +211,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = context.Users.Single(u => u.Email.Equals("abc@kicunmail")).UserId,
                     TreeId = context.Trees.FirstOrDefault().TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Ojciec")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Mama")).NodeId
                 },
@@ -218,7 +225,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = context.Users.Single(u => u.Email.Equals("siostra@kicunmail")).UserId,
                     TreeId = context.Trees.FirstOrDefault().TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Ojciec")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Mama")).NodeId
                 },
@@ -231,7 +239,8 @@ namespace FamilyTree.Helpers
                     PictureUrl = "",
                     UserId = context.Users.Single(u => u.Email.Equals("brat@kicunmail")).UserId,
                     TreeId = context.Trees.FirstOrDefault().TreeId,
-                    Children = new List<Node>(),
+                    Children = new List<NodeNode>(),
+                    Parents = new List<NodeNode>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Ojciec")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Mama")).NodeId
                 }
@@ -249,13 +258,95 @@ namespace FamilyTree.Helpers
                 var dziadek2 = context.Nodes.SingleOrDefault(n => n.Name.Equals("Dziadek2"));
                 var babcia2 = context.Nodes.SingleOrDefault(n => n.Name.Equals("Babcia2"));
 
-                dziadek.Children.Add(ojciec);
-                babcia.Children.Add(ojciec);
-                mama.Children.Add(krzys); mama.Children.Add(siostra); mama.Children.Add(brat);
-                ojciec.Children.Add(krzys); ojciec.Children.Add(siostra); ojciec.Children.Add(brat);
-                dziadek2.Children.Add(mama);
-                babcia2.Children.Add(mama);
+                var rel1 = new NodeNode
+                {
+                    Child = ojciec,
+                    ChildId = ojciec.NodeId,
+                    Parent = dziadek,
+                    ParentId = dziadek.NodeId
+                };
 
+                var rel2 = new NodeNode
+                {
+                    Child = ojciec,
+                    ChildId = ojciec.NodeId,
+                    Parent = babcia,
+                    ParentId = babcia.NodeId
+                };
+
+                var rel3 = new NodeNode
+                {
+                    Child = krzys,
+                    ChildId = krzys.NodeId,
+                    Parent = mama,
+                    ParentId = mama.NodeId
+                };
+
+                var rel4 = new NodeNode
+                {
+                    Child = siostra,
+                    ChildId = siostra.NodeId,
+                    Parent = mama,
+                    ParentId = mama.NodeId
+                };
+
+                var rel5 = new NodeNode
+                {
+                    Child = brat,
+                    ChildId = brat.NodeId,
+                    Parent = mama,
+                    ParentId = mama.NodeId
+                };
+
+                var rel6 = new NodeNode
+                {
+                    Child = krzys,
+                    ChildId = krzys.NodeId,
+                    Parent = ojciec,
+                    ParentId = ojciec.NodeId
+                };
+
+                var rel7 = new NodeNode
+                {
+                    Child = siostra,
+                    ChildId = siostra.NodeId,
+                    Parent = ojciec,
+                    ParentId = ojciec.NodeId
+                };
+
+                var rel8 = new NodeNode
+                {
+                    Child = brat,
+                    ChildId = brat.NodeId,
+                    Parent = ojciec,
+                    ParentId = ojciec.NodeId
+                };
+
+                var rel9 = new NodeNode
+                {
+                    Child = mama,
+                    ChildId = mama.NodeId,
+                    Parent = dziadek2,
+                    ParentId = dziadek2.NodeId
+                };
+
+                var rel10 = new NodeNode
+                {
+                    Child = mama,
+                    ChildId = mama.NodeId,
+                    Parent = babcia2,
+                    ParentId = babcia2.NodeId
+                };
+                context.NodeNode.Add(rel1);
+                context.NodeNode.Add(rel2);
+                context.NodeNode.Add(rel3);
+                context.NodeNode.Add(rel4);
+                context.NodeNode.Add(rel5);
+                context.NodeNode.Add(rel6);
+                context.NodeNode.Add(rel7);
+                context.NodeNode.Add(rel8);
+                context.NodeNode.Add(rel9);
+                context.NodeNode.Add(rel10);
                 context.SaveChanges();
 
                 context.Posts.AddRange(
@@ -275,7 +366,6 @@ namespace FamilyTree.Helpers
                 }
                 );
 
-                //DODAĆ DZIECI W SEED DRZEWIE ! ! !
                 context.SaveChanges();
             }
         }

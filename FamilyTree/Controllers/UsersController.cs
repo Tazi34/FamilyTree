@@ -10,6 +10,7 @@ using FamilyTree.Models;
 using Microsoft.Extensions.Options;
 using FamilyTree.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FamilyTree.Controllers
 {
@@ -33,6 +34,22 @@ namespace FamilyTree.Controllers
         public ActionResult<AuthenticateResponse> GetJWT (string email, string password)
         {
             var request = userService.Authenticate(email, password);
+            if (request == null)
+                return Unauthorized();
+            return Ok(request);
+        }
+
+        /// <summary>
+        /// Uzyskanie informacji o przesłanym w headerze tokenie
+        /// </summary>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        [Route("")]
+        public ActionResult<AuthenticateResponse> CheckJWT()
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var request = userService.CheckUserId(userId);
             if (request == null)
                 return Unauthorized();
             return Ok(request);
