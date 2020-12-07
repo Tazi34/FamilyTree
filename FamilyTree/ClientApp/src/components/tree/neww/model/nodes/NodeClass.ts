@@ -12,6 +12,7 @@ export class Node {
   firstParent: EntityId | null = null;
   secondParent: EntityId | null = null;
   graph: number | undefined = undefined;
+  d3Node: any;
   getCanvasLocation = (): Point => {
     return this.location;
   };

@@ -1,9 +1,11 @@
+import { EntityId } from "@reduxjs/toolkit";
 import { D3DragEvent } from "d3";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../../../d3/RectMapper";
 import { ApplicationState } from "../../../../helpers";
 import { Person } from "../../../../model/TreeStructureInterfaces";
+import { isGraphCyclic } from "../../graphAlgorithms/cycleDetection";
 import {
   getLinkId,
   getLinkIdSelector,
@@ -13,15 +15,23 @@ import {
 import { createPath } from "../../treeLogic/linkCreationHelpers";
 import {
   addDeleteIcon,
+  addGearIcon,
   addPlusIcon,
+  appendConnectionCircle,
   renderFamilyNode as renderFamilyNodes,
   renderNodeCards,
 } from "../../treeLogic/nodeCreationHelpers";
+import {
+  ConnectionState,
+  finishConnection,
+  startConnecting,
+} from "../connectionReducer";
 import { FamilyNode } from "./nodes/FamilyNode";
 import { Node } from "./nodes/NodeClass";
 import { PersonNode } from "./nodes/PersonNode";
 import {
   addParent,
+  connectParent,
   deleteNode,
   getIncomingLinks,
   getLinkNodes,
@@ -30,6 +40,9 @@ import {
   getOutboundLinks,
   Link,
   moveNode,
+  selectAllFamiliesLocal,
+  selectAllNodes,
+  selectAllNodesLocal,
   TreeState,
 } from "./treeReducer";
 
@@ -40,7 +53,7 @@ const d3 = Object.assign({}, d3_base, d3_dag);
 const nodesGroupId = "nodes_group";
 const linksGroupId = "links_group";
 //TODO PRZENIESC
-interface IDictionary<TValue> {
+export interface IDictionary<TValue> {
   [id: string]: TValue;
 }
 
@@ -60,12 +73,16 @@ export interface TreeRendererProps {
 const TreeRenderer = (props: TreeRendererProps) => {
   const container = useRef(null);
   const dispatch = useDispatch();
+  const connectionState = useSelector<ApplicationState, ConnectionState>(
+    (state) => state.connection
+  );
+  const [connectingMode, setConnectingMode] = useState(false);
   const treeState = useSelector<ApplicationState, TreeState>(
     (state) => state.tree
   );
   const effect = useEffect(() => {
     initializeTree();
-  }, [props.nodes, props.links, props.families]);
+  }, [props.nodes, props.links, props.families, connectionState]);
 
   const initializeTree = () => {
     const container = selectContainer();
@@ -96,19 +113,15 @@ const TreeRenderer = (props: TreeRendererProps) => {
     initializeLinks(linksCanvas, links);
   };
 
-  const changeVisibility = (familyNode: any) => {
-    if (familyNode.isHidden) {
-      familyNode.each((node: any, i: any) => {
+  const changeVisibility = (familyNode: FamilyNode) => {
+    if (!familyNode.isVisible) {
+      traverseTree(familyNode, (node: any, i: any) => {
         var links = getNodeLinks(treeState, node);
 
         //Do refactoringu
         var nodesToShow = [node.id];
         if (node.isFamily) {
-          nodesToShow = [
-            ...nodesToShow,
-            node.family.firstParent,
-            node.family.secondParent,
-          ];
+          nodesToShow = [...nodesToShow, node.firstParent, node.secondParent];
         }
         nodesToShow.forEach((n) => selectNode(n).attr("display", ""));
 
@@ -117,11 +130,11 @@ const TreeRenderer = (props: TreeRendererProps) => {
           selectNode(node.id).select(".visibleCircle").attr("fill", "black");
         }
         links.forEach((link) => selectLink(link.id).attr("display", ""));
-        familyNode.isHidden = false;
+        familyNode.isVisible = true;
       });
     } else {
       //TODO visibility
-      familyNode.each((node: any, i: any) => {
+      traverseTree(familyNode, (node: any, i: any) => {
         var links = getOutboundLinks(treeState, node);
 
         //zeby nie usuwac galazki piewrwszej
@@ -129,18 +142,14 @@ const TreeRenderer = (props: TreeRendererProps) => {
           links = [...links, ...getIncomingLinks(treeState, node)];
         }
 
-        familyNode.isHidden = true;
+        familyNode.isVisible = false;
         if (i == 0) {
           selectNode(node.id).select(".visibleCircle").attr("fill", "white");
         } else {
           var nodesToHide = [node.id];
           //TODO POPRAWIC
           if (node.isFamily) {
-            nodesToHide = [
-              ...nodesToHide,
-              node.family.firstParent,
-              node.family.secondParent,
-            ];
+            nodesToHide = [...nodesToHide, node.firstParent, node.secondParent];
           }
           nodesToHide.forEach((n) => {
             selectNode(n).attr("display", "none");
@@ -205,6 +214,14 @@ const TreeRenderer = (props: TreeRendererProps) => {
     renderFamilyNodes(familyNodesSelector);
     renderNodeCards(peopleNodesSelector);
 
+    appendConnectionCircle(peopleNodesSelector, (e: any, node: PersonNode) => {
+      if (!connectionState.isConnecting) {
+        dispatch(startConnecting(node.id));
+      } else {
+        dispatch(finishConnection(node.id));
+        dispatch(connectParent(connectionState.start as EntityId, node.id));
+      }
+    });
     addDeleteIcon(peopleNodesSelector, (node: PersonNode) => {
       dispatch(deleteNode(node));
     });
@@ -226,6 +243,12 @@ const TreeRenderer = (props: TreeRendererProps) => {
 
     addPlusIcon(peopleNodesSelector, (node: PersonNode) => {
       dispatch(addParent(node.id as number, newPerson));
+    });
+
+    addGearIcon(peopleNodesSelector, () => {
+      const peopleNodes = selectAllNodesLocal(treeState.nodes);
+      const familyNodes = selectAllFamiliesLocal(treeState.families);
+      alert(isGraphCyclic([...peopleNodes, ...familyNodes]));
     });
   };
 
@@ -287,21 +310,19 @@ const TreeRenderer = (props: TreeRendererProps) => {
   };
 
   const moveNodeOnCanvas = (e: DragEvent, node: Node) => {
+    if (connectingMode) {
+      return;
+    }
     var svgNode = selectNode(node.id);
 
     var x = e.x;
     var y = e.y;
-    console.log(e);
-    console.log(`${e.x} ${e.y}`);
-    console.log(`WIDTH: ${RECT_WIDTH / 2} HEIGHT: ${RECT_HEIGHT / 2}`);
-
     if (!node.isFamily) {
       x -= RECT_WIDTH / 2;
       y -= RECT_HEIGHT / 2;
     }
-    console.log(node.location);
+
     //move svg without moving node in redux store
-    console.log(svgNode.attr("transform"));
     svgNode.attr("transform", (d: any) => `translate(${x},${y})`);
 
     const outbondLinks = getOutboundLinks(treeState, node);
@@ -335,6 +356,9 @@ const TreeRenderer = (props: TreeRendererProps) => {
       }
     });
   };
+  const traverseTree = (node: Node, callback: Function) => {
+    traverseRec(node, callback, 0, (id: number) => getNodeById(treeState, id));
+  };
   return <g ref={container} key={Math.random().toString()}></g>;
 };
 
@@ -348,4 +372,21 @@ export const removeNodeFromFamily = (family: any, id: any) => {
   } else {
     family.children = family.children.filter((a: any) => a != id);
   }
+};
+//TODO przeniesc do innego pliku
+export const traverseRec = (
+  node: Node,
+  callback: Function,
+  depth: number,
+  nodesSelector: Function
+) => {
+  callback(node, depth);
+
+  const childrens = node.children
+    .map((child) => nodesSelector(child))
+    .filter((a) => a) as Node[];
+
+  childrens.forEach((child) => {
+    traverseRec(child, callback, ++depth, nodesSelector);
+  });
 };

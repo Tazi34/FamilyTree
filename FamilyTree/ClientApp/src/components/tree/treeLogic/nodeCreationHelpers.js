@@ -2,7 +2,12 @@ import {
   emptyNodeAttributs,
   rectangleAttributes,
 } from "../../../d3/NodeAttributes";
-import { deleteIcon, gearIcon, plusIcon } from "../../../d3/RectMapper";
+import {
+  deleteIcon,
+  gearIcon,
+  plusIcon,
+  RECT_WIDTH,
+} from "../../../d3/RectMapper";
 import * as d3 from "d3";
 
 export const addDeleteIcon = (nodes, handler) => {
@@ -15,7 +20,13 @@ export const addDeleteIcon = (nodes, handler) => {
       handler(d);
     });
 };
-
+export const addGearIcon = (nodes, handler) => {
+  nodes
+    .append("g")
+    .append("path")
+    .attr("d", gearIcon)
+    .on("click", (event, d) => handler(d));
+};
 export const addPlusIcon = (nodes, handler) => {
   nodes
     .append("g")
@@ -40,7 +51,7 @@ export const renderNodeCards = (node) => {
       u = u.attr(key, attributes[key]);
     }
   });
-  node.append("path").attr("d", gearIcon);
+
   //TODO weryfikacja id
   node
     .append("text")
@@ -61,12 +72,35 @@ export const renderNodeCards = (node) => {
     });
 };
 
+export const appendConnectionCircle = (node, handler) => {
+  node
+    .append("circle")
+    .attr("r", 10)
+    .attr("stroke", "red")
+    .attr("fill", "white")
+    .attr("cx", RECT_WIDTH / 2)
+    .attr("cy", 0)
+    .attr("fill-opacity", 0)
+    .style("cursor", "pointer")
+    .on("click", handler);
+  node
+    .append("circle")
+    .attr("r", 5)
+    .attr("stroke", "black")
+    .attr("fill", "black")
+    .attr("cx", RECT_WIDTH / 2)
+    .attr("cy", 0)
+    .style("cursor", "pointer")
+    .attr("class", "visibleCircle");
+};
+
 export const renderFamilyNode = (nodes) => {
   nodes
     .append("circle")
-    .attr("r", 40)
+    .attr("r", 10)
     .attr("stroke", "none")
     .attr("fill", "white")
+    .style("cursor", "pointer")
     .attr("fill-opacity", 0);
 
   nodes
@@ -74,5 +108,6 @@ export const renderFamilyNode = (nodes) => {
     .attr("r", 5)
     .attr("stroke", "black")
     .attr("fill", "black")
+    .style("cursor", "pointer")
     .attr("class", "visibleCircle");
 };

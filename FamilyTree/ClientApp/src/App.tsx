@@ -20,6 +20,7 @@ import {
 } from "./applicationRouting";
 import { withAlertMessage } from "./components/alerts/withAlert";
 import BlogPage from "./components/blog/BlogPage";
+import Suntech from "./components/chat/Suntech";
 import HomePage from "./components/homePage/HomePage";
 import EmptyLayout from "./components/layout/EmptyLayout";
 import LayoutRoute from "./components/layout/LayoutRoute";
@@ -52,6 +53,9 @@ const App = (props: any) => {
     return null;
   }
   const { alertSuccess, alertError, alertInfo } = props;
+
+  return <Suntech />;
+
   return (
     <MuiThemeProvider theme={theme}>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>

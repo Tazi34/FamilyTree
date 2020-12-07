@@ -1,3 +1,4 @@
+import { ConnectionState } from "./../connectionReducer";
 import {
   createAction,
   createAsyncThunk,
@@ -17,6 +18,7 @@ import { baseURL } from "../../../../helpers/apiHelpers";
 import { createActionWithPayload } from "../../../../helpers/helpers";
 import { TreeStructure } from "../../../../model/TreeStructureInterfaces";
 import { getLinkId } from "../../treeLogic/idHelpers";
+
 import { GetTreeStructures } from "./../../../../d3/treeStructureGenerator";
 import { mapCollectionToEntity } from "./../../../../helpers/helpers";
 import { ApplicationState } from "./../../../../helpers/index";
@@ -32,14 +34,14 @@ const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
 
 //TYPES
-export interface TreeState {
+export type TreeState = {
   nodes: EntityState<PersonNode>;
   links: EntityState<Link>;
   families: EntityState<FamilyNode>;
   initialTrees: TreeStructure[];
   isLoading: boolean;
   nextFamilyId: number;
-}
+};
 
 export type Link = {
   source: EntityId;
@@ -65,19 +67,19 @@ const initialState: TreeState = {
 };
 
 //SELECTORS
-const {
+export const {
   selectAll: selectAllLinksLocal,
   selectById: selectLinkLocal,
 } = linksAdapter.getSelectors((state: EntityState<Link>) => state);
-const {
+export const {
   selectAll: selectAllNodesLocal,
-  selectById: selectNode,
+  selectById: selectNodeLocal,
 } = personNodesAdapter.getSelectors((state: EntityState<PersonNode>) => state);
-const {
+export const {
   selectAll: selectAllFamiliesLocal,
   selectById: selectFamily,
 } = familyNodesAdapter.getSelectors((state: EntityState<FamilyNode>) => state);
-const {
+export const {
   selectAll: selectAllPeopleLocal,
   selectById: selectPersonByIdLocal,
 } = peopleAdapter.getSelectors((state: EntityState<Person>) => state);
@@ -103,6 +105,12 @@ export const changeNodePosition = createAction(
   `${actionNamePrefix}/nodeMoved`,
   (nodeId: number, location: Point): any => ({
     payload: { nodeId, location },
+  })
+);
+export const connectParent = createAction(
+  `${actionNamePrefix}/parentConnected`,
+  (childId: EntityId, parentId: EntityId): any => ({
+    payload: { childId, parentId },
   })
 );
 
@@ -139,6 +147,13 @@ export const addParent = createAction(
   `${actionNamePrefix}/${PersonNodesPrefix}/parentAdded`,
   (sourceId: number, parent: Person): any => ({
     payload: { source: sourceId, parent },
+  })
+);
+
+export const addChild = createAction(
+  `${actionNamePrefix}/${PersonNodesPrefix}/childAdded`,
+  (parentId: number, child: Person): any => ({
+    payload: { parentId, child },
   })
 );
 export const moveNode = createAction(
@@ -223,11 +238,18 @@ export const treeReducer = createReducer(initialState, (builder) => {
     .addCase(getTree.rejected, (state) => {
       state.isLoading = false;
     })
+    .addCase(connectParent, (state, action: any) => {
+      const { childId, parentId } = action.payload;
+      const child = getNodeById(state, childId) as Node;
+      const parent = getNodeById(state, parentId) as Node;
+      const link = createLink(parent, child);
+      linksAdapter.addOne(state.links, link);
+    })
     .addCase(addParent, (state, action: any) => {
       const sourceId = action.payload.source as number;
       const parent = action.payload.parent as Person;
 
-      const sourceNode = selectNode(state.nodes, sourceId);
+      const sourceNode = selectNodeLocal(state.nodes, sourceId);
       if (!sourceNode) {
         return;
       }
@@ -415,12 +437,11 @@ export const treeReducer = createReducer(initialState, (builder) => {
             person.information,
             n.x,
             n.y,
-            n.children.map((a: any) => a.id),
+            person.children,
             person.firstParent,
             person.secondParent,
             n.families
           );
-
           peopleNodes.push(personNode);
         } else {
           var family = families.find((a: any) => a.id == n.id);
@@ -444,19 +465,6 @@ export const treeReducer = createReducer(initialState, (builder) => {
         l.source = l.source.id;
         l.target = l.target.id;
       });
-
-      // return {
-      //   payload: {
-      //     families: mapCollectionToEntity(familyNodes, familyNodesAdapter),
-      //     nodes: mapCollectionToEntity(peopleNodes, PersonNodesAdapter),
-      //     links: mapCollectionToEntity(d3Links, linksAdapter),
-      //     otherNodes: mapCollectionToEntity(otherNodes, otherNodesAdapter),
-      //   },
-      //};
-      /////////////////////////////////////////////////////
-      //start empty
-
-      //TODO problem z wyborem id przez setAll
 
       familyNodes.forEach((node: FamilyNode) => {
         var familyMembers: EntityId[] = [];
@@ -486,11 +494,14 @@ export const treeReducer = createReducer(initialState, (builder) => {
       var { node, x, y } = action.payload;
       var nodeToMove = node.isFamily
         ? selectFamily(state.families, node.id)
-        : selectNode(state.nodes, node.id);
+        : selectNodeLocal(state.nodes, node.id);
 
       if (nodeToMove) {
         nodeToMove.location = { x, y };
       }
+    })
+    .addCase(addChild, (state, action: any) => {
+      const { parentId, child } = action.payload;
     });
 });
 
@@ -512,7 +523,7 @@ export const getNodeById = function (
   if (!isInt(id)) {
     return selectFamily(state.families, id);
   }
-  return selectNode(state.nodes, id);
+  return selectNodeLocal(state.nodes, id);
 };
 
 export const getLinkNodes = (state: TreeState, link: Link) => {
