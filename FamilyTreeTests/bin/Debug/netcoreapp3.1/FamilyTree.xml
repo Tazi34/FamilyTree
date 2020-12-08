@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FamilyTree</name>
+    </assembly>
+    <members>
+        <member name="M:FamilyTree.Controllers.BlogController.GetBlogList(System.Int32)">
+            <summary>
+            Zwraca listę wszystkich id postów użytkownika wraz z datami utworzenia
+            </summary>
+            <param name="userId">Id użytkwnika</param>
+            <returns></returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.BlogController.GetPost(System.Int32)">
+            <summary>
+            Zwraca post o podanym Id
+            </summary>
+            <param name="postId">Id posta</param>
+            <returns>Z</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.BlogController.CreatePost(FamilyTree.Models.CreatePostRequest)">
+            <summary>
+            Dodaje post dla użytkownika z JWT
+            </summary>
+            <param name="model">JSON CreatePostRequest</param>
+            <returns>Zwraca nowo dodany post</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.BlogController.ModifyPost(FamilyTree.Models.ModifyPostRequest)">
+            <summary>
+            Modyfikuje post użytkownika z JWT
+            </summary>
+            <param name="model">JSON ModifyPostRequest</param>
+            <returns>Zwraca zmodyfikowany post</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.EditUsersController.ModifyUser(FamilyTree.Models.ModifyUserRequest)">
+            <summary>
+            Modyfikacja informacji o użytkowniku
+            </summary>
+            <param name="model">ModifyUserRequest</param>
+            <returns>Zwraca token i zmodyfikowane informacje o użytkowniku</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.EditUsersController.ChangePassword(FamilyTree.Models.ChangePasswordRequest)">
+            <summary>
+            Zmiana hasła
+            </summary>
+            <param name="model"></param>
+            <returns>Zwraca token i informacje o użytkowniku</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.EditUsersController.SetUserPicture">
+            <summary>
+            TODO
+            </summary>
+        </member>
+        <member name="M:FamilyTree.Controllers.EditUsersController.ChangeUserPicture">
+            <summary>
+            TODO
+            </summary>
+        </member>
+        <member name="M:FamilyTree.Controllers.EditUsersController.ChangeUserPicture(System.Int32)">
+            <summary>
+            TODO
+            </summary>
+        </member>
+        <member name="M:FamilyTree.Controllers.TreeController.GetTree(System.Int32)">
+            <summary>
+            Zwraca drzewo o danym Id
+            </summary>
+            <param name="treeId">Id drzewa</param>
+            <returns></returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.TreeController.GetNode(System.Int32)">
+            <summary>
+            Zwraca node o danym Id
+            </summary>
+            <param name="nodeId">Id node-a</param>
+            <returns></returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.TreeController.GetUserTrees(System.Int32)">
+            <summary>
+            Zwraca listę drzew użytkownika do wyświetlenia na profilu (drzewa publiczne + drzewa prywatne w których jest użytkownik z JWT)
+            </summary>
+            <param name="userId">Id użytkownika</param>
+            <returns></returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.TreeController.CreateTree(FamilyTree.Models.CreateTreeRequest)">
+            <summary>
+            Tworzy nowe drzewo z jednym nodem, w którym jest umieszczany użytkownik
+            </summary>
+            <param name="model">CreateTreeRequest</param>
+            <returns>Zwraca stworzone drzewo</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.TreeController.ModifyTree(FamilyTree.Models.ModifyTreeRequest)">
+            <summary>
+            Modyfikuje drzewo (nazwa drzewa, czy prywatne)
+            </summary>
+            <param name="model"></param>
+            <returns>Zwraca całe zmodyfikowane drzewo</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.TreeController.CreateNode(FamilyTree.Models.CreateNodeRequest)">
+            <summary>
+            Tworzy nowy node
+            </summary>
+            <param name="model">CreateNodeRequest</param>
+            <returns>Zwraca całe drzewo</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.TreeController.ModifyNode(FamilyTree.Models.ModifyNodeRequest)">
+            <summary>
+            Modyfikuje node
+            </summary>
+            <param name="model">ModifyNodeRequest</param>
+            <returns>Zwraca całe drzewo</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.UsersController.GetJWT(System.String,System.String)">
+            <summary>
+            Uzyskanie tokena
+            </summary>
+            <param name="email">Email</param>
+            <param name="password">hasło</param>
+            <returns></returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.UsersController.CheckJWT">
+            <summary>
+            Uzyskanie informacji o przesłanym w headerze tokenie
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.UsersController.Post(FamilyTree.Models.CreateUserRequest)">
+            <summary>
+            Tworzy nowego użytkownika
+            </summary>
+            <param name="model">CreateUserRequest</param>
+            <returns>Zwraca informacje o użytkowniku i token</returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.UsersController.Facebook">
+            <summary>
+            TODO
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:FamilyTree.Controllers.UsersController.Google">
+            <summary>
+            TODO
+            </summary>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

@@ -37,8 +37,8 @@ namespace FamilyTree.Services
                 UserId = userId
             };
             context.Posts.Add(newPost);
-            context.SaveChangesAsync();
-            return GetPost(newPost.PostId);
+            context.SaveChanges();
+            return CreateResponse(newPost);
         }
 
         public PostResponse GetPost(int postId)
@@ -46,16 +46,7 @@ namespace FamilyTree.Services
             var post = context.Posts.SingleOrDefault(post => post.PostId == postId);
             if (post == null)
                 return null;
-            var response = new PostResponse
-            {
-                PostId = post.PostId,
-                UserId = post.UserId,
-                Title = post.Title,
-                Text = post.Text,
-                CreationTime = post.CreationTime,
-                PictureUrl = post.PictureUrl
-            };
-            return response;
+            return CreateResponse(post);
         }
 
         public BlogListResponse GetPostsList(int userId)
@@ -91,6 +82,18 @@ namespace FamilyTree.Services
             }
             context.SaveChanges();
             return GetPost(post.PostId);
+        }
+        private PostResponse CreateResponse(Post post)
+        {
+            return new PostResponse
+            {
+                PostId = post.PostId,
+                UserId = post.UserId,
+                Title = post.Title,
+                Text = post.Text,
+                CreationTime = post.CreationTime,
+                PictureUrl = post.PictureUrl
+            };
         }
     }
 }

@@ -9,14 +9,15 @@ namespace FamilyTree.Helpers
 {
     public class DataContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<PreviousSurname> PreviousSurnames { get; set; }
-        public DbSet<Tree> Trees { get; set; }
-        public DbSet<Node> Nodes { get; set; }
-        public DbSet<Post> Posts { get; set; }
-        public DbSet<NodeNode> NodeNode { get; set; }
-        public DbSet<NodeNodeMarriage> NodeNodeMarriage { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<PreviousSurname> PreviousSurnames { get; set; }
+        public virtual DbSet<Tree> Trees { get; set; }
+        public virtual DbSet<Node> Nodes { get; set; }
+        public virtual DbSet<Post> Posts { get; set; }
+        public virtual DbSet<NodeNode> NodeNode { get; set; }
+        public virtual DbSet<NodeNodeMarriage> NodeNodeMarriage { get; set; }
 
+        public DataContext() { }
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
