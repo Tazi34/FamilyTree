@@ -15,6 +15,7 @@ namespace FamilyTree.Helpers
         public DbSet<Node> Nodes { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<NodeNode> NodeNode { get; set; }
+        public DbSet<NodeNodeMarriage> NodeNodeMarriage { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
@@ -22,7 +23,7 @@ namespace FamilyTree.Helpers
         }
         protected override void OnModelCreating(ModelBuilder model_builder)
         {
-            model_builder.Entity<NodeNode>().HasKey(bc => new { bc.ParentId, bc.ChildId });
+            model_builder.Entity<NodeNode>().HasKey(nn => new { nn.ParentId, nn.ChildId });
             model_builder.Entity<NodeNode>()
                 .HasOne(bc => bc.Parent)
                 .WithMany(b => b.Children)
@@ -31,6 +32,17 @@ namespace FamilyTree.Helpers
                 .HasOne(bc => bc.Child)
                 .WithMany(c => c.Parents)
                 .HasForeignKey(bc => bc.ChildId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            model_builder.Entity<NodeNodeMarriage>().HasKey(nnm => new { nnm.Partner1Id, nnm.Partner2Id});
+            model_builder.Entity<NodeNodeMarriage>()
+                .HasOne(nnm => nnm.Partner1)
+                .WithMany(n => n.Partners2)
+                .HasForeignKey(bc => bc.Partner1Id);
+            model_builder.Entity<NodeNodeMarriage>()
+                .HasOne(nnm => nnm.Partner2)
+                .WithMany(n => n.Partners1)
+                .HasForeignKey(nnm => nnm.Partner2Id)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

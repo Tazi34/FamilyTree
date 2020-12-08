@@ -29,7 +29,13 @@ namespace FamilyTree.Services
 
         public TreeResponse CreateNode(int userId, CreateNodeRequest model)
         {
-            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == model.TreeId);
+            var tree = context.Trees
+                .Include(x => x.Nodes).ThenInclude(x => x.Children)
+                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
+                .SingleOrDefault(tree => tree.TreeId == model.TreeId);
+
             if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
                 return null;
 
@@ -45,6 +51,7 @@ namespace FamilyTree.Services
                     ChildId = child_node.NodeId
                 });
             }
+
             var parents = new List<NodeNode>();
             var fatherNode = context.Nodes.SingleOrDefault(n => n.NodeId == model.FatherId);
             if(fatherNode != null)
@@ -64,6 +71,24 @@ namespace FamilyTree.Services
                     ParentId = motherNode.NodeId
                 });
             }
+            var partners1 = new List<NodeNodeMarriage>();
+            var partners2 = new List<NodeNodeMarriage>();
+            foreach (int partner in model.Partners)
+            {
+                var partner_node = context.Nodes.SingleOrDefault(n => n.NodeId == partner);
+                if (partner_node == null)
+                    return null;
+                partners1.Add(new NodeNodeMarriage
+                {
+                    Partner1 = partner_node,
+                    Partner1Id = partner_node.NodeId
+                });
+                partners2.Add(new NodeNodeMarriage
+                {
+                    Partner2 = partner_node,
+                    Partner2Id = partner_node.NodeId
+                });
+            }
             var node = new Node
             {
                 Birthday = model.Birthday,
@@ -73,6 +98,8 @@ namespace FamilyTree.Services
                 PictureUrl = model.PictureUrl,
                 Children = children,
                 Parents = parents,
+                Partners1 = partners1,
+                Partners2 = partners2,
                 FatherId = model.FatherId,
                 MotherId = model.MotherId,
                 Description = model.Description
@@ -96,6 +123,8 @@ namespace FamilyTree.Services
                 PictureUrl = user.PictureUrl,
                 Children = new List<NodeNode>(),
                 Parents = new List<NodeNode>(),
+                Partners1 = new List<NodeNodeMarriage>(),
+                Partners2 = new List<NodeNodeMarriage>(),
                 FatherId = 0,
                 MotherId = 0,
                 Description = ""
@@ -126,8 +155,13 @@ namespace FamilyTree.Services
 
         public TreeResponse GetTree(int id, int userId)
         {
-            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == id);
-            if(tree != null && (!tree.IsPrivate || IsUserInTree(tree, userId)))
+            var tree = context.Trees
+                .Include(x => x.Nodes).ThenInclude(x => x.Children)
+                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
+                .SingleOrDefault(tree => tree.TreeId == id);
+            if (tree != null && (!tree.IsPrivate || IsUserInTree(tree, userId)))
             {
                 return new TreeResponse(tree);
             }
@@ -163,7 +197,12 @@ namespace FamilyTree.Services
 
         public TreeResponse ModifyNode(int userId, ModifyNodeRequest model)
         {
-            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == model.TreeId);
+            var tree = context.Trees
+                .Include(x => x.Nodes).ThenInclude(x => x.Children)
+                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
+                .SingleOrDefault(tree => tree.TreeId == model.TreeId);
             if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
                 return null;
             var node = tree.Nodes.SingleOrDefault(n => n.NodeId == model.NodeId);
@@ -197,6 +236,36 @@ namespace FamilyTree.Services
                                 Parent = node
                             };
                             context.NodeNode.Add(rel);
+                        }
+                    }
+                }
+            }
+            if(model.Partners != null)
+            {
+                foreach (int partner in model.Partners)
+                {
+                    var currentPartner1 = node.Partners1.SingleOrDefault(c => c.Partner1Id == partner);
+                    if (currentPartner1 == null)
+                    {
+                        var partnerNode = context.Nodes.SingleOrDefault(n => n.NodeId == partner);
+                        if (partnerNode != null)
+                        {
+                            var rel1 = new NodeNodeMarriage
+                            {
+                                Partner1 = partnerNode,
+                                Partner1Id = partnerNode.NodeId,
+                                Partner2 = node,
+                                Partner2Id = node.NodeId,
+                            };
+                            var rel2 = new NodeNodeMarriage
+                            {
+                                Partner2 = partnerNode,
+                                Partner2Id = partnerNode.NodeId,
+                                Partner1 = node,
+                                Partner1Id = node.NodeId,
+                            };
+                            context.NodeNodeMarriage.Add(rel1);
+                            context.NodeNodeMarriage.Add(rel2);
                         }
                     }
                 }
