@@ -98,7 +98,7 @@ namespace FamilyTreeTests.Blog
         public void GetListFail()
         {
             var blog = service.GetPostsList(0);
-            //Assert.IsNotNull(blog);
+            //Assert.IsNotNull(blog);dsfsfdsafasfasfdafs        
             Assert.AreEqual(blog.Posts.Count, 0);
         }
     }
