@@ -14,16 +14,20 @@ namespace FamilyTree.Services
 {
     public interface ITokenService
     {
-        public string GetToken(int userId);
+        public string GetToken(long userId);
     }
     public class TokenService : ITokenService
     {
         private byte[] key;
+        public TokenService(AppSettings appsettings)
+        {
+            key = Encoding.ASCII.GetBytes(appsettings.Secret);
+        }
         public TokenService(IOptions<AppSettings> appsettings)
         {
             key = Encoding.ASCII.GetBytes(appsettings.Value.Secret);
         }
-        public string GetToken(int userId)
+        public string GetToken(long userId)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
