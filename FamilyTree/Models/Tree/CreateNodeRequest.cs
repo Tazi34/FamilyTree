@@ -19,5 +19,6 @@ namespace FamilyTree.Models
         public int FatherId { get; set; }
         public int MotherId { get; set; }
         public List<int> Children { get; set; }
+        public List<int> Partners { get; set; }
     }
 }

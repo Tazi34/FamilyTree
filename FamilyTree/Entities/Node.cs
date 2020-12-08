@@ -19,5 +19,10 @@ namespace FamilyTree.Entities
         public int MotherId { get; set; }
         public List<NodeNode> Children { get; set; }
         public List<NodeNode> Parents { get; set; }
+        public string Sex { get; set; }
+        public List<NodeNodeMarriage> Partners1 { get; set; }
+        public List<NodeNodeMarriage> Partners2 { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
     }
 }

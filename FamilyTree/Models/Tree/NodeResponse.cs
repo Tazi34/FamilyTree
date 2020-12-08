@@ -19,6 +19,7 @@ namespace FamilyTree.Models
         public int FatherId { get; set; }
         public int MotherId { get; set; }
         public List<int> Children { get; set; }
+        public List<int> Partners { get; set; }
         public NodeResponse(Node node)
         {
             NodeId = node.NodeId;
@@ -35,6 +36,11 @@ namespace FamilyTree.Models
             foreach(var child in node.Children)
             {
                 Children.Add(child.ChildId);
+            }
+            Partners = new List<int>();
+            foreach (var partner in node.Partners1)
+            {
+                Partners.Add(partner.Partner1Id);
             }
         }
     }
