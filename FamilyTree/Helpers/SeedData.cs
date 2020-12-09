@@ -123,6 +123,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = 0,
                     MotherId = 0,
                 },
@@ -137,6 +139,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = 0,
                     MotherId = 0
                 },
@@ -151,6 +155,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = 0,
                     MotherId = 0,
                 },
@@ -165,6 +171,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault(t => t.Name.Equals("Kicun drzewo")).TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = 0,
                     MotherId = 0,
                 }
@@ -182,6 +190,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault().TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Dziadek2")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Babcia2")).NodeId
                 },
@@ -196,6 +206,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault().TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Dziadek")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Babcia")).NodeId
                 }
@@ -213,6 +225,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault().TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Ojciec")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Mama")).NodeId
                 },
@@ -227,6 +241,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault().TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Ojciec")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Mama")).NodeId
                 },
@@ -241,6 +257,8 @@ namespace FamilyTree.Helpers
                     TreeId = context.Trees.FirstOrDefault().TreeId,
                     Children = new List<NodeNode>(),
                     Parents = new List<NodeNode>(),
+                    Partners1 = new List<NodeNodeMarriage>(),
+                    Partners2 = new List<NodeNodeMarriage>(),
                     FatherId = context.Nodes.Single(n => n.Name.Equals("Ojciec")).NodeId,
                     MotherId = context.Nodes.Single(n => n.Name.Equals("Mama")).NodeId
                 }
@@ -347,6 +365,55 @@ namespace FamilyTree.Helpers
                 context.NodeNode.Add(rel8);
                 context.NodeNode.Add(rel9);
                 context.NodeNode.Add(rel10);
+                //----marriages:
+                var mar1 = new NodeNodeMarriage
+                {
+                    Partner1 = babcia,
+                    Partner1Id = babcia.NodeId,
+                    Partner2 = dziadek,
+                    Partner2Id = dziadek.NodeId
+                };
+                var mar2 = new NodeNodeMarriage
+                {
+                    Partner2 = babcia,
+                    Partner2Id = babcia.NodeId,
+                    Partner1 = dziadek,
+                    Partner1Id = dziadek.NodeId
+                };
+                var mar3 = new NodeNodeMarriage
+                {
+                    Partner1 = babcia2,
+                    Partner1Id = babcia2.NodeId,
+                    Partner2 = dziadek2,
+                    Partner2Id = dziadek2.NodeId
+                };
+                var mar4 = new NodeNodeMarriage
+                {
+                    Partner2 = babcia2,
+                    Partner2Id = babcia2.NodeId,
+                    Partner1 = dziadek2,
+                    Partner1Id = dziadek2.NodeId
+                };
+                var mar5 = new NodeNodeMarriage
+                {
+                    Partner1 = mama,
+                    Partner1Id = mama.NodeId,
+                    Partner2 = ojciec,
+                    Partner2Id = ojciec.NodeId
+                };
+                var mar6 = new NodeNodeMarriage
+                {
+                    Partner2 = mama,
+                    Partner2Id = mama.NodeId,
+                    Partner1 = ojciec,
+                    Partner1Id = ojciec.NodeId
+                };
+                context.NodeNodeMarriage.Add(mar1);
+                context.NodeNodeMarriage.Add(mar2);
+                context.NodeNodeMarriage.Add(mar3);
+                context.NodeNodeMarriage.Add(mar4);
+                context.NodeNodeMarriage.Add(mar5);
+                context.NodeNodeMarriage.Add(mar6);
                 context.SaveChanges();
 
                 context.Posts.AddRange(

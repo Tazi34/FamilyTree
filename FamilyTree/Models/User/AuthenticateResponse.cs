@@ -15,5 +15,8 @@ namespace FamilyTree.Models
         public string Token { get; set; }
         public string Role { get; set; }
         public List<String> PreviousSurnames { get; set;}
+        public DateTime Birthday { get; set; }
+        public string PictureUrl { get; set; }
+        public string Sex { get; set; }
     }
 }

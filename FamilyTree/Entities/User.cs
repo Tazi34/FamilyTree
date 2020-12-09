@@ -17,5 +17,6 @@ namespace FamilyTree.Entities
         public DateTime Birthday { get; set; }
         public string PictureUrl { get; set; }
         public List<PreviousSurname> PrevSurnames { get; set; }
+        public string Sex { get; set; }
     }
 }

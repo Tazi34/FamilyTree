@@ -23,5 +23,6 @@ namespace FamilyTree.Models
         public string Password { get; set; }
         public DateTime Birthday { get; set; }
         public List<string> PreviousSurnames { get; set; }
+        public string Sex { get; set; }
     }
 }

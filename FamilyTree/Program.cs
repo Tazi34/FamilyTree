@@ -21,6 +21,7 @@ namespace FamilyTree
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                SeedData.Initialize(services);
                 try
                 {
                     SeedData.Initialize(services);
