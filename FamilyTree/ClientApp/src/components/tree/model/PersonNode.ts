@@ -1,6 +1,6 @@
-import { moveNode } from "./../treeReducer";
+import { moveNode } from "../treeReducer";
 import { EntityId } from "@reduxjs/toolkit";
-import { RECT_HEIGHT, RECT_WIDTH } from "../../../../../d3/RectMapper";
+import { RECT_HEIGHT, RECT_WIDTH } from "../../../d3/RectMapper";
 import { Point } from "../treeReducer";
 import { Node } from "./NodeClass";
 

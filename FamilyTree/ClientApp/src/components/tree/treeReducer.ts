@@ -1,4 +1,4 @@
-import { ConnectionState } from "./../connectionReducer";
+import { ConnectionState } from "./connectionReducer";
 import {
   createAction,
   createAsyncThunk,
@@ -8,26 +8,21 @@ import {
   EntityState,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
-import {
-  RECT_HEIGHT,
-  RECT_WIDTH,
-  X_SEP,
-  Y_SEP,
-} from "../../../../d3/RectMapper";
-import { baseURL } from "../../../../helpers/apiHelpers";
-import { createActionWithPayload } from "../../../../helpers/helpers";
-import { TreeStructure } from "../../../../model/TreeStructureInterfaces";
-import { getLinkId } from "../../treeLogic/idHelpers";
+import { RECT_HEIGHT, RECT_WIDTH, X_SEP, Y_SEP } from "../../d3/RectMapper";
+import { baseURL } from "../../helpers/apiHelpers";
+import { createActionWithPayload } from "../../helpers/helpers";
+import { TreeStructure } from "../../model/TreeStructureInterfaces";
+import { getLinkId } from "./helpers/idHelpers";
 
-import { GetTreeStructures } from "./../../../../d3/treeStructureGenerator";
-import { mapCollectionToEntity } from "./../../../../helpers/helpers";
-import { ApplicationState } from "./../../../../helpers/index";
-import { Family, Person } from "./../../../../model/TreeStructureInterfaces";
-import names from "./../../../../samples/names.json";
-import surnames from "./../../../../samples/surnames.json";
-import { FamilyNode } from "./nodes/FamilyNode";
-import { Node } from "./nodes/NodeClass";
-import { PersonNode } from "./nodes/PersonNode";
+import { GetTreeStructures } from "../../d3/treeStructureGenerator";
+import { mapCollectionToEntity } from "../../helpers/helpers";
+import { ApplicationState } from "../../helpers/index";
+import { Family, Person } from "../../model/TreeStructureInterfaces";
+import names from "../../samples/names.json";
+import surnames from "../../samples/surnames.json";
+import { FamilyNode } from "./model/FamilyNode";
+import { Node } from "./model/NodeClass";
+import { PersonNode } from "./model/PersonNode";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");

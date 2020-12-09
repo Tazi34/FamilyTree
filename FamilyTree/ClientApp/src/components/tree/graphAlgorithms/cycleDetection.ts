@@ -1,11 +1,8 @@
-import { Node } from "./../neww/model/nodes/NodeClass";
+import { Node } from "../model/NodeClass";
 import { EntityId } from "@reduxjs/toolkit";
-import {
-  PersonInformation,
-  PersonNode,
-} from "./../neww/model/nodes/PersonNode";
+import { PersonInformation, PersonNode } from "../model/PersonNode";
 
-import { IDictionary } from "../neww/model/TreeRenderer";
+import { IDictionary } from "../TreeRenderer";
 
 export const isGraphCyclic = (nodes: Node[]): boolean => {
   const visited: IDictionary<boolean> = {};

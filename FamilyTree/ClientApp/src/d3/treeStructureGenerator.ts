@@ -6,7 +6,7 @@ import {
   Person,
   TreeStructure,
 } from "../model/TreeStructureInterfaces";
-import { peopleAdapter } from "./../components/tree/neww/model/treeReducer";
+import { peopleAdapter } from "../components/tree/treeReducer";
 
 export const GetTreeStructures = (
   people: EntityState<Person>

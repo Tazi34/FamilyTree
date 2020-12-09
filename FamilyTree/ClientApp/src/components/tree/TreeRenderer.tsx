@@ -2,17 +2,17 @@ import { EntityId } from "@reduxjs/toolkit";
 import { D3DragEvent } from "d3";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RECT_HEIGHT, RECT_WIDTH } from "../../../../d3/RectMapper";
-import { ApplicationState } from "../../../../helpers";
-import { Person } from "../../../../model/TreeStructureInterfaces";
-import { isGraphCyclic } from "../../graphAlgorithms/cycleDetection";
+import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+import { ApplicationState } from "../../helpers";
+import { Person } from "../../model/TreeStructureInterfaces";
+import { isGraphCyclic } from "./graphAlgorithms/cycleDetection";
 import {
   getLinkId,
   getLinkIdSelector,
   getNodeId,
   getNodeIdSelector,
-} from "../../treeLogic/idHelpers";
-import { createPath } from "../../treeLogic/linkCreationHelpers";
+} from "./helpers/idHelpers";
+import { createPath } from "./helpers/linkCreationHelpers";
 import {
   addDeleteIcon,
   addGearIcon,
@@ -20,15 +20,15 @@ import {
   appendConnectionCircle,
   renderFamilyNode as renderFamilyNodes,
   renderNodeCards,
-} from "../../treeLogic/nodeCreationHelpers";
+} from "./helpers/nodeCreationHelpers";
 import {
   ConnectionState,
   finishConnection,
   startConnecting,
-} from "../connectionReducer";
-import { FamilyNode } from "./nodes/FamilyNode";
-import { Node } from "./nodes/NodeClass";
-import { PersonNode } from "./nodes/PersonNode";
+} from "./connectionReducer";
+import { FamilyNode } from "./model/FamilyNode";
+import { Node } from "./model/NodeClass";
+import { PersonNode } from "./model/PersonNode";
 import {
   addParent,
   connectParent,

@@ -14,8 +14,8 @@ import {
   selectAllFamilies,
   selectAllLinks,
   selectAllNodes,
-} from "./neww/model/treeReducer";
-import TreeRenderer from "./neww/model/TreeRenderer";
+} from "./treeReducer";
+import TreeRenderer from "./TreeRenderer";
 import { ZoomContainer } from "./Zoom";
 
 type TreeContainerState = {
@@ -34,7 +34,7 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
     this.state = {
       addMenuX: 0,
       addMenuY: 0,
-      isAddMenuOpen: true,
+      isAddMenuOpen: false,
       familyTreeEntries: data2,
     };
     this.svgRef = React.createRef();

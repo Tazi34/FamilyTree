@@ -1,5 +1,5 @@
-import { PersonInformation } from "./../../neww/model/nodes/PersonNode";
-import { PersonNode } from "../../neww/model/nodes/PersonNode";
+import { PersonInformation } from "../../model/PersonNode";
+import { PersonNode } from "../../model/PersonNode";
 import { isGraphCyclic } from "../cycleDetection";
 
 const mockInformation: PersonInformation = {

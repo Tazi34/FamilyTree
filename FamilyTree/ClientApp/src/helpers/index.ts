@@ -2,10 +2,7 @@ import { chatReducer } from "./../components/chat/chatReducer";
 import { authenticationReducer } from "./../components/loginPage/authenticationReducer";
 
 import { combineReducers } from "redux";
-import {
-  treeReducer,
-  TreeState,
-} from "../components/tree/neww/model/treeReducer";
+import { treeReducer, TreeState } from "../components/tree/treeReducer";
 import {
   postsReducer,
   PostsState,
@@ -15,7 +12,7 @@ import { ChatsState } from "../components/chat/chatReducer";
 import {
   connectionReducer,
   ConnectionState,
-} from "../components/tree/neww/connectionReducer";
+} from "../components/tree/connectionReducer";
 
 // The top-level state object
 export interface ApplicationState {
