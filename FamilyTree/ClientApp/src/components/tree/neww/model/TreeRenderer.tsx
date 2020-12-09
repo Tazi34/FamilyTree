@@ -214,14 +214,14 @@ const TreeRenderer = (props: TreeRendererProps) => {
     renderFamilyNodes(familyNodesSelector);
     renderNodeCards(peopleNodesSelector);
 
-    appendConnectionCircle(peopleNodesSelector, (e: any, node: PersonNode) => {
-      if (!connectionState.isConnecting) {
-        dispatch(startConnecting(node.id));
-      } else {
-        dispatch(finishConnection(node.id));
-        dispatch(connectParent(connectionState.start as EntityId, node.id));
-      }
-    });
+    // appendConnectionCircle(peopleNodesSelector, (e: any, node: PersonNode) => {
+    //   if (!connectionState.isConnecting) {
+    //     dispatch(startConnecting(node.id));
+    //   } else {
+    //     dispatch(finishConnection(node.id));
+    //     dispatch(connectParent(connectionState.start as EntityId, node.id));
+    //   }
+    // });
     addDeleteIcon(peopleNodesSelector, (node: PersonNode) => {
       dispatch(deleteNode(node));
     });
