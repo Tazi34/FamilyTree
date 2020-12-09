@@ -7,7 +7,8 @@ import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
 type Props = {
   friend: Friend;
-  onChatOpen: (friend: Friend) => void;
+
+  onChatClick: (friend: Friend) => void;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -35,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const FriendEntry = ({ friend, onChatOpen }: Props) => {
+const FriendEntry = ({ friend, onChatClick }: Props) => {
   const classes = useStyles();
   return (
     <TooltipMouseFollow title={`${friend.name} ${friend.surname}`}>
@@ -44,7 +45,7 @@ const FriendEntry = ({ friend, onChatOpen }: Props) => {
         borderColor="primary.dark"
         component={ButtonBase}
         className={classes.profilePictureContainer}
-        onClick={() => onChatOpen(friend)}
+        onClick={() => onChatClick(friend)}
       >
         {friend.image.length > 0 ? (
           <img src={friend.image} className={classes.profilePicture} />

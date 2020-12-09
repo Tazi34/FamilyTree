@@ -10,6 +10,8 @@ import {
   finishedChatsLoading,
   getLatestChats,
   openChat,
+  closeChat,
+  currentChatsSelector,
 } from "../chat/chatReducer";
 import { getUser } from "../loginPage/authenticationReducer";
 import FriendsList from "./FriendsList";
@@ -20,10 +22,15 @@ const FriendsListProvider = (props: any) => {
   const dispatch = useThunkDispatch();
   const loadedChats = useSelector(finishedChatsLoading);
   const latestChats = useSelector(latestsChatsSelector.selectAll);
+  const openChats = useSelector(currentChatsSelector);
   const user = useSelector(getUser);
 
-  const handleChatOpen = (friend: Friend) => {
-    dispatch(openChat(friend.id));
+  const handleChatClick = (friend: Friend) => {
+    if (openChats.some((chat) => chat.user.id == friend.id)) {
+      dispatch(closeChat(friend.id));
+    } else {
+      dispatch(openChat(friend.id));
+    }
   };
 
   useEffect(() => {
@@ -34,7 +41,7 @@ const FriendsListProvider = (props: any) => {
 
   return (
     <FriendsList
-      onChatOpen={handleChatOpen}
+      onChatClick={handleChatClick}
       friendsLimit={5}
       friends={latestChats}
     ></FriendsList>

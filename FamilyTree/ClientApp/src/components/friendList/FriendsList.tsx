@@ -7,13 +7,13 @@ import FriendEntry from "./FriendEntry";
 type Props = {
   friendsLimit: number;
   friends: Friend[];
-  onChatOpen: (friend: Friend) => void;
+  onChatClick: (friend: Friend) => void;
 };
 const useStyles = makeStyles((theme: Theme) => ({
   root: {},
 }));
 
-const FriendsList = ({ friends, friendsLimit, onChatOpen }: Props) => {
+const FriendsList = ({ friends, friendsLimit, onChatClick }: Props) => {
   const classes = useStyles();
 
   const friendsToShow =
@@ -27,7 +27,7 @@ const FriendsList = ({ friends, friendsLimit, onChatOpen }: Props) => {
     >
       {friendsToShow.map((friend: Friend) => (
         <div>
-          <FriendEntry onChatOpen={onChatOpen} friend={friend}></FriendEntry>
+          <FriendEntry onChatClick={onChatClick} friend={friend}></FriendEntry>
           <Divider />
         </div>
       ))}

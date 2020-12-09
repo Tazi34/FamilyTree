@@ -10,7 +10,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   background: {
     padding: 7,
-    margin: "200px auto",
+    marginTop: "200px",
+    marginRight: "10px",
     position: "fixed",
   },
   spaceFiller: {
@@ -28,12 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const FriendsPanel = (props: any) => {
   const classes = useStyles();
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      className={classes.root}
-    >
+    <Box display="flex" flexDirection="column" className={classes.root}>
       {/* <div className={classes.spaceFiller}></div> */}
       <Paper className={classes.background}>
         <Box
