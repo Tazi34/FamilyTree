@@ -4,7 +4,7 @@ import TreeContainer from "./TreeContainer";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: "90%",
+    width: "100%",
     margin: "0 auto",
     height: "100%",
     background: "radial-gradient(#e0e0e0,grey)",

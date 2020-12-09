@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   image: {
     width: "100%",
+    height: 700,
   },
   imageContainer: {
     [theme.breakpoints.down("md")]: {

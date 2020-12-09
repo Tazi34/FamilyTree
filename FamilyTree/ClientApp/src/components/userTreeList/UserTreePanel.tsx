@@ -13,17 +13,20 @@ import TreesListProvider from "./TreesListProvider";
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
-    width: "100%",
+    maxWidth: 350,
+    width: "80%",
+    margin: "0 auto",
     height: "100%",
     maring: "0 auto",
+    diplay: "flex",
+    alignItems: "center",
   },
   paper: {
-    maxWidth: 300,
-    maxHeight: 450,
-    width: "90%",
+    maxWidth: 350,
     margin: "100px 10px",
     position: "fixed",
     padding: "10px 5px",
+    width: "calc(16%)",
   },
   flexGrow: {
     flex: 0.2,

@@ -16,7 +16,7 @@ const AuthenticatedNavbar = (props: any) => {
   return (
     <div>
       <RedirectButton to={BLOG_PAGE_URI}>Blog</RedirectButton>
-      <RedirectButton to={TREE_PAGE_URI}>Tree</RedirectButton>
+
       <RedirectButton to={TREE_PAGE_URI}>Tree</RedirectButton>
       <LogoutButton>Logout</LogoutButton>
     </div>

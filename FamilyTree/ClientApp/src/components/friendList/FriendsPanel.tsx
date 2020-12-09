@@ -7,11 +7,12 @@ import InvitationIcon from "@material-ui/icons/InsertInvitation";
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     height: "100%",
+    width: "100%",
   },
   background: {
     padding: 7,
-    marginTop: "200px",
-    marginRight: "10px",
+    right: 10,
+    bottom: 0,
     position: "fixed",
   },
   spaceFiller: {

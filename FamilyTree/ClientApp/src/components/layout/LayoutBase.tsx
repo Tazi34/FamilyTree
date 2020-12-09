@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   filler: {
     width: "100%",
+    height: 64,
   },
 }));
 
@@ -58,6 +59,7 @@ export default (props: { children?: React.ReactNode }) => {
       alignItems="stretch"
     >
       <Navbar isLoggedIn={isLoggedIn}></Navbar>
+
       <div className={classes.filler}></div>
       {props.children}
     </Box>
