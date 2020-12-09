@@ -12,12 +12,19 @@ import { ApplicationState } from "../../helpers";
 import { baseURL, CHAT_API_URL } from "../../helpers/apiHelpers";
 import { Friend } from "../../model/Friend";
 
+export type Message = {
+  date: Date;
+  outgoing: boolean;
+  text: string;
+  id: number;
+};
 export type Chat = {
   user: {
     id: number;
     name: string;
     surname: string;
     image: string;
+    messages: Message[];
   };
 };
 
@@ -63,6 +70,16 @@ export const initialState: ChatsState = {
   loadedLatestChats: false,
 };
 
+export const sendMessage = createAction(
+  `${prefix}/messageSent`,
+  (userId: number, text: string) => ({
+    payload: {
+      userId,
+      text,
+    },
+  })
+);
+
 export const chatReducer = createReducer<ChatsState>(
   initialState,
   (builder) => {
@@ -93,6 +110,19 @@ export const chatReducer = createReducer<ChatsState>(
         state.currentChats = state.currentChats.filter(
           (a) => a.user.id != action.payload
         );
+      })
+      .addCase(sendMessage, (state, action) => {
+        const chat = state.currentChats.find(
+          (chat) => chat.user.id == action.payload.userId
+        );
+        if (chat) {
+          chat.user.messages.push({
+            id: Math.floor(Math.random() * 100000),
+            date: new Date(),
+            outgoing: true,
+            text: action.payload.text,
+          });
+        }
       });
   }
 );
