@@ -34,3 +34,9 @@ export type PersonInformation = {
   surname: string;
   birthDate: string;
 };
+
+export const mockPerson: PersonInformation = {
+  name: "Mock",
+  surname: "Person",
+  birthDate: new Date().toString(),
+};

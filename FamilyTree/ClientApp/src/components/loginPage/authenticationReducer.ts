@@ -62,7 +62,7 @@ export const loginUser = createAsyncThunk(
 export const logoutUser = createAction("users/userLoggedout");
 
 //REDUCER
-const initialState: AuthenticationState = {
+export const authenticationInitialState: AuthenticationState = {
   isLoggedIn: false,
   user: null,
   status: {
@@ -70,61 +70,64 @@ const initialState: AuthenticationState = {
     loading: false,
   },
 };
-export const authenticationReducer = createReducer(initialState, (builder) => {
-  builder
-    .addCase(createUser.pending, (state: AuthenticationState, action) => {
-      state.isLoggedIn = false;
-      state.user = null;
-      removeAuthorizationToken();
-    })
-    .addCase(createUser.fulfilled, (state: AuthenticationState, action) => {
-      const userData: CreateUserSuccessResponse = action.payload.data;
-      state.isLoggedIn = true;
-      state.user = {
-        email: userData.email,
-        id: userData.userId,
-        name: userData.name,
-        surname: userData.surname,
-        role: userData.role,
-        token: userData.token,
-      };
-      addAuthorizationToken(userData.token);
-    })
-    .addCase(logoutUser, (state) => {
-      state.user = null;
-      state.isLoggedIn = false;
-      removeAuthorizationToken();
-    });
+export const authenticationReducer = createReducer(
+  authenticationInitialState,
+  (builder) => {
+    builder
+      .addCase(createUser.pending, (state: AuthenticationState, action) => {
+        state.isLoggedIn = false;
+        state.user = null;
+        removeAuthorizationToken();
+      })
+      .addCase(createUser.fulfilled, (state: AuthenticationState, action) => {
+        const userData: CreateUserSuccessResponse = action.payload.data;
+        state.isLoggedIn = true;
+        state.user = {
+          email: userData.email,
+          id: userData.userId,
+          name: userData.name,
+          surname: userData.surname,
+          role: userData.role,
+          token: userData.token,
+        };
+        addAuthorizationToken(userData.token);
+      })
+      .addCase(logoutUser, (state) => {
+        state.user = null;
+        state.isLoggedIn = false;
+        removeAuthorizationToken();
+      });
 
-  addThunkWithStatusHandlers(
-    builder,
-    loginUser,
-    (state: AuthenticationState, action: any) => {
-      const userToken = action.payload.data.accessToken;
-      var decoded: any = jwt_decode(userToken);
-      console.log(decoded);
-      var userId = decoded.sub;
-      var email = decoded.email;
-      addAuthorizationToken(userToken);
+    addThunkWithStatusHandlers(
+      builder,
+      loginUser,
+      (state: AuthenticationState, action: any) => {
+        const userToken = action.payload.data.accessToken;
+        var decoded: any = jwt_decode(userToken);
+        console.log(decoded);
+        var userId = decoded.sub;
+        var email = decoded.email;
+        addAuthorizationToken(userToken);
 
-      state.isLoggedIn = true;
-      state.user = {
-        email: email,
-        id: userId,
-        token: userToken,
-        role: "USER",
-        name: "Pablo",
-        surname: "Picasso",
-      };
-    },
-    undefined,
-    (state: AuthenticationState, action: any) => {
-      state.isLoggedIn = false;
-      state.user = null;
-      removeAuthorizationToken();
-    }
-  );
-});
+        state.isLoggedIn = true;
+        state.user = {
+          email: email,
+          id: userId,
+          token: userToken,
+          role: "USER",
+          name: "Pablo",
+          surname: "Picasso",
+        };
+      },
+      undefined,
+      (state: AuthenticationState, action: any) => {
+        state.isLoggedIn = false;
+        state.user = null;
+        removeAuthorizationToken();
+      }
+    );
+  }
+);
 
 //selectors
 const selectSelf = (state: ApplicationState) => state;

@@ -63,7 +63,7 @@ export const createChat = createAsyncThunk<AxiosResponse<any>, number>(
   }
 );
 
-export const initialState: ChatsState = {
+export const chatInitialState: ChatsState = {
   latestChats: latestChatsAdapter.getInitialState(),
   currentChats: [],
   openChatsLimit: 2,
@@ -81,7 +81,7 @@ export const sendMessage = createAction(
 );
 
 export const chatReducer = createReducer<ChatsState>(
-  initialState,
+  chatInitialState,
   (builder) => {
     builder
       .addCase(getLatestChats.fulfilled, (state, action) => {

@@ -6,7 +6,7 @@ export interface ConnectionState {
   end: EntityId | null;
 }
 
-const initialState: ConnectionState = {
+export const connectionsInitialState: ConnectionState = {
   isConnecting: false,
   start: null,
   end: null,
@@ -21,7 +21,7 @@ export const finishConnection = createAction<EntityId>(
 );
 
 export const connectionReducer = createReducer<ConnectionState>(
-  initialState,
+  connectionsInitialState,
   (builder) => {
     builder
       .addCase(startConnecting, (state, action) => {

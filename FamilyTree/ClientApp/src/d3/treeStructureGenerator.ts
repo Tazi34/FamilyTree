@@ -136,7 +136,7 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
 
   return {
     families,
-    people: mapCollectionToEntity(people, peopleAdapter),
+    people: mapCollectionToEntity(people),
     links,
   };
 };

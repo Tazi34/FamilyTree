@@ -1,9 +1,17 @@
-import { chatReducer } from "./../components/chat/chatReducer";
-import { authenticationReducer } from "./../components/loginPage/authenticationReducer";
+import { treeInitialState } from "./../components/tree/treeReducer";
+import {
+  chatInitialState,
+  chatReducer,
+} from "./../components/chat/chatReducer";
+import {
+  authenticationInitialState,
+  authenticationReducer,
+} from "./../components/loginPage/authenticationReducer";
 
 import { combineReducers } from "redux";
 import { treeReducer, TreeState } from "../components/tree/treeReducer";
 import {
+  postsInitialState,
   postsReducer,
   PostsState,
 } from "./../components/blog/redux/postsReducer";
@@ -12,6 +20,7 @@ import { ChatsState } from "../components/chat/chatReducer";
 import {
   connectionReducer,
   ConnectionState,
+  connectionsInitialState,
 } from "../components/tree/connectionReducer";
 
 // The top-level state object
@@ -22,6 +31,13 @@ export interface ApplicationState {
   authentication: AuthenticationState;
   chats: ChatsState;
 }
+export const initialAppState: ApplicationState = {
+  authentication: authenticationInitialState,
+  chats: chatInitialState,
+  connection: connectionsInitialState,
+  posts: postsInitialState,
+  tree: treeInitialState,
+};
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
 // the reducer with the matching name. It's important that the names match exactly, and that the reducer

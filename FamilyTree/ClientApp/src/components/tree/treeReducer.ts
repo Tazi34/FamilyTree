@@ -38,11 +38,17 @@ export type TreeState = {
   nextFamilyId: number;
 };
 
-export type Link = {
+export class Link {
   source: EntityId;
   target: EntityId;
   id: string;
-};
+
+  constructor(source: EntityId, target: EntityId) {
+    this.id = getLinkId(source, target);
+    this.source = source;
+    this.target = target;
+  }
+}
 
 //ADAPTERS
 export const personNodesAdapter = createEntityAdapter<PersonNode>();
@@ -52,7 +58,7 @@ export const linksAdapter = createEntityAdapter<Link>({
 });
 export const peopleAdapter = createEntityAdapter<Person>();
 //STATE
-const initialState: TreeState = {
+export const treeInitialState: TreeState = {
   nodes: personNodesAdapter.getInitialState(),
   families: familyNodesAdapter.getInitialState(),
   links: linksAdapter.getInitialState(),
@@ -159,7 +165,7 @@ export const moveNode = createAction(
 );
 
 //REDUCER
-export const treeReducer = createReducer(initialState, (builder) => {
+export const treeReducer = createReducer(treeInitialState, (builder) => {
   builder
     .addCase(deleteNode, (state, action) => {
       const node = action.payload;
@@ -176,6 +182,7 @@ export const treeReducer = createReducer(initialState, (builder) => {
         console.log(link);
         var targetedFamily = node.id == link.source ? link.target : link.source;
 
+        //TODO stała
         if (targetedFamily != "connecting_node") {
           const family = selectFamily(state.families, targetedFamily);
           if (family) {
@@ -371,7 +378,7 @@ export const treeReducer = createReducer(initialState, (builder) => {
         }
       });
 
-      var people = mapCollectionToEntity(peopleArray, null);
+      var people = mapCollectionToEntity(peopleArray);
 
       const trees = GetTreeStructures(people);
 

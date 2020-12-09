@@ -51,10 +51,7 @@ export const addThunkWithStatusHandlers = <R, A, S>(
     });
 };
 
-export const mapCollectionToEntity = <T>(
-  entities: T[],
-  adapter: any
-): EntityState<T> => {
+export const mapCollectionToEntity = <T>(entities: T[]): EntityState<T> => {
   const state: EntityState<T> = {
     ids: [],
     entities: {},

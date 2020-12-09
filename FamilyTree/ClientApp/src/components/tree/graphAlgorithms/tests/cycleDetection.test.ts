@@ -31,6 +31,5 @@ test("Given not acyclic graph return false", () => {
 
 test("Given cyclic square return true", () => {
   //given
-  debugger;
   expect(isGraphCyclic(cyclicSquare)).toBe(true);
 });

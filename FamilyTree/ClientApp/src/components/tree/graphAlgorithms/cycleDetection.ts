@@ -1,6 +1,6 @@
 import { Node } from "../model/NodeClass";
 import { EntityId } from "@reduxjs/toolkit";
-import { PersonInformation, PersonNode } from "../model/PersonNode";
+import { PersonNode } from "../model/PersonNode";
 
 import { IDictionary } from "../TreeRenderer";
 

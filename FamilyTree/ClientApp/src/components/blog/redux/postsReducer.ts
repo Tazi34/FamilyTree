@@ -51,16 +51,18 @@ export const postsSelectors = postsAdapter.getSelectors<ApplicationState>(
 );
 
 //STATE
-const initialStatus: Status = {
+export const initialStatus: Status = {
   error: null,
   loading: false,
 };
 
-export type PostsState = EntityState<Post> & StatusState;
+export type PostsState = EntityState<Post> & {
+  status: StatusState;
+};
 
-const postsInitialState = postsAdapter.getInitialState({
+export const postsInitialState = postsAdapter.getInitialState({
   status: initialStatus,
-});
+}) as PostsState;
 
 //REDUCER
 
