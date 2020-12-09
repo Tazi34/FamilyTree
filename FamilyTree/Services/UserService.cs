@@ -11,7 +11,7 @@ namespace FamilyTree.Services
     public interface IUserService
     {
         AuthenticateResponse Authenticate(string email, string password);
-        User GetById(int userId);
+        User GetUserById(int userId);
         AuthenticateResponse CreateUser(CreateUserRequest model);
         AuthenticateResponse Modify(ModifyUserRequest model);
         AuthenticateResponse ChangePassword(ChangePasswordRequest model);
@@ -31,22 +31,10 @@ namespace FamilyTree.Services
         {
             var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(x => x.Email.Equals(email));
 
-            if (user == null)
+            if (user == null || user.PasswordHash != password)
                 return null;
 
-            if (user.PasswordHash != password)
-                return null;
-
-            return new AuthenticateResponse
-            {
-                Email = user.Email,
-                Name = user.Name,
-                Surname = user.Surname,
-                UserId = user.UserId,
-                Token = tokenService.GetToken(user.UserId),
-                Role = user.Role,
-                PreviousSurnames = user.PrevSurnames.Select(x => x.Surname).ToList()
-            };
+            return CreateResponse(user);
         }
 
         public AuthenticateResponse ChangePassword(ChangePasswordRequest model)
@@ -58,7 +46,7 @@ namespace FamilyTree.Services
             user.PasswordHash = model.Password;
             context.Users.Update(user);
             context.SaveChanges();
-            return Authenticate(model.Email, model.Password);
+            return CreateResponse(user);
         }
 
         public AuthenticateResponse CheckUserId(int userId)
@@ -66,7 +54,7 @@ namespace FamilyTree.Services
             var user = context.Users.SingleOrDefault(u => u.UserId == userId);
             if(user == null)
                 return null;
-            return Authenticate(user.Email, user.PasswordHash);
+            return CreateResponse(user);
         }
 
         public AuthenticateResponse CreateUser(CreateUserRequest model)
@@ -85,7 +73,7 @@ namespace FamilyTree.Services
                     });
                 }
             }
-            var user1 = new User
+            var user = new User
             {
                 Name = model.Name,
                 Surname = model.Surname,
@@ -93,14 +81,15 @@ namespace FamilyTree.Services
                 PasswordHash = model.Password,
                 Role = Role.User,
                 Birthday = model.Birthday,
-                PrevSurnames = previousSurnames
+                PrevSurnames = previousSurnames,
+                Sex = model.Sex
             };
-            context.Users.Add(user1);
+            context.Users.Add(user);
             context.SaveChanges();
-            return Authenticate(model.Email, model.Password);
+            return CreateResponse(user);
         }
 
-        public User GetById(int userId)
+        public User GetUserById(int userId)
         {
             return context.Users.SingleOrDefault(x => x.UserId == userId);
         }
@@ -110,7 +99,6 @@ namespace FamilyTree.Services
             var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(u => u.UserId == model.UserId);
             if (user == null)
                 return null;
-
             if (!string.IsNullOrWhiteSpace(model.Email) && model.Email != user.Email)
             {
                 if (context.Users.Any(x => x.Email.Equals(model.Email)))
@@ -118,11 +106,12 @@ namespace FamilyTree.Services
 
                 user.Email = model.Email;
             }
-
             if (!string.IsNullOrWhiteSpace(model.Name))
                 user.Name = model.Name;
             if (!string.IsNullOrWhiteSpace(model.Surname))
                 user.Surname = model.Surname;
+            if (!string.IsNullOrWhiteSpace(model.Sex))
+                user.Surname = model.Sex;
             if (model.Birthday != null)
                 user.Birthday = model.Birthday;
             if (model.PreviousSurnames != null)
@@ -147,10 +136,22 @@ namespace FamilyTree.Services
                     }
                 }
             }
-
             context.Users.Update(user);
             context.SaveChanges();
-            return Authenticate(user.Email, user.PasswordHash);
+            return CreateResponse(user);
+        }
+        private AuthenticateResponse CreateResponse(User user)
+        {
+            return new AuthenticateResponse
+            {
+                Email = user.Email,
+                Name = user.Name,
+                Surname = user.Surname,
+                UserId = user.UserId,
+                Token = tokenService.GetToken(user.UserId),
+                Role = user.Role,
+                PreviousSurnames = user.PrevSurnames.Select(x => x.Surname).ToList()
+            };
         }
     }
 }

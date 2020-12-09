@@ -11,7 +11,7 @@ namespace FamilyTreeTests.Token
 {
     class TokenServiceTests
     {
-        private AppSettings appsettings = new AppSettings { Secret = "TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST" };
+        private AppSettings appSettings = new AppSettings { Secret = "TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST_TEST" };
         private TokenService service;
         private byte[] key;
         private JwtSecurityTokenHandler handler;
@@ -19,8 +19,8 @@ namespace FamilyTreeTests.Token
         [SetUp]
         public void Setup()
         {
-            service = new TokenService(appsettings);
-            key = Encoding.ASCII.GetBytes(appsettings.Secret);
+            service = new TokenService(appSettings);
+            key = Encoding.ASCII.GetBytes(appSettings.Secret);
             handler = new JwtSecurityTokenHandler();
             validations = new TokenValidationParameters
             {

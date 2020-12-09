@@ -33,8 +33,8 @@ namespace FamilyTreeTests.Blog
         [SetUp]
         public void Setup()
         {
-            var Posts = new List<Post>{post}.AsQueryable();
-            var Users = new List<User>{user}.AsQueryable();
+            var Posts = new List<Post>{post};
+            var Users = new List<User>{user};
 
             mockSetPost = CreateDbMock.Create(Posts);
             mockSetUser = CreateDbMock.Create(Users);
