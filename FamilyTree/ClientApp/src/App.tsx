@@ -29,6 +29,7 @@ import { AuthenticationState } from "./components/loginPage/authenticationReduce
 import AuthorizedPrivateRoute from "./components/loginPage/AuthorizedPrivateRoute";
 import LoginPage from "./components/loginPage/UI/LoginPage";
 import GuestRoute from "./components/navigation/GuestRoute";
+import UnknownPage from "./components/navigation/UnknownPage";
 import Registration from "./components/registration/Registration";
 import Tree from "./components/tree/Tree";
 import { ApplicationState } from "./helpers";
@@ -66,7 +67,7 @@ const App = (props: any) => {
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
-            path={BLOG_PAGE_URI}
+            path={`${BLOG_PAGE_URI}/:blogId`}
             component={BlogPage}
             layout={ThreeColumnLayout}
             user={loggedUser}
@@ -91,6 +92,12 @@ const App = (props: any) => {
             exact
             path="/"
             component={HomePage}
+            layout={EmptyLayout}
+          />
+          <LayoutRoute
+            exact
+            path="*"
+            component={UnknownPage}
             layout={EmptyLayout}
           />
         </Switch>
