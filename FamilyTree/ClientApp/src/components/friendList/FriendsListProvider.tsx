@@ -22,15 +22,10 @@ const FriendsListProvider = (props: any) => {
   const dispatch = useThunkDispatch();
   const loadedChats = useSelector(finishedChatsLoading);
   const latestChats = useSelector(latestsChatsSelector.selectAll);
-  const openChats = useSelector(currentChatsSelector);
   const user = useSelector(getUser);
 
   const handleChatClick = (friend: Friend) => {
-    if (openChats.some((chat) => chat.user.id == friend.id)) {
-      dispatch(closeChat(friend.id));
-    } else {
-      dispatch(openChat(friend.id));
-    }
+    dispatch(openChat(friend.id));
   };
 
   useEffect(() => {

@@ -49,8 +49,9 @@ export const getLatestChats = createAsyncThunk<AxiosResponse<any>, number>(
 export const openChat = (userId: number) => (dispatch: any, getState: any) => {
   const state: ApplicationState = getState();
   const openedChats = state.chats.currentChats;
+
   if (openedChats.find((chat) => chat.user.id == userId)) {
-    return;
+    return dispatch(closeChat(userId));
   }
 
   return dispatch(createChat(userId));
@@ -132,6 +133,10 @@ export const latestsChatsSelector = latestChatsAdapter.getSelectors<ApplicationS
   (state) => state.chats.latestChats
 );
 
+export const currentChatsSelectorLocal = createDraftSafeSelector(
+  (state: ChatsState) => state,
+  (state) => state.currentChats
+);
 export const currentChatsSelector = createDraftSafeSelector(
   selectChatsState,
   (state) => state.currentChats

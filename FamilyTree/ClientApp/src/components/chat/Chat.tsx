@@ -15,7 +15,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import { Chat as ChatType } from "./chatReducer";
 import SendIcon from "@material-ui/icons/Send";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
-import ChatMessage from "./API/ChatMessage";
+import ChatMessage from "./ChatMessage";
 import { Formik } from "formik";
 const useStyles = makeStyles((theme: Theme) => ({
   chatTab: {
