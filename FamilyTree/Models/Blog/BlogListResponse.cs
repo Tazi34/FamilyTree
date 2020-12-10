@@ -7,6 +7,6 @@ namespace FamilyTree.Models
 {
     public class BlogListResponse
     {
-        public List<SimplePost> Posts { get; set; }
+        public List<PostResponse> Posts { get; set; }
     }
 }

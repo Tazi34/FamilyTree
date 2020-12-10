@@ -54,14 +54,17 @@ namespace FamilyTree.Services
             var postsList = context.Posts.Where(post => post.UserId == userId);
             var response = new BlogListResponse
             {
-                Posts = new List<SimplePost>()
+                Posts = new List<PostResponse>()
             };
             foreach(Post p in postsList)
             {
-                response.Posts.Add(new SimplePost
+                response.Posts.Add(new PostResponse
                 {
                     CreationTime = p.CreationTime,
-                    PostId = p.PostId
+                    PostId = p.PostId,
+                    Text = p.Text,
+                    Title = p.Title,
+                    UserId = p.UserId
                 });
             }
             return response;
