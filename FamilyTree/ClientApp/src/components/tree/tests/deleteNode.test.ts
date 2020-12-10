@@ -1,27 +1,15 @@
-import { mapCollectionToEntity } from "./../../../helpers/helpers";
-import {
-  deleteNode,
-  familyNodesAdapter,
-  linksAdapter,
-  peopleAdapter,
-  personNodesAdapter,
-  selectAllFamilies,
-  selectAllFamiliesLocal,
-  selectAllLinks,
-  selectAllLinksLocal,
-  selectAllNodes,
-  selectAllNodesLocal,
-  treeReducer,
-} from "./../treeReducer";
 import configureStore from "redux-mock-store"; //ES6 modules
 import { ApplicationState } from "../../../helpers";
+import { mapCollectionToEntity } from "../../../helpers/helpers";
+import { initialAppState } from "../../../helpers/index";
 import { createMockFamily } from "../../../helpers/testUtils";
-import { initialAppState } from "./../../../helpers/index";
 import { PersonNode } from "../model/PersonNode";
-import { assert } from "console";
-
-const middlewares: any = [];
-const mockStore = configureStore<ApplicationState>(middlewares);
+import {
+  deleteNode,
+  selectAllFamiliesLocal,
+  selectAllNodesLocal,
+  treeReducer,
+} from "../treeReducer";
 
 const setupState = () => {
   const state = initialAppState;
