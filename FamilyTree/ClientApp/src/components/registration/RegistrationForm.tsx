@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export type UserRegistartionData = {
+export type UserRegistrationData = {
   name: string;
   surname: string;
   email: string;
@@ -31,7 +31,7 @@ export type UserRegistartionData = {
   previousSurnames: string[];
 };
 
-const initialData: UserRegistartionData = {
+const initialData: UserRegistrationData = {
   name: "",
   surname: "",
   email: "",
@@ -85,12 +85,14 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
                 fullWidth
                 label="Name"
                 name={"name"}
+                onChange={change.bind(null, "name")}
               />
               <TextField
                 autoComplete={"family-name"}
                 fullWidth
                 label="Surname"
                 name={"surname"}
+                onChange={change.bind(null, "surname")}
               />
               <TextField
                 name="email"

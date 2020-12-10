@@ -4,7 +4,7 @@ import * as React from "react";
 import { useDispatch } from "react-redux";
 import { WithAlert, withAlertMessage } from "../alerts/withAlert";
 import { createUser } from "../loginPage/authenticationReducer";
-import RegistrationForm, { UserRegistartionData } from "./RegistrationForm";
+import RegistrationForm, { UserRegistrationData } from "./RegistrationForm";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 
@@ -12,7 +12,7 @@ const Registration = (props: any) => {
   const classes = useStyles();
   const dispatch: any = useDispatch();
 
-  const handleRegister = (registrationData: UserRegistartionData) => {
+  const handleRegister = (registrationData: UserRegistrationData) => {
     dispatch(createUser(registrationData)).then((data: any) => {
       if (data.error) {
         props.onError("Error occured during account creation. ");
