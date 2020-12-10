@@ -11,6 +11,7 @@ import registerServiceWorker from "./registerServiceWorker";
 import "./index.css";
 import { loginUser } from "./components/loginPage/authenticationReducer";
 import { LoginUserRequestData } from "./components/loginPage/API/loginUser";
+import { loginData } from "./components/tree/helpers/loginData";
 // Create browser history to use in the Redux store
 const baseUrl = document
   .getElementsByTagName("base")[0]
@@ -21,11 +22,8 @@ const history = createBrowserHistory({ basename: baseUrl });
 export const store: any = configureStore(history);
 export type AppDispatch = typeof store.dispatch;
 export const useThunkDispatch = () => useDispatch<AppDispatch>();
-const mockUser: LoginUserRequestData = {
-  email: "user@user.com",
-  password: "password",
-};
-store.dispatch(loginUser(mockUser));
+
+store.dispatch(loginUser(loginData));
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>

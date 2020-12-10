@@ -1,5 +1,5 @@
 import { LoginUserRequestData } from "../../loginPage/API/loginUser";
 export const loginData: LoginUserRequestData = {
-  email: "user@user.com",
-  password: "password",
+  email: "abc@kicunmail",
+  password: "haslo123",
 };

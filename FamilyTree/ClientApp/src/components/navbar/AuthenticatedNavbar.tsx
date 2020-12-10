@@ -15,7 +15,9 @@ const AuthenticatedNavbar = (props: any) => {
   const classes = useStyles();
   return (
     <div>
-      <RedirectButton to={BLOG_PAGE_URI}>Blog</RedirectButton>
+      <RedirectButton to={`${BLOG_PAGE_URI}/${props.user.id}`}>
+        Blog
+      </RedirectButton>
 
       <RedirectButton to={TREE_PAGE_URI}>Tree</RedirectButton>
       <LogoutButton>Logout</LogoutButton>

@@ -5,16 +5,21 @@ import {
   createReducer,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
-import jwt_decode from "jwt-decode";
 import { addThunkWithStatusHandlers } from "../../helpers/helpers";
 import { ApplicationState } from "../../helpers/index";
-import { AUTHENTICATION_API_URL, baseURL } from "./../../helpers/apiHelpers";
+import {
+  AUTHENTICATION_API_URL,
+  LOGIN_API_URL,
+} from "./../../helpers/apiHelpers";
 import { StatusState } from "./../../helpers/helpers";
 import {
   CreateUserRequestData,
   CreateUserSuccessResponse,
 } from "./API/createUser";
-import { LoginUserRequestData } from "./API/loginUser";
+import {
+  LoginUserRequestData,
+  LoginUserResponseSuccessData,
+} from "./API/loginUser";
 import {
   addAuthorizationToken,
   removeAuthorizationToken,
@@ -28,11 +33,12 @@ export type AuthenticationState = {
 
 export type User = {
   id: number;
-  email: string | null;
+  email: string;
   role: string;
   name: string;
   surname: string;
-  token: string | null;
+  token: string;
+  previousSurnames: string[];
 };
 
 //ACTIONS
@@ -50,11 +56,9 @@ export const loginUser = createAsyncThunk(
   "users/loginUser",
   async (loginData: LoginUserRequestData): Promise<AxiosResponse> => {
     //TODO zmienic na logowanie do zdeployowanego backendu
-    console.log(loginData);
-    return await Axios.post(
-      //`${authenticationURL}/${registrationData.email}/${registrationData.password}`
-      `${baseURL}/login`,
-      loginData
+    return await Axios.get(
+      `${LOGIN_API_URL}/${loginData.email}/${loginData.password}`
+      //`${baseURL}/login`,
     );
   }
 );
@@ -89,9 +93,11 @@ export const authenticationReducer = createReducer(
           surname: userData.surname,
           role: userData.role,
           token: userData.token,
+          previousSurnames: userData.previousSurnames,
         };
         addAuthorizationToken(userData.token);
       })
+
       .addCase(logoutUser, (state) => {
         state.user = null;
         state.isLoggedIn = false;
@@ -102,21 +108,18 @@ export const authenticationReducer = createReducer(
       builder,
       loginUser,
       (state: AuthenticationState, action: any) => {
-        const userToken = action.payload.data.accessToken;
-        var decoded: any = jwt_decode(userToken);
-        console.log(decoded);
-        var userId = decoded.sub;
-        var email = decoded.email;
-        addAuthorizationToken(userToken);
+        const userData: LoginUserResponseSuccessData = action.payload.data;
+        addAuthorizationToken(userData.token);
 
         state.isLoggedIn = true;
         state.user = {
-          email: email,
-          id: userId,
-          token: userToken,
-          role: "USER",
-          name: "Pablo",
-          surname: "Picasso",
+          email: userData.email,
+          id: userData.userId,
+          name: userData.name,
+          surname: userData.surname,
+          role: userData.role,
+          token: userData.token,
+          previousSurnames: userData.previousSurnames,
         };
       },
       undefined,

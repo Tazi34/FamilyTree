@@ -13,34 +13,27 @@ import {
 import { Post } from "../../../model/Post";
 import { postsAPI } from "./../postsAPI";
 import { createStatusActions, Status } from "./genericStatusReducer";
-const postsDataPath = "posts/data";
+const BLOG_API_URL = "posts/data";
 
 const postsAdapter = createEntityAdapter<Post>();
 
 //ACTIONS
 export const addPost = createAsyncThunk<any, Post>(
-  `${postsDataPath}/postAdded`,
+  `${BLOG_API_URL}/postAdded`,
   async (post: Post): Promise<AxiosResponse> => {
     return postsAPI.addPost(post);
   }
 );
 export const deletePost = createAsyncThunk<any, number>(
-  `${postsDataPath}/postDeleted`,
+  `${BLOG_API_URL}/postDeleted`,
   async (postId: number): Promise<AxiosResponse> => {
     return postsAPI.deletePost(postId);
   }
 );
 export const getPostsByBlogId = createAsyncThunk(
-  `${postsDataPath}/fetchByBlogId`,
+  `${BLOG_API_URL}/fetchByBlogId`,
   async (blogId: number): Promise<any> => {
     return postsAPI.getByBlogId(blogId);
-  }
-);
-
-export const getPosts = createAsyncThunk(
-  `${postsDataPath}/fetchAll`,
-  async (): Promise<any> => {
-    return postsAPI.getPosts();
   }
 );
 
@@ -81,9 +74,16 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
 
   addThunkWithStatusHandlers(
     builder,
-    getPosts,
+    getPostsByBlogId,
     (state: PostsState, action: any) => {
-      postsAdapter.addMany(state, action.payload.data);
+      const postsData = action.payload.data.posts;
+      const posts: Post[] = postsData.map((p: any) => ({
+        id: p.postId,
+        publicationDate: p.creationTime,
+        title: "Title",
+      }));
+
+      postsAdapter.addMany(state, posts);
     }
   );
   addThunkWithStatusHandlers(

@@ -1,6 +1,6 @@
-import { UserRegistartionData } from "../../registration/RegistrationForm";
+import { UserRegistrationData } from "../../registration/RegistrationForm";
 
-export type CreateUserRequestData = UserRegistartionData;
+export type CreateUserRequestData = UserRegistrationData;
 
 export type CreateUserSuccessResponse = {
   userId: number;

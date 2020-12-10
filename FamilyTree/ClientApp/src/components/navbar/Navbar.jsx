@@ -86,7 +86,7 @@ const useStyles = makeStyles((theme) =>
     },
   })
 );
-export default function PrimarySearchAppBar({ isLoggedIn }) {
+export default function PrimarySearchAppBar({ isLoggedIn, user }) {
   const classes = useStyles();
   const history = useHistory();
   React.useEffect(() => {
@@ -125,7 +125,7 @@ export default function PrimarySearchAppBar({ isLoggedIn }) {
         </Box>
         <div className={classes.grow} />
         <div className={classes.sectionDesktop}>
-          {isLoggedIn ? <AuthenticatedNavbar /> : <GuestNavbar />}
+          {isLoggedIn ? <AuthenticatedNavbar user={user} /> : <GuestNavbar />}
         </div>
       </Toolbar>
     </AppBar>

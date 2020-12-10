@@ -235,8 +235,8 @@ const TreeRenderer = (props: TreeRendererProps) => {
         surname: "Node",
         birthDate: "20-05-1454",
       },
-      firstParent: null,
-      secondParent: null,
+      fatherId: null,
+      motherId: null,
       children: [],
       partners: [],
     };

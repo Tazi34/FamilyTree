@@ -1,23 +1,18 @@
 import { Post } from "./../../model/Post";
 import Axios, { AxiosResponse } from "axios";
-import { baseURL } from "./../../helpers/apiHelpers";
+import { baseURL, BLOG_API_URL } from "./../../helpers/apiHelpers";
 
-export const postsURL = `${baseURL}/posts`;
 const getByBlogId = async (blogId: number): Promise<AxiosResponse<Post>> => {
-  return Axios.get<Post>(`${postsURL}/${blogId}`);
-};
-const getPosts = async (): Promise<AxiosResponse<Post>> => {
-  return Axios.get<Post>(`${postsURL}`);
+  return Axios.get<Post>(`${BLOG_API_URL}/${blogId}`);
 };
 
 const deletePost = async (id: number): Promise<AxiosResponse> => {
-  return Axios.delete<Post>(`${postsURL}/${id}`);
+  return Axios.delete<Post>(`${BLOG_API_URL}/${id}`);
 };
 const addPost = async (post: Post): Promise<AxiosResponse> => {
-  return Axios.post<Post>(`${postsURL}/`);
+  return Axios.post<Post>(`${BLOG_API_URL}/`);
 };
 export const postsAPI = {
-  getPosts,
   getByBlogId,
   deletePost,
   addPost,

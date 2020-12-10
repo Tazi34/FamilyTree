@@ -59,22 +59,22 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
   var links: string[][] = [];
   var family: Family | undefined;
   people.forEach((person) => {
-    const { id } = person;
+    const { id: id } = person;
 
     family = families.find(
       (family) =>
-        (family.firstParent == person.firstParent &&
-          family.secondParent == person.secondParent) ||
-        (family.secondParent == person.firstParent &&
-          family.firstParent == person.secondParent)
+        (family.firstParent == person.fatherId &&
+          family.secondParent == person.motherId) ||
+        (family.secondParent == person.fatherId &&
+          family.firstParent == person.motherId)
     );
     if (family) {
       family.children.push(id);
     } else {
-      if (person.firstParent || person.secondParent) {
+      if (person.fatherId || person.motherId) {
         family = {
-          firstParent: person.firstParent,
-          secondParent: person.secondParent,
+          firstParent: person.fatherId,
+          secondParent: person.motherId,
           children: [id],
           id: person.graph + "u" + familyIdCounter++,
         };
@@ -360,11 +360,11 @@ const APRecursive = (
 const personToNode = (person: Person): WorkPersonNode => {
   var childrenIds = person.children.map((a) => a.toString());
   var neighbours = [...childrenIds];
-  if (person.firstParent) {
-    neighbours.push(person.firstParent.toString());
+  if (person.fatherId) {
+    neighbours.push(person.fatherId.toString());
   }
-  if (person.secondParent) {
-    neighbours.push(person.secondParent.toString());
+  if (person.motherId) {
+    neighbours.push(person.motherId.toString());
   }
   var partners = person.partners.map((p) => p.toString());
   neighbours = [...neighbours, ...partners];

@@ -2,8 +2,8 @@ import { EntityState } from "@reduxjs/toolkit";
 
 export interface Person {
   id: number;
-  firstParent: number | null;
-  secondParent: number | null;
+  fatherId: number | null;
+  motherId: number | null;
   information: PersonData;
   children: number[];
   partners: number[];

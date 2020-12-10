@@ -22,7 +22,7 @@ import names from "../../samples/names.json";
 import surnames from "../../samples/surnames.json";
 import { FamilyNode } from "./model/FamilyNode";
 import { Node } from "./model/NodeClass";
-import { PersonNode } from "./model/PersonNode";
+import { PersonInformation, PersonNode } from "./model/PersonNode";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -140,7 +140,8 @@ export const setFamilyNodes = createActionWithPayload<FamilyNode[]>(
 export const getTree = createAsyncThunk(
   `${actionNamePrefix}/treeGenerated`,
   async (id): Promise<AxiosResponse> => {
-    return Axios.get(`${baseURL}/trees/${id}`);
+    //TODO zmienic na id
+    return Axios.get(`${baseURL}/tree/${1}`);
   }
 );
 
@@ -179,7 +180,6 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
 
       links.forEach((link) => {
         linksAdapter.removeOne(state.links, link.id);
-        console.log(link);
         var targetedFamily = node.id == link.source ? link.target : link.source;
 
         //TODO stała
@@ -330,11 +330,27 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     })
     .addCase(getTree.fulfilled, (state, action) => {
       //TODO wyrzucic peopleAdapter
-      const peopleArray: Person[] = action.payload.data.people;
+      const peopleArray: Person[] = action.payload.data.nodes.map((n: any) => {
+        const information: PersonInformation = {
+          birthDate: n.birthday,
+          surname: n.surname,
+          name: n.name,
+        };
+        var person: Person = {
+          children: n.children,
+          fatherId: n.fatherId,
+          partners: n.partners,
+          motherId: n.motherId,
+          id: n.nodeId,
+          information,
+        };
+
+        return person;
+      });
 
       peopleArray.forEach((p) => {
-        p.information.name = names[p.id];
-        p.information.surname = surnames[p.id];
+        // p.information.name = names[p.nodeId];
+        // p.information.surname = surnames[p.nodeId];
       });
 
       peopleArray
@@ -347,23 +363,23 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
 
       //Categorize partners and children
       peopleArray.forEach((person: Person) => {
-        const { id } = person;
+        const { id: id } = person;
 
         var firstParent: Person | undefined;
         var secondParent: Person | undefined;
-        if (person.firstParent) {
-          firstParent = peopleArray.find((a) => a.id == person.firstParent);
+        if (person.fatherId) {
+          firstParent = peopleArray.find((a) => a.id == person.fatherId);
           if (!firstParent) {
-            person.firstParent = null;
+            person.fatherId = null;
           } else {
             firstParent!.children.push(id);
           }
         }
 
-        if (person.secondParent) {
-          secondParent = peopleArray.find((a) => a.id == person.secondParent);
+        if (person.motherId) {
+          secondParent = peopleArray.find((a) => a.id == person.motherId);
           if (!secondParent) {
-            person.secondParent = null;
+            person.motherId = null;
           } else {
             secondParent!.children.push(id);
           }
@@ -440,8 +456,8 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
             n.x,
             n.y,
             person.children,
-            person.firstParent,
-            person.secondParent,
+            person.fatherId,
+            person.motherId,
             n.families
           );
           peopleNodes.push(personNode);

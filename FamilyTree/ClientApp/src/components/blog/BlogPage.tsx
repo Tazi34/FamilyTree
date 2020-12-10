@@ -7,12 +7,13 @@ import PostsList from "./PostsList";
 import {
   addPost,
   deletePost,
-  getPosts,
+  getPostsByBlogId,
   postsSelectors,
   PostsState,
 } from "./redux/postsReducer";
 import React, { useEffect } from "react";
 import { ApplicationState } from "../../helpers";
+import { useParams } from "react-router";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -21,13 +22,17 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: 30,
   },
 }));
-
+interface ParamTypes {
+  blogId: string | undefined;
+}
 const BlogPage = (props: any) => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const c = useParams<ParamTypes>();
+  const blogId = props.computedMatch.params.blogId;
 
   useEffect(() => {
-    dispatch(getPosts());
+    dispatch(getPostsByBlogId(parseFloat(blogId)));
   }, []);
 
   const handlePostAdd = (post: Post) => {
@@ -43,6 +48,9 @@ const BlogPage = (props: any) => {
     console.log(r);
     return r;
   });
+  if (!blogId) {
+    return null;
+  }
 
   return (
     <Paper className={classes.root}>

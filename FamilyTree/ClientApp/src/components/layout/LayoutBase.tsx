@@ -58,7 +58,7 @@ export default (props: { children?: React.ReactNode }) => {
       flexDirection="column"
       alignItems="stretch"
     >
-      <Navbar isLoggedIn={isLoggedIn}></Navbar>
+      <Navbar isLoggedIn={isLoggedIn} user={authenticationState.user}></Navbar>
 
       <div className={classes.filler}></div>
       {props.children}
