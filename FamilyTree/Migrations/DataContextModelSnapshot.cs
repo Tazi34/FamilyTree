@@ -26,6 +26,9 @@ namespace FamilyTree.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
+                    b.Property<DateTime>("LastMessageTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("User1Id")
                         .HasColumnType("int");
 

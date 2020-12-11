@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FamilyTree.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20201211125302_AddChat")]
+    [Migration("20201211174214_AddChat")]
     partial class AddChat
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,9 @@ namespace FamilyTree.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .UseIdentityColumn();
+
+                    b.Property<DateTime>("LastMessageTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("User1Id")
                         .HasColumnType("int");

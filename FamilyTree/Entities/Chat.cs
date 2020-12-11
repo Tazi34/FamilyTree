@@ -11,5 +11,6 @@ namespace FamilyTree.Entities
         public int User1Id { get; set; }
         public int User2Id { get; set; }
         public List<Message> Messages { get; set; }
+        public DateTime LastMessageTime {get; set;}
     }
 }

@@ -14,7 +14,8 @@ namespace FamilyTree.Migrations
                     ChatId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     User1Id = table.Column<int>(type: "int", nullable: false),
-                    User2Id = table.Column<int>(type: "int", nullable: false)
+                    User2Id = table.Column<int>(type: "int", nullable: false),
+                    LastMessageTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
