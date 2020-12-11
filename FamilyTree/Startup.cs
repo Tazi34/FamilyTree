@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using FamilyTree.Helpers;
 using FamilyTree.Services;
+using FamilyTree.Hubs;
 using System.Web.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Threading.Tasks;
@@ -42,7 +43,8 @@ namespace FamilyTree
             }
             );
             services.AddCors();
-
+            services.AddSignalR(o => o.EnableDetailedErrors = true);
+            services.AddSingleton<IConnectionsService, ConnectionsService>();
             services.AddControllersWithViews();
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
@@ -52,6 +54,7 @@ namespace FamilyTree
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITreeService, TreeService>();
             services.AddScoped<IBlogService, BlogService>();
+            services.AddScoped<IChatService, ChatService>();
 
             services.AddSwaggerGen(c =>
             {
@@ -83,6 +86,16 @@ namespace FamilyTree
             {
                 x.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chathub")))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    },
                     OnTokenValidated = context =>
                     {
                         var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
@@ -138,7 +151,11 @@ namespace FamilyTree
             app.UseCors(options =>
             {
                 //TODO PK: dodac restrykcje dla CORSU - na razie potrzebuje do testowania frontu na szybko
-                options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                options
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .AllowCredentials();
             });
 
             app.UseRouting();
@@ -147,6 +164,7 @@ namespace FamilyTree
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chathub");
             });
 
             //app.UseEndpoints(endpoints =>
