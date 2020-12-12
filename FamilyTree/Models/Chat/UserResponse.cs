@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace FamilyTree.Models
 {
-    public class SimplePost
+    public class UserResponse
     {
-        public int PostId { get; set; }
-        public DateTime CreationTime { get; set; }
+        public int UserId { get; set; }
+        public DateTime LastMessageTime { get; set; }
     }
 }

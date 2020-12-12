@@ -16,35 +16,39 @@ namespace FamilyTree.Helpers
         public virtual DbSet<Post> Posts { get; set; }
         public virtual DbSet<NodeNode> NodeNode { get; set; }
         public virtual DbSet<NodeNodeMarriage> NodeNodeMarriage { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
+        public virtual DbSet<Chat> Chats { get; set; }
 
         public DataContext() { }
         public DataContext(DbContextOptions<DataContext> options)
             : base(options)
         {
         }
-        protected override void OnModelCreating(ModelBuilder model_builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            model_builder.Entity<NodeNode>().HasKey(nn => new { nn.ParentId, nn.ChildId });
-            model_builder.Entity<NodeNode>()
+            modelBuilder.Entity<NodeNode>().HasKey(nn => new { nn.ParentId, nn.ChildId });
+            modelBuilder.Entity<NodeNode>()
                 .HasOne(bc => bc.Parent)
                 .WithMany(b => b.Children)
                 .HasForeignKey(bc => bc.ParentId);
-            model_builder.Entity<NodeNode>()
+            modelBuilder.Entity<NodeNode>()
                 .HasOne(bc => bc.Child)
                 .WithMany(c => c.Parents)
                 .HasForeignKey(bc => bc.ChildId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            model_builder.Entity<NodeNodeMarriage>().HasKey(nnm => new { nnm.Partner1Id, nnm.Partner2Id});
-            model_builder.Entity<NodeNodeMarriage>()
+            modelBuilder.Entity<NodeNodeMarriage>().HasKey(nnm => new { nnm.Partner1Id, nnm.Partner2Id});
+            modelBuilder.Entity<NodeNodeMarriage>()
                 .HasOne(nnm => nnm.Partner1)
                 .WithMany(n => n.Partners2)
                 .HasForeignKey(bc => bc.Partner1Id);
-            model_builder.Entity<NodeNodeMarriage>()
+            modelBuilder.Entity<NodeNodeMarriage>()
                 .HasOne(nnm => nnm.Partner2)
                 .WithMany(n => n.Partners1)
                 .HasForeignKey(nnm => nnm.Partner2Id)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Chat>().HasIndex(m => new {m.User1Id, m.User2Id }).IsUnique();
         }
     }
 }

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace FamilyTree.Models
 {
-    public class BlogListResponse
+    public class MessagesListResponse
     {
-        public List<PostResponse> Posts { get; set; }
+        public List<MessageResponse> MessageList { get; set; }
     }
 }
