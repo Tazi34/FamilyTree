@@ -6,7 +6,6 @@ import TreeCard from "./TreeCard";
 
 interface TreeListProps {
   trees: TreeInformation[];
-  className?: string;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -19,7 +18,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const TreesList = ({ trees, className }: TreeListProps) => {
+const TreesList = ({ trees }: TreeListProps) => {
   const classes = useStyles();
   return (
     <List className={classes.root}>
