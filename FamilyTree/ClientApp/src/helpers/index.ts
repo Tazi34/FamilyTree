@@ -1,3 +1,8 @@
+import {
+  UserTreesState,
+  initialUserTreesState,
+  userTreesReducer,
+} from "./../components/userTreeList/usersTreeReducer";
 import { treeInitialState } from "./../components/tree/treeReducer";
 import {
   chatInitialState,
@@ -30,6 +35,7 @@ export interface ApplicationState {
   connection: ConnectionState;
   authentication: AuthenticationState;
   chats: ChatsState;
+  userTrees: UserTreesState;
 }
 export const initialAppState: ApplicationState = {
   authentication: authenticationInitialState,
@@ -37,6 +43,7 @@ export const initialAppState: ApplicationState = {
   connection: connectionsInitialState,
   posts: postsInitialState,
   tree: treeInitialState,
+  userTrees: initialUserTreesState,
 };
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -48,6 +55,7 @@ export const reducers = {
   connection: connectionReducer,
   authentication: authenticationReducer,
   chats: chatReducer,
+  userTrees: userTreesReducer,
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

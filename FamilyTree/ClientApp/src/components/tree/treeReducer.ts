@@ -1,4 +1,3 @@
-import { ConnectionState } from "./connectionReducer";
 import {
   createAction,
   createAsyncThunk,
@@ -8,18 +7,17 @@ import {
   EntityState,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
-import { RECT_HEIGHT, RECT_WIDTH, X_SEP, Y_SEP } from "../../d3/RectMapper";
-import { baseURL } from "../../helpers/apiHelpers";
-import { createActionWithPayload } from "../../helpers/helpers";
-import { TreeStructure } from "../../model/TreeStructureInterfaces";
-import { getLinkId } from "./helpers/idHelpers";
-
+import { X_SEP, Y_SEP } from "../../d3/RectMapper";
 import { GetTreeStructures } from "../../d3/treeStructureGenerator";
-import { mapCollectionToEntity } from "../../helpers/helpers";
+import { baseURL } from "../../helpers/apiHelpers";
+import {
+  createActionWithPayload,
+  mapCollectionToEntity,
+} from "../../helpers/helpers";
 import { ApplicationState } from "../../helpers/index";
+import { TreeInformation } from "../../model/TreeInformation";
 import { Family, Person } from "../../model/TreeStructureInterfaces";
-import names from "../../samples/names.json";
-import surnames from "../../samples/surnames.json";
+import { getLinkId } from "./helpers/idHelpers";
 import { FamilyNode } from "./model/FamilyNode";
 import { Node } from "./model/NodeClass";
 import { PersonInformation, PersonNode } from "./model/PersonNode";
@@ -33,9 +31,9 @@ export type TreeState = {
   nodes: EntityState<PersonNode>;
   links: EntityState<Link>;
   families: EntityState<FamilyNode>;
-  initialTrees: TreeStructure[];
   isLoading: boolean;
   nextFamilyId: number;
+  treeId: EntityId | null;
 };
 
 export class Link {
@@ -62,9 +60,9 @@ export const treeInitialState: TreeState = {
   nodes: personNodesAdapter.getInitialState(),
   families: familyNodesAdapter.getInitialState(),
   links: linksAdapter.getInitialState(),
-  initialTrees: [],
   isLoading: false,
   nextFamilyId: 0,
+  treeId: null,
 };
 
 //SELECTORS
@@ -140,8 +138,7 @@ export const setFamilyNodes = createActionWithPayload<FamilyNode[]>(
 export const getTree = createAsyncThunk(
   `${actionNamePrefix}/treeGenerated`,
   async (id): Promise<AxiosResponse> => {
-    //TODO zmienic na id
-    return Axios.get(`${baseURL}/tree/${1}`);
+    return Axios.get(`${baseURL}/tree/${id}`);
   }
 );
 
@@ -507,6 +504,9 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       linksAdapter.setAll(state.links, d3Links);
       personNodesAdapter.setAll(state.nodes, peopleNodes);
       familyNodesAdapter.setAll(state.families, familyNodes);
+
+      const { treeId } = action.payload.data;
+      state.treeId = treeId;
     })
     .addCase(moveNode, (state, action: any) => {
       var { node, x, y } = action.payload;

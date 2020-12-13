@@ -23,8 +23,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 const TreeCard = ({ tree, className }: TreeCardProps) => {
   const classes = useStyles();
-  const isPublic = tree.isPublic;
-  const publicText = isPublic ? "public" : "private";
+  const isPrivate = tree.isPrivate;
+  const treeVisibilityText = isPrivate ? "private" : "public";
 
   return (
     <div className={className}>
@@ -52,7 +52,7 @@ const TreeCard = ({ tree, className }: TreeCardProps) => {
           align="right"
           className={classes.treeInfo}
         >
-          {tree.members} members, {publicText}
+          {treeVisibilityText}
         </Typography>
       </Box>
     </div>

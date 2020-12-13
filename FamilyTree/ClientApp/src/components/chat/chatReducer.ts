@@ -1,3 +1,4 @@
+import * as signalR from "@microsoft/signalr";
 import {
   createAction,
   createAsyncThunk,
@@ -9,8 +10,17 @@ import {
 import Axios, { AxiosResponse } from "axios";
 import { dispatch } from "d3";
 import { ApplicationState } from "../../helpers";
-import { baseURL, CHAT_API_URL } from "../../helpers/apiHelpers";
+import { baseURL, CHAT_API_URL, localURL } from "../../helpers/apiHelpers";
 import { Friend } from "../../model/Friend";
+
+const connectionBuilder = new signalR.HubConnectionBuilder().withUrl(
+  "https://familytree.azurewebsites.net/chatHub",
+  {
+    accessTokenFactory: () =>
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEiLCJuYmYiOjE2MDc3MDk5MTAsImV4cCI6MTYwODMxNDcxMCwiaWF0IjoxNjA3NzA5OTEwfQ.J-8oxsOxnGpLWy3rZ2yRguc4FDR9w8pn4hCYB9moSwY",
+  }
+);
+type ConnectionHub = any;
 
 export type Message = {
   date: Date;
@@ -33,6 +43,7 @@ export type ChatsState = {
   currentChats: Chat[];
   loadedLatestChats: boolean;
   openChatsLimit: number;
+  connectionHub: ConnectionHub | null;
 };
 
 const prefix = "chat";
@@ -43,20 +54,48 @@ export const getLatestChats = createAsyncThunk<AxiosResponse<any>, number>(
   `${prefix}/usersLatestChatsAcquired`,
   async (userId) => {
     //TODO zmienic przy deployu backendu
-    return await Axios.get(`${baseURL}/latestChats/${userId}`);
+    return await Axios.get(`${localURL}/latestChats/${userId}`);
   }
 );
-export const openChat = (userId: number) => (dispatch: any, getState: any) => {
-  const state: ApplicationState = getState();
-  const openedChats = state.chats.currentChats;
+export const openChat = createAsyncThunk(
+  "openChat",
+  async (userId: number) => async (dispatch: any, getState: any) => {
+    const state: ApplicationState = getState();
+    const openedChats = state.chats.currentChats;
+    var connectionHub = state.chats.connectionHub;
 
-  if (openedChats.find((chat) => chat.user.id == userId)) {
-    return dispatch(closeChat(userId));
+    if (!connectionHub) {
+      var newHub = connectionBuilder.build();
+      await dispatch(connectToHub(newHub)).then(() =>
+        dispatch(setConnectionHub(newHub)).catch(() => dispatch(removeHub()))
+      );
+    }
+
+    if (openedChats.find((chat) => chat.user.id == userId)) {
+      return dispatch(closeChat(userId));
+    }
+
+    return dispatch(createChat(userId));
   }
+);
 
-  return dispatch(createChat(userId));
-};
+export const connectToHub = createAsyncThunk<any, any>(
+  `${prefix}/connectToHub`,
+  async (newHub: any) => (dispatch: any, getState: any) => {
+    const state = getState();
+    const connectionHub = state.chats.connectionHub;
+    if (connectionHub) {
+      return;
+    }
+    return newHub.start();
+  }
+);
+const removeHub = createAction(`${prefix}/removedConnectionHub`);
+
+const setConnectionHub = createAction<any>(`${prefix}/connectionHubSet`);
+
 export const closeChat = createAction<number>(`${prefix}/chatClosed`);
+
 export const createChat = createAsyncThunk<AxiosResponse<any>, number>(
   `${prefix}/chatOpened`,
   async (userId) => {
@@ -69,6 +108,7 @@ export const chatInitialState: ChatsState = {
   currentChats: [],
   openChatsLimit: 2,
   loadedLatestChats: false,
+  connectionHub: null,
 };
 
 export const sendMessage = createAction(

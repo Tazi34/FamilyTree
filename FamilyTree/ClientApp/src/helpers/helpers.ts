@@ -1,5 +1,6 @@
 import {
   ActionReducerMapBuilder,
+  AnyAction,
   AsyncThunk,
   createAction,
   EntityState,
@@ -23,9 +24,9 @@ export interface StatusState {
 export const addThunkWithStatusHandlers = <R, A, S>(
   builder: ActionReducerMapBuilder<any>,
   asyncThunkAction: AsyncThunk<R, A, any>,
-  fullFilledHandler?: Function,
-  pendingHandler?: Function,
-  rejectedHandler?: Function
+  fullFilledHandler?: (state: S, action: AnyAction) => void,
+  pendingHandler?: (state: S, action: AnyAction) => void,
+  rejectedHandler?: (state: S, action: AnyAction) => void
 ) => {
   builder
     .addCase(asyncThunkAction.fulfilled, (state, action) => {

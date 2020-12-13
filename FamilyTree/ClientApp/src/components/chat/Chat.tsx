@@ -9,6 +9,8 @@ import {
   TextField,
   Typography,
 } from "@material-ui/core";
+import * as signalR from "@microsoft/signalr";
+
 import { Theme } from "@material-ui/core/styles";
 import React, { useState } from "react";
 import CloseIcon from "@material-ui/icons/Close";
@@ -119,6 +121,37 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
   const handleChatClose = () => {
     onChatClose(user.id);
   };
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl("https://familytree.azurewebsites.net/chatHub", {
+      accessTokenFactory: () =>
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEiLCJuYmYiOjE2MDc3MDk5MTAsImV4cCI6MTYwODMxNDcxMCwiaWF0IjoxNjA3NzA5OTEwfQ.J-8oxsOxnGpLWy3rZ2yRguc4FDR9w8pn4hCYB9moSwY",
+    })
+    .build();
+
+  connection
+    .start()
+    .then((val: any) => console.log(val))
+    .catch((err: any) => console.log(err));
+
+  connection.on("ReceiveMessage", function (user, message) {
+    var msg = message
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    var encodedMsg = user + " says " + msg;
+    console.log(`Received ${encodedMsg}`);
+  });
+
+  const sendMessage = (id: number, msg: string) => {
+    console.log(id);
+    console.log(msg);
+    connection
+      .invoke("SendMessage", id.toString(), msg)
+      .then((val: any) => console.log(val))
+      .catch(function (err) {
+        return console.error(err.toString());
+      });
+  };
 
   return (
     <div className={classes.chatTab}>
@@ -172,7 +205,8 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
             <Formik
               initialValues={{ message: "" }}
               onSubmit={(values, { resetForm }) => {
-                onMessageSend(chat.user.id, values.message);
+                sendMessage(chat.user.id, values.message);
+                //onMessageSend(chat.user.id, values.message);
                 resetForm();
               }}
             >
