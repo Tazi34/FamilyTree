@@ -7,6 +7,8 @@ import { Node } from "./NodeClass";
 export class PersonNode extends Node {
   personDetails: PersonInformation;
   families: EntityId[];
+  userId: number | null;
+  partners: EntityId[];
   getCanvasLocation = (): Point => {
     return {
       x: this.location.x - RECT_WIDTH / 2,
@@ -15,28 +17,38 @@ export class PersonNode extends Node {
   };
   constructor(
     id: EntityId,
+    treeId: number,
     personDetails: PersonInformation,
     x: number,
     y: number,
     children: EntityId[] = [],
     firstParent: EntityId | null = null,
     secondParent: EntityId | null = null,
-    families: EntityId[] = []
+    families: EntityId[] = [],
+    partners: EntityId[] = [],
+    userId: number | null = null
   ) {
-    super(id, x, y, false, children, firstParent, secondParent);
+    super(id, treeId, x, y, false, children, firstParent, secondParent);
+
     this.personDetails = personDetails;
     this.families = families;
+    this.userId = userId;
+    this.partners = partners;
   }
 }
 
 export type PersonInformation = {
   name: string;
   surname: string;
-  birthDate: string;
+  birthday: string;
+  description: string;
+  pictureUrl: string;
 };
 
 export const mockPerson: PersonInformation = {
   name: "Mock",
   surname: "Person",
-  birthDate: new Date().toString(),
+  birthday: new Date().toString(),
+  description: "",
+  pictureUrl: "",
 };

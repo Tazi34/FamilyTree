@@ -13,12 +13,14 @@ export class Node {
   secondParent: EntityId | null = null;
   graph: number | undefined = undefined;
   d3Node: any;
+  treeId: number;
   getCanvasLocation = (): Point => {
     return this.location;
   };
 
   constructor(
     id: EntityId,
+    treeId: number,
     x: number,
     y: number,
     isFamily: boolean,
@@ -26,12 +28,19 @@ export class Node {
     firstParent: EntityId | null = null,
     secondParent: EntityId | null = null
   ) {
+    this.treeId = treeId;
     this.id = id;
     this.location = { x, y };
     this.isFamily = isFamily;
     this.children = children;
     this.firstParent = firstParent;
     this.secondParent = secondParent;
+    if (this.firstParent === 0) {
+      this.firstParent = null;
+    }
+    if (this.secondParent === 0) {
+      this.secondParent = null;
+    }
   }
 
   addParent = (parentId: number) => {

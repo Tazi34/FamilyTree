@@ -1,10 +1,12 @@
 import { EntityState } from "@reduxjs/toolkit";
+import { PersonInformation } from "../components/tree/model/PersonNode";
 
 export interface Person {
   id: number;
+  treeId: number;
   fatherId: number | null;
   motherId: number | null;
-  information: PersonData;
+  information: PersonInformation;
   children: number[];
   partners: number[];
   graph?: number;
@@ -17,11 +19,7 @@ export interface Family {
   children: number[];
   id: string;
 }
-export interface PersonData {
-  name: string;
-  surname: string;
-  birthDate: string;
-}
+
 export interface TreeStructure {
   people: EntityState<Person>;
   links: string[][];

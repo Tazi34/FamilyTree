@@ -19,7 +19,7 @@ export const createMockFamily = (
 
   if (firstParent) {
     people.push(
-      new PersonNode(firstParent, mockPerson, 0, 0, children, null, null, [
+      new PersonNode(firstParent, 0, mockPerson, 0, 0, children, null, null, [
         familyId,
       ])
     );
@@ -27,7 +27,7 @@ export const createMockFamily = (
   }
   if (secondParent) {
     people.push(
-      new PersonNode(secondParent, mockPerson, 0, 0, children, null, null, [
+      new PersonNode(secondParent, 0, mockPerson, 0, 0, children, null, null, [
         familyId,
       ])
     );
@@ -36,7 +36,7 @@ export const createMockFamily = (
 
   children.forEach((c) => {
     people.push(
-      new PersonNode(c, mockPerson, 0, 0, [], firstParent, secondParent, [
+      new PersonNode(c, 0, mockPerson, 0, 0, [], firstParent, secondParent, [
         familyId,
       ])
     );
@@ -44,6 +44,7 @@ export const createMockFamily = (
   });
   const family: FamilyNode = new FamilyNode(
     familyId,
+    0,
     0,
     0,
     children,
