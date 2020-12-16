@@ -9,6 +9,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     maxWidth: 500,
     display: "flex",
     alignItems: "center",
+    borderRadius: 10,
+    borderBottomLeftRadius: 0,
+    borderTopLeftRadius: 0,
   },
   treeName: {
     flexGrow: 1,

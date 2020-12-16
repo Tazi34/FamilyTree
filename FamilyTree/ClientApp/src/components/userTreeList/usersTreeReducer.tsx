@@ -72,9 +72,7 @@ export const userTreesReducer = createReducer<UserTreesState>(
       builder,
       getUserTrees,
       (state, action) => {
-        console.log(action);
         const userTrees = action.payload.data.trees;
-        console.log(state);
         userTreesAdapter.setAll(state.trees, userTrees);
       }
     );

@@ -133,7 +133,7 @@ export const authenticationReducer = createReducer(
 );
 
 //selectors
-const selectSelf = (state: ApplicationState) => state;
+export const selectSelf = (state: ApplicationState) => state;
 
 export const getUser = createDraftSafeSelector(
   selectSelf,
