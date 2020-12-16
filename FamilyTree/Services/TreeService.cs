@@ -16,7 +16,7 @@ namespace FamilyTree.Services
         public TreeUserResponse GetUserTrees(int id, int claimId);
         public TreeResponse CreateTree(int userId, CreateTreeRequest model);
         public TreeResponse ModifyTree(int userId, ModifyTreeRequest model);
-        public TreeResponse CreateNode(int userId, CreateNodeRequest model);
+        public NodeResponse CreateNode(int userId, CreateNodeRequest model);
         public TreeResponse ModifyNode(int userId, ModifyNodeRequest model);
     }
     public class TreeService : ITreeService
@@ -27,7 +27,7 @@ namespace FamilyTree.Services
             context = dataContext;
         }
 
-        public TreeResponse CreateNode(int userId, CreateNodeRequest model)
+        public NodeResponse CreateNode(int userId, CreateNodeRequest model)
         {
             var tree = context.Trees
                 .Include(x => x.Nodes).ThenInclude(x => x.Children)
@@ -36,7 +36,7 @@ namespace FamilyTree.Services
                 .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
                 .SingleOrDefault(tree => tree.TreeId == model.TreeId);
 
-            if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
+            if (tree == null || (!IsUserInTree(tree, userId) && tree.IsPrivate) || !ValidateNode(model, tree))
                 return null;
 
             var children = new List<NodeNode>();
@@ -106,7 +106,7 @@ namespace FamilyTree.Services
             };
             tree.Nodes.Add(node);
             context.SaveChanges();
-            return GetTree(model.TreeId, userId);
+            return new NodeResponse(node);
         }
 
         public TreeResponse CreateTree(int userId, CreateTreeRequest model)

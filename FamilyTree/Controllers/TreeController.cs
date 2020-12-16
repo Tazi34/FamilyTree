@@ -105,7 +105,7 @@ namespace FamilyTree.Controllers
         /// <returns>Zwraca całe drzewo</returns>
         [HttpPost]
         [Route("node")]
-        public ActionResult<TreeResponse> CreateNode(CreateNodeRequest model)
+        public ActionResult<NodeResponse> CreateNode(CreateNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var tree = treeService.CreateNode(userId, model);
