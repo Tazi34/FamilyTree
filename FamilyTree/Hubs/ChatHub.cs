@@ -39,7 +39,7 @@ namespace FamilyTree.Hubs
             }
             else
             {
-                await Clients.Clients(connectionIdList).SendAsync("ReceiveMessage", userId, message);
+                await Clients.Clients(connectionIdList).SendAsync("ReceiveMessage", userId, message, mess.CreationTime.ToString());
                 mess.Sent = true;
                 chatService.AddMessage(mess, fromId, userId);
             }
@@ -51,7 +51,7 @@ namespace FamilyTree.Hubs
             connectionsService.RegisterConnection(userId, Context.ConnectionId);
             List<Message> notSentMessages = chatService.MarkAsSent(userId);
             foreach(Message m in notSentMessages)
-                await Clients.Caller.SendAsync("ReceiveMessage", m.FromId, m.Text);
+                await Clients.Caller.SendAsync("ReceiveMessage", m.FromId, m.Text, m.CreationTime.ToString());
         }
         public override Task OnDisconnectedAsync(Exception exception)
         {
