@@ -7,7 +7,7 @@ import { PersonNode } from "../model/PersonNode";
 import {
   deleteNode,
   selectAllFamiliesLocal,
-  selectAllNodesLocal,
+  selectAllPersonNodesLocal,
   treeReducer,
 } from "../treeReducer";
 
@@ -35,7 +35,7 @@ describe("delete-node", () => {
     //Act
     const newState = treeReducer(state.tree, deleteNode(child));
 
-    const nodes = selectAllNodesLocal(newState.nodes);
+    const nodes = selectAllPersonNodesLocal(newState.nodes);
 
     const previousLinksCount = state.tree.links.ids.length;
     const currentLinksCount = newState.links.ids.length;

@@ -1,0 +1,10 @@
+#connectionPath {
+  pointer-events: none;
+}
+#main-group {
+  pointer-events: bounding-box;
+}
+
+g {
+  pointer-events: visiblePainted;
+}

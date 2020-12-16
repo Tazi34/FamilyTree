@@ -20,12 +20,13 @@ export const addDeleteIcon = (nodes, handler) => {
       handler(d);
     });
 };
-export const addGearIcon = (nodes, handler) => {
+export const addGearIcon = (nodes, clickHandler, hoverHandler) => {
   nodes
     .append("g")
     .append("path")
     .attr("d", gearIcon)
-    .on("click", (event, d) => handler(d));
+    .on("click", clickHandler)
+    .on("mouseover", hoverHandler);
 };
 export const addPlusIcon = (nodes, handler) => {
   nodes
@@ -37,6 +38,17 @@ export const addPlusIcon = (nodes, handler) => {
 
 export const renderNodeCards = (node) => {
   node
+    .append("rect")
+    .attr("class", "card-rect")
+    .each(function (d) {
+      var u = d3.select(this);
+      const attributes = d.isFamily ? emptyNodeAttributs : rectangleAttributes;
+      for (const key in attributes) {
+        u = u.attr(key, attributes[key]);
+      }
+    });
+
+  node
     .append("image")
     .attr(
       "href",
@@ -44,13 +56,6 @@ export const renderNodeCards = (node) => {
     )
     .attr("height", 30)
     .attr("width", 30);
-  node.append("rect").each(function (d) {
-    var u = d3.select(this);
-    const attributes = d.isFamily ? emptyNodeAttributs : rectangleAttributes;
-    for (const key in attributes) {
-      u = u.attr(key, attributes[key]);
-    }
-  });
 
   //TODO weryfikacja id
   node
@@ -72,7 +77,7 @@ export const renderNodeCards = (node) => {
     });
 };
 
-export const appendConnectionCircle = (node, handler) => {
+export const appendConnectionCircle = (node, clickHandler, hoverHandler) => {
   node
     .append("circle")
     .attr("r", 10)
@@ -81,8 +86,8 @@ export const appendConnectionCircle = (node, handler) => {
     .attr("cx", RECT_WIDTH / 2)
     .attr("cy", 0)
     .attr("fill-opacity", 0)
-    .style("cursor", "pointer")
-    .on("click", handler);
+    .style("cursor", "pointer");
+
   node
     .append("circle")
     .attr("r", 5)

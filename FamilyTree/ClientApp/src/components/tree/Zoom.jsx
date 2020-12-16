@@ -20,7 +20,7 @@ export function ZoomContainer(props) {
   }, [svgElement]);
 
   return (
-    <g transform={`translate(${x}, ${100 + y}) scale(${k})`}>
+    <g id="zoom-container" transform={`translate(${x}, ${y}) scale(${k})`}>
       {props.children}
     </g>
   );

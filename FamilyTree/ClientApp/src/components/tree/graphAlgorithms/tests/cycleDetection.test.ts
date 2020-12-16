@@ -3,7 +3,7 @@ import { PersonNode } from "../../model/PersonNode";
 import { isGraphCyclic } from "../cycleDetection";
 
 const mockInformation: PersonInformation = {
-  birthDate: "",
+  birthday: "",
   name: "",
   surname: "",
 };

@@ -1,4 +1,4 @@
-import { EntityId } from "@reduxjs/toolkit";
+import { EntityId, EntityState } from "@reduxjs/toolkit";
 import { D3DragEvent } from "d3";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,8 +22,11 @@ import {
   renderNodeCards,
 } from "./helpers/nodeCreationHelpers";
 import {
+  ConnectionPoint,
+  connectionStartPointSelector,
   ConnectionState,
   finishConnection,
+  isConnectingSelector,
   startConnecting,
 } from "./connectionReducer";
 import { FamilyNode } from "./model/FamilyNode";
@@ -31,7 +34,8 @@ import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import {
   addParent,
-  connectParent,
+  connectAsChild,
+  connectToFamily,
   deleteNode,
   getIncomingLinks,
   getLinkNodes,
@@ -40,12 +44,15 @@ import {
   getOutboundLinks,
   Link,
   moveNode,
+  randomFamilyId,
+  selectAllFamilies,
   selectAllFamiliesLocal,
-  selectAllNodes,
-  selectAllNodesLocal,
+  selectAllNodesLocal as selectAllNodes,
+  selectAllPersonNodes,
+  selectAllPersonNodesLocal,
   TreeState,
 } from "./treeReducer";
-
+import "./treeRenderer.css";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -71,22 +78,42 @@ export interface TreeRendererProps {
 // };
 
 const TreeRenderer = (props: TreeRendererProps) => {
-  const container = useRef(null);
+  const container = useRef<any>(null);
   const dispatch = useDispatch();
-  const connectionState = useSelector<ApplicationState, ConnectionState>(
-    (state) => state.connection
-  );
+
   const [connectingMode, setConnectingMode] = useState(false);
+  const [startPoint, setStartPoint] = useState<ConnectionPoint | null>(null);
+  const [canConnectTo, setCanConnectTo] = useState<IDictionary<boolean>>({});
+
   const treeState = useSelector<ApplicationState, TreeState>(
     (state) => state.tree
   );
-  const effect = useEffect(() => {
+  const allFamilyNodes = useSelector(selectAllFamilies);
+  const isConnecting = useSelector(isConnectingSelector);
+  const connectionStartPoint = useSelector(connectionStartPointSelector);
+  const allNodes = useSelector(selectAllNodes);
+  const allPersonNodes = useSelector(selectAllPersonNodes);
+  useEffect(() => {
     initializeTree();
-  }, [props.nodes, props.links, props.families, connectionState]);
+  });
 
   const initializeTree = () => {
-    const container = selectContainer();
-    container.attr("transform", "translate(-500,0)");
+    const d3Container = selectContainer();
+    d3Container.append("path").attr("id", "connectionPath");
+    d3Container.attr("id", "main-group");
+
+    d3Container.on("mousemove", (e: any) => {
+      if (connectingMode) {
+        var pathData = d3.path();
+        pathData.moveTo(startPoint!.x, startPoint!.y);
+        pathData.lineTo(e.layerX, e.layerY);
+
+        var path = d3Container.select("#connectionPath");
+
+        path.attr("d", pathData).attr("stroke", "black");
+      }
+    });
+
     updateNodesAndLinks(props.nodes, props.families, props.links);
   };
 
@@ -182,19 +209,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
     var peopleNodesSelector = allNodesSelector.filter((s: any) => !s.isFamily);
     var familyNodesSelector = allNodesSelector.filter((s: any) => s.isFamily);
 
-    var dragHandler = d3
-      .drag()
-      .subject((e: any, node: Node) => node.location)
-      .on("drag", (e: any, d: any) => {
-        moveNodeOnCanvas(e, d);
-        //close context menu if open
-        props.onAddNodeMenuClose(e);
-      })
-      .on("end", (e: D3DragEvent<any, any, Node>, node: Node) => {
-        dispatch(moveNode(node, e.x, e.y));
-      });
-    dragHandler(allNodesSelector);
-    dragHandler(familyNodesSelector);
     peopleNodesSelector.on("contextmenu", props.onAddMenuOpen);
 
     peopleNodesSelector.attr(
@@ -210,30 +224,96 @@ const TreeRenderer = (props: TreeRendererProps) => {
       (d: any) => `translate(${d.location.x},${d.location.y})`
     );
 
-    familyNodesSelector.on("click", (e: any, d: any) => changeVisibility(d));
+    familyNodesSelector.on("click", (e: any, familyNode: FamilyNode) => {
+      if (connectingMode) {
+        if (canConnectTo[familyNode.id]) {
+          setConnectingMode(false);
+          setCanConnectTo({});
+          dispatch(connectToFamily(startPoint!.id, familyNode.id));
+        } else {
+          console.log("Cant connect to " + familyNode.id);
+        }
+      } else {
+        changeVisibility(familyNode);
+      }
+    });
     renderFamilyNodes(familyNodesSelector);
     renderNodeCards(peopleNodesSelector);
 
-    // appendConnectionCircle(peopleNodesSelector, (e: any, node: PersonNode) => {
-    //   if (!connectionState.isConnecting) {
-    //     dispatch(startConnecting(node.id));
-    //   } else {
-    //     dispatch(finishConnection(node.id));
-    //     dispatch(connectParent(connectionState.start as EntityId, node.id));
-    //   }
-    // });
+    peopleNodesSelector.on("mouseover", (e: any, d: PersonNode) => {
+      if (connectingMode) {
+      }
+    });
+
+    //appendConnectionCircle(
+    addGearIcon(
+      peopleNodesSelector,
+      (e: any, selectedNode: PersonNode) => {
+        const point = {
+          id: selectedNode.id,
+          x: selectedNode.location.x,
+          y: selectedNode.location.y,
+        };
+
+        if (!connectingMode) {
+          setConnectingMode(true);
+          setStartPoint(point);
+          var canConnectToDict: IDictionary<boolean> = {};
+
+          allPersonNodes
+            .filter((node) => node.id != point.id)
+            .forEach((node) => {
+              canConnectToDict[node.id] = checkIfCanConnectAsChild(
+                allNodes,
+                point.id,
+                node.id
+              );
+            });
+
+          allFamilyNodes.forEach((family) => {
+            canConnectToDict[family.id] = checkIfCanConnectToFamily(
+              allNodes,
+              point.id,
+              family.id
+            );
+          });
+          setCanConnectTo(canConnectToDict);
+          console.log(canConnectToDict);
+        } else {
+          if (canConnectTo[point.id]) {
+            dispatch(connectAsChild(startPoint!.id, point.id));
+            setConnectingMode(false);
+            setStartPoint(null);
+            d3.select("connectionPath").attr("d", "");
+          } else {
+            console.log("Can connect to " + point.id);
+          }
+        }
+      },
+      (e: any, selectedNode: PersonNode) => {
+        if (connectingMode) {
+          console.log(e);
+          const d3Node = selectNode(selectedNode.id);
+          if (!canConnectTo[selectedNode.id]) {
+            d3Node.attr("opacity", "0.4");
+          }
+        }
+      }
+    );
     addDeleteIcon(peopleNodesSelector, (node: PersonNode) => {
       dispatch(deleteNode(node));
     });
-    const usedIds = nodes.map((n) => n.id);
     //TODO ID
     const newFakePerson = Math.floor(Math.random() * 1000000 + 10000) + 100;
     const newPerson: Person = {
       id: newFakePerson,
+      treeId: props.nodes[0].treeId,
       information: {
         name: "New",
         surname: "Node",
-        birthDate: "20-05-1454",
+        birthday: "20-05-1454",
+        description: "",
+        pictureUrl: "",
       },
       fatherId: null,
       motherId: null,
@@ -245,11 +325,23 @@ const TreeRenderer = (props: TreeRendererProps) => {
       dispatch(addParent(node.id as number, newPerson));
     });
 
-    addGearIcon(peopleNodesSelector, () => {
-      const peopleNodes = selectAllNodesLocal(treeState.nodes);
-      const familyNodes = selectAllFamiliesLocal(treeState.families);
-      alert(isGraphCyclic([...peopleNodes, ...familyNodes]));
-    });
+    //addGearIcon(peopleNodesSelector);
+
+    var dragHandler = d3
+      .drag()
+      .subject((e: any, node: Node) => node.location)
+      .on("drag", (e: any, d: any) => {
+        moveNodeOnCanvas(e, d);
+        //close context menu if open
+
+        props.onAddNodeMenuClose(e);
+      })
+      .on("end", (e: D3DragEvent<any, any, Node>, node: Node) => {
+        dispatch(moveNode(node, e.x, e.y));
+      });
+
+    dragHandler(allNodesSelector);
+    dragHandler(familyNodesSelector);
   };
 
   const initializeLinks = (linksCanvas: any, data: Link[]) => {
@@ -313,6 +405,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
     if (connectingMode) {
       return;
     }
+
     var svgNode = selectNode(node.id);
 
     var x = e.x;
@@ -389,4 +482,62 @@ export const traverseRec = (
   childrens.forEach((child) => {
     traverseRec(child, callback, ++depth, nodesSelector);
   });
+};
+
+const checkIfCanConnectAsChild = (
+  nodes: Node[],
+  childId: EntityId,
+  parentId: EntityId
+) => {
+  var nodesCopy = JSON.parse(JSON.stringify(nodes)) as Node[];
+  const parentNode = nodesCopy.find((n) => n.id == parentId) as PersonNode;
+  const treeId = parentNode.treeId;
+  const familyNode = new FamilyNode(
+    randomFamilyId(),
+    treeId,
+    0,
+    0,
+    [childId],
+    parentId,
+    null
+  );
+
+  parentNode.families.push(familyNode.id);
+  parentNode.children.push(childId);
+
+  const childNode = nodesCopy.find((n) => n.id == childId) as PersonNode;
+  childNode.families.push(familyNode.id);
+  childNode.firstParent = parentId;
+
+  nodesCopy.push(familyNode);
+  var hasCycle = isGraphCyclic(nodesCopy);
+
+  return !hasCycle;
+};
+const checkIfCanConnectToFamily = (
+  nodes: Node[],
+  childId: EntityId,
+  familyId: EntityId
+) => {
+  var nodesCopy = JSON.parse(JSON.stringify(nodes)) as Node[];
+  const familyNode = nodesCopy.find((n) => n.id == familyId) as FamilyNode;
+
+  familyNode.children.push(childId);
+
+  const parentsIds = [familyNode.firstParent, familyNode.secondParent].filter(
+    (a) => a
+  ) as EntityId[];
+
+  const parents = nodesCopy.filter((node) => parentsIds.includes(node.id));
+
+  parents.forEach((parent) => {
+    parent.children.push(childId);
+  });
+
+  const childNode = nodesCopy.find((node) => node.id == childId) as PersonNode;
+
+  childNode.firstParent = familyNode.firstParent;
+  childNode.secondParent = familyNode.secondParent;
+
+  return !isGraphCyclic(nodesCopy);
 };

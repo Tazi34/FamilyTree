@@ -34,8 +34,8 @@ const isCyclicRec = (
   visited[node.id] = true;
 
   var neighbours: EntityId[];
-  if (node instanceof PersonNode) {
-    neighbours = node.families;
+  if (!node.isFamily) {
+    neighbours = (node as PersonNode).families;
   } else {
     neighbours = [node.firstParent, node.secondParent, ...node.children].filter(
       (a) => a
