@@ -80,7 +80,8 @@ namespace FamilyTree.Services
             var messagesList = context.Messages.Where(m => m.ChatId == chatId).OrderByDescending(m => m.CreationTime).Take(100).ToList();
             var resultList = new MessagesListResponse
             {
-                MessageList = new List<MessageResponse>()
+                MessageList = new List<MessageResponse>(),
+
             };
             foreach(Message m in messagesList)
             {
@@ -97,7 +98,12 @@ namespace FamilyTree.Services
 
         public UsersListResponse GetLastUsersList(int userId)
         {
-            var chatList = context.Chats.Where(c => c.User1Id == userId || c.User2Id == userId).OrderByDescending(c => c.LastMessageTime).Take(10);
+            var chatList = context.Chats
+                .Include(c => c.User1)
+                .Include(c => c.User2)
+                .Where(c => c.User1Id == userId || c.User2Id == userId)
+                .OrderByDescending(c => c.LastMessageTime)
+                .Take(10);
             if (chatList == null)
                 return null;
             var resultList = new UsersListResponse
@@ -106,11 +112,29 @@ namespace FamilyTree.Services
             };
             foreach(Chat c in chatList)
             {
-                resultList.UsersList.Add(new UserResponse
+                bool userNo1 = userId == c.User1Id ? false : true;
+                if (userNo1)
                 {
-                    LastMessageTime = c.LastMessageTime,
-                    UserId = userId == c.User1Id ? c.User2Id : c.User1Id
-                });
+                    resultList.UsersList.Add(new UserResponse
+                    {
+                        LastMessageTime = c.LastMessageTime,
+                        UserId = c.User1Id,
+                        Name = c.User1.Name,
+                        Surname = c.User1.Surname,
+                        PictureUrl = c.User1.PictureUrl
+                    });
+                }
+                else
+                {
+                    resultList.UsersList.Add(new UserResponse
+                    {
+                        LastMessageTime = c.LastMessageTime,
+                        UserId = c.User2Id,
+                        Name = c.User2.Name,
+                        Surname = c.User2.Surname,
+                        PictureUrl = c.User2.PictureUrl
+                    });
+                }
             }
             return resultList;
         }

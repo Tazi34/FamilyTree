@@ -49,6 +49,16 @@ namespace FamilyTree.Helpers
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Chat>().HasIndex(m => new {m.User1Id, m.User2Id }).IsUnique();
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.User1)
+                .WithMany(u => u.Chats2)
+                .HasForeignKey(c => c.User1Id);
+
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.User2)
+                .WithMany(u => u.Chats1)
+                .HasForeignKey(c => c.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

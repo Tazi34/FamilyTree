@@ -18,5 +18,7 @@ namespace FamilyTree.Entities
         public string PictureUrl { get; set; }
         public List<PreviousSurname> PrevSurnames { get; set; }
         public string Sex { get; set; }
+        public List<Chat> Chats1 { get; set; }
+        public List<Chat> Chats2 { get; set; }
     }
 }
