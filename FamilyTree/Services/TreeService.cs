@@ -142,7 +142,12 @@ namespace FamilyTree.Services
 
         public NodeResponse GetNode(int id, int userId)
         {
-            var node = context.Nodes.Include(x => x.Children).SingleOrDefault(node => node.NodeId == id);
+            var node = context.Nodes
+                .Include(n => n.Children)
+                .Include(n => n.Parents)
+                .Include(n => n.Partners1)
+                .Include(n => n.Partners2)
+                .SingleOrDefault(node => node.NodeId == id);
             if (node == null)
                 return null;
             var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == node.TreeId);
