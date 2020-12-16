@@ -19,7 +19,8 @@ import {
   getTree,
   selectAllFamilies,
   selectAllLinks,
-  selectAllNodes,
+  selectAllPersonNodes,
+  addEmptyNode,
 } from "./treeReducer";
 import {
   changeTreeName,
@@ -28,6 +29,9 @@ import {
 } from "../userTreeList/usersTreeReducer";
 import TreeRenderer from "./TreeRenderer";
 import { ZoomContainer } from "./Zoom";
+import { PersonInformation } from "./model/PersonNode";
+import { Person } from "../../model/TreeStructureInterfaces";
+import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 
 type TreeContainerState = {
   isAddMenuOpen: boolean;
@@ -37,7 +41,7 @@ type TreeContainerState = {
 const styles = (theme: Theme) => ({
   treeInformationPanel: {
     top: 0,
-    left: 50,
+    left: 0,
     position: `relative`,
   } as any,
 });
@@ -92,6 +96,22 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
   handleTreeVisibilityChange = (treeInformation: TreeInformation) => {
     this.props.changeTreeVisibility(treeInformation);
   };
+  handleAddNode = () => {
+    const createNodeData: CreateNodeRequestData = {
+      userId: 0,
+      treeId: this.props.treeInformation.treeId,
+      children: [],
+      fatherId: 0,
+      motherId: 0,
+      pictureUrl: "",
+      description: "",
+      name: "XD",
+      surname: "Pablo",
+      birthday: "2020-12-16T20:29:42.677Z",
+      partners: [],
+    };
+    this.props.addEmptyNode(createNodeData);
+  };
   handleConnectChild = () => {};
   render() {
     if (this.props.isLoading) return null;
@@ -105,9 +125,10 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
             onTreeNameChange={this.handleTreeNameChange}
             onTreeVisibilityChange={this.handleTreeVisibilityChange}
           />
+          <Button onClick={this.handleAddNode}>Add Node</Button>
         </div>
 
-        <svg ref={this.svgRef} width={"100%"} height={"100%"}>
+        <svg id="tree-canvas" ref={this.svgRef} width={"100%"} height={"100%"}>
           <ZoomContainer
             getSvg={this.getSvg}
             onMouseMove={this.handleCloseMenu}
@@ -156,12 +177,14 @@ const mapDispatch = {
   getTree,
   changeTreeName,
   changeTreeVisibility,
+  addEmptyNode,
 };
 const mapState = (state: ApplicationState) => ({
-  nodes: selectAllNodes(state),
+  nodes: selectAllPersonNodes(state),
   isLoading: state.tree.isLoading,
   families: selectAllFamilies(state),
   links: selectAllLinks(state),
+
   treeInformation: state.tree.treeId
     ? usersTreesSelectors.selectById(state, state.tree!.treeId)
     : null,
