@@ -28,7 +28,8 @@ namespace FamilyTree.Helpers
                         Surname = "Kicun",
                         Email = "abc@kicunmail",
                         Birthday = DateTime.Today,
-                        PasswordHash = "haslo123",
+                        PasswordHash = "8IgJYYFdGqHdnopG+aNYqOunLjU4MZ3Q5iMpDmKQeE4=",//haslo123
+                        Salt = "PA0w+FFm3WaD0/AvLx7PkA==",
                         Role = Role.User,
                         PrevSurnames = new List<PreviousSurname>()
                     },
@@ -38,7 +39,8 @@ namespace FamilyTree.Helpers
                         Surname = "Kicun",
                         Email = "brat@kicunmail",
                         Birthday = DateTime.Today,
-                        PasswordHash = "brat",
+                        PasswordHash = "Qt8W/CRBgFMaTpQoMM5JoNCNFurnC+omBFp0gZVHII8=",//brat
+                        Salt = "EIUd/75Vg7e/ojBPaDefjw==",
                         Role = Role.User
                     },
                     new User
@@ -47,7 +49,8 @@ namespace FamilyTree.Helpers
                         Surname = "Kicun",
                         Email = "siostra@kicunmail",
                         Birthday = DateTime.Today,
-                        PasswordHash = "siostra",
+                        PasswordHash = "+V7/hmL+ZyQamZ4VoY62EPXPDNU+5X/yyEStQ96mXdk=",//siostra
+                        Salt = "oM0gjDPfDTJXzaiZg0MDNw==",
                         Role = Role.User
                     },
                     new User
@@ -56,7 +59,8 @@ namespace FamilyTree.Helpers
                         Surname = "Kicun",
                         Email = "ojciec@kicunmail",
                         Birthday = DateTime.Today,
-                        PasswordHash = "ojciec",
+                        PasswordHash = "TgwYrtlm4O8dw8WM/mXdb5n/FWSvaGjuxpMAc6YK5bc=",//ojciec
+                        Salt = "rkdBhkTfK5GaGbHwUX6fnQ==",
                         Role = Role.User
                     },
                     new User
@@ -65,7 +69,8 @@ namespace FamilyTree.Helpers
                         Surname = "Kicun",
                         Email = "mama@kicunmail",
                         Birthday = DateTime.Today,
-                        PasswordHash = "mama",
+                        PasswordHash = "zhgxmJU0andmdWBxIiMGs+vCHQXh4LkqoBLivGaFF8s=",//mama
+                        Salt = "fLBGVyxXeEZ3dGI/TgaH7w==",
                         Role = Role.User
                     },
                     new User
@@ -74,7 +79,8 @@ namespace FamilyTree.Helpers
                         Surname = "Kicun",
                         Email = "dziadek@kicunmail",
                         Birthday = DateTime.Today,
-                        PasswordHash = "dziadek",
+                        PasswordHash = "rIFSQY588V8c2t25qJSMSt+92XgIVfr3DWWgb+Tk+W8=",//dziadek
+                        Salt = "I9kJRE7Z77p0TMqLq/o0yg==",
                         Role = Role.User
                     },
                     new User
@@ -83,7 +89,8 @@ namespace FamilyTree.Helpers
                         Surname = "Kicun",
                         Email = "babcia@kicunmail",
                         Birthday = DateTime.Today,
-                        PasswordHash = "babcia",
+                        PasswordHash = "Da7FrdKr4Uz49HTDIzYyN5ajHlccUSJ79MvlaDdZNyI=",//babcia
+                        Salt = "XhdnT8bZsgzF6ohmR2s5dA==",
                         Role = Role.User
                     }
                 );

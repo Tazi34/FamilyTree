@@ -13,6 +13,7 @@ namespace FamilyTree.Entities
         public string Surname { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
+        public string Salt { get; set; }
         public string Role { get; set; }
         public DateTime Birthday { get; set; }
         public string PictureUrl { get; set; }

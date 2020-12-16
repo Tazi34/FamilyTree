@@ -21,17 +21,18 @@ namespace FamilyTree.Services
     {
         private DataContext context;
         private ITokenService tokenService;
+        private IPasswordService passwordService;
 
-        public UserService(DataContext dataContext, ITokenService tokenService)
+        public UserService(DataContext dataContext, ITokenService tokenService, IPasswordService passwordService)
         {
             context = dataContext;
             this.tokenService = tokenService;
+            this.passwordService = passwordService;
         }
         public AuthenticateResponse Authenticate(string email, string password)
         {
-            var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(x => x.Email.Equals(email));
-
-            if (user == null || user.PasswordHash != password)
+            var user = context.Users.Include(u => u.PrevSurnames).SingleOrDefault(x => x.Email.Equals(email));
+            if (user == null || !passwordService.Compare(user.PasswordHash, password, user.Salt))
                 return null;
 
             return CreateResponse(user);
@@ -39,11 +40,11 @@ namespace FamilyTree.Services
 
         public AuthenticateResponse ChangePassword(ChangePasswordRequest model)
         {
-            var user = context.Users.SingleOrDefault(u => u.UserId == model.UserId && u.Email.Equals(model.Email) && u.PasswordHash.Equals(model.OldPassword));
-            if (user == null)
+            var user = context.Users.Include(u => u.PrevSurnames).SingleOrDefault(u => u.UserId == model.UserId);
+            if (user == null || !passwordService.Compare(user.PasswordHash, model.OldPassword, user.Salt))
                 return null;
 
-            user.PasswordHash = model.Password;
+            (user.PasswordHash, user.Salt) = passwordService.CreateHash(model.Password);
             context.Users.Update(user);
             context.SaveChanges();
             return CreateResponse(user);
@@ -73,12 +74,14 @@ namespace FamilyTree.Services
                     });
                 }
             }
+            var hashSaltTuple = passwordService.CreateHash(model.Password);
             var user = new User
             {
                 Name = model.Name,
                 Surname = model.Surname,
                 Email = model.Email,
-                PasswordHash = model.Password,
+                PasswordHash = hashSaltTuple.Item1,
+                Salt = hashSaltTuple.Item2,
                 Role = Role.User,
                 Birthday = model.Birthday,
                 PrevSurnames = previousSurnames,

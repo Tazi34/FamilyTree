@@ -55,6 +55,7 @@ namespace FamilyTree
             services.AddScoped<ITreeService, TreeService>();
             services.AddScoped<IBlogService, BlogService>();
             services.AddScoped<IChatService, ChatService>();
+            services.AddScoped<IPasswordService, PasswordService>();
 
             services.AddSwaggerGen(c =>
             {
