@@ -25,10 +25,12 @@ namespace FamilyTree.Services
     {
         private DataContext context;
         private ITreeAuthService treeAuthService;
-        public TreeService(DataContext dataContext, ITreeAuthService treeAuthService)
+        private ITreeValidationService treeValidationService;
+        public TreeService(DataContext dataContext, ITreeAuthService treeAuthService, ITreeValidationService treeValidationService)
         {
             context = dataContext;
             this.treeAuthService = treeAuthService;
+            this.treeValidationService = treeValidationService;
         }
 
         public NodeResponse CreateNode(int userId, CreateNodeRequest model)
@@ -39,13 +41,13 @@ namespace FamilyTree.Services
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return null;
 
-            if (!ValidateNode(model, tree))
+            if (!treeValidationService.ValidateNewNode(model, tree))
                 return null;
 
             var children = new List<NodeNode>();
             foreach(int child in model.Children)
             {
-                var child_node = context.Nodes.SingleOrDefault(n => n.NodeId == child);
+                var child_node = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
                 if (child_node == null)
                     return null;
                 children.Add(new NodeNode
@@ -56,7 +58,7 @@ namespace FamilyTree.Services
             }
 
             var parents = new List<NodeNode>();
-            var fatherNode = context.Nodes.SingleOrDefault(n => n.NodeId == model.FatherId);
+            var fatherNode = tree.Nodes.SingleOrDefault(n => n.NodeId == model.FatherId);
             if(fatherNode != null)
             {
                 parents.Add(new NodeNode
@@ -65,7 +67,7 @@ namespace FamilyTree.Services
                     ParentId = fatherNode.NodeId
                 });
             }
-            var motherNode = context.Nodes.SingleOrDefault(n => n.NodeId == model.MotherId);
+            var motherNode = tree.Nodes.SingleOrDefault(n => n.NodeId == model.MotherId);
             if (motherNode != null)
             {
                 parents.Add(new NodeNode
@@ -78,7 +80,7 @@ namespace FamilyTree.Services
             var partners2 = new List<NodeNodeMarriage>();
             foreach (int partner in model.Partners)
             {
-                var partner_node = context.Nodes.SingleOrDefault(n => n.NodeId == partner);
+                var partner_node = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
                 if (partner_node == null)
                     return null;
                 partners1.Add(new NodeNodeMarriage
@@ -103,9 +105,8 @@ namespace FamilyTree.Services
                 Parents = parents,
                 Partners1 = partners1,
                 Partners2 = partners2,
-                FatherId = model.FatherId,
-                MotherId = model.MotherId,
-                Description = model.Description
+                Description = model.Description,
+                Sex = model.Sex
             };
             tree.Nodes.Add(node);
             context.SaveChanges();
@@ -141,7 +142,7 @@ namespace FamilyTree.Services
             };
             context.Trees.Add(tree);
             context.SaveChanges();
-            return GetTree(tree.TreeId, user.UserId);
+            return new TreeResponse(tree);
         }
 
         public bool DeleteNode(int userId, int nodeId)
@@ -149,7 +150,7 @@ namespace FamilyTree.Services
             var node = GetNodeFromContext(nodeId);
             var user = GetUserFromContext(userId);
             var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
-            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return false;
             return DeleteNode(node);
@@ -178,7 +179,7 @@ namespace FamilyTree.Services
             var node = GetNodeFromContext(nodeId);
             var user = GetUserFromContext(userId);
             var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
-            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
             return new NodeResponse(node);
@@ -208,16 +209,6 @@ namespace FamilyTree.Services
             return new TreeUserResponse(authorizedTrees);
         }
 
-        public bool IsUserInTree(Tree tree, int userId)
-        {
-            foreach(Node node in tree.Nodes)
-            {
-                if (node.UserId == userId)
-                    return true;
-            }
-            return false;
-        }
-
         public TreeResponse ModifyNode(int userId, ModifyNodeRequest model)
         {
             var node = GetNodeFromContext(model.NodeId);
@@ -227,7 +218,7 @@ namespace FamilyTree.Services
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InNode, authLevel))
                 return null;
 
-            if (!ValidateNode(model, tree))
+            if (!treeValidationService.ValidateModifiedNode(model, tree))
                 return null;
 
             if(model.Birthday != null)
@@ -247,7 +238,7 @@ namespace FamilyTree.Services
                     var currentChild = node.Children.SingleOrDefault(c => c.ChildId == child);
                     if (currentChild == null)
                     {
-                        var child_node = context.Nodes.SingleOrDefault(n => n.NodeId == child);
+                        var child_node = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
                         if(child_node != null)
                         {
                             var rel = new NodeNode
@@ -259,6 +250,7 @@ namespace FamilyTree.Services
                             };
                             context.NodeNode.Add(rel);
                         }
+                        return null;
                     }
                 }
             }
@@ -269,7 +261,7 @@ namespace FamilyTree.Services
                     var currentPartner1 = node.Partners1.SingleOrDefault(c => c.Partner1Id == partner);
                     if (currentPartner1 == null)
                     {
-                        var partnerNode = context.Nodes.SingleOrDefault(n => n.NodeId == partner);
+                        var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
                         if (partnerNode != null)
                         {
                             var rel1 = new NodeNodeMarriage
@@ -289,11 +281,10 @@ namespace FamilyTree.Services
                             context.NodeNodeMarriage.Add(rel1);
                             context.NodeNodeMarriage.Add(rel2);
                         }
+                        return null;
                     }
                 }
             }
-            node.MotherId = model.MotherId;
-            node.FatherId = model.FatherId;
             node.UserId = model.UserId;
             context.SaveChanges();
             return GetTree(model.TreeId, userId);
@@ -312,51 +303,6 @@ namespace FamilyTree.Services
             context.SaveChanges();
             return GetTree(model.TreeId, userId);
         }
-        private bool ValidateNode(CreateNodeRequest node, Tree tree)
-        {
-            if (node.FatherId != 0 && tree.Nodes.SingleOrDefault(n => n.NodeId == node.FatherId) == null)
-                return false;
-            if (node.MotherId != 0 && tree.Nodes.SingleOrDefault(n => n.NodeId == node.MotherId) == null)
-                return false;
-            foreach(int child in node.Children)
-            {
-                var childNode = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
-                if (childNode == null)
-                    return false;
-                if (childNode.Parents.Count > 1)
-                    return false;
-            }
-            foreach(int partner in node.Partners)
-            {
-                var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
-                if (partnerNode == null)
-                    return false;
-            }
-            return true;
-        }
-        private bool ValidateNode(ModifyNodeRequest node, Tree tree)
-        {
-            if (node.FatherId != 0 && tree.Nodes.SingleOrDefault(n => n.NodeId == node.FatherId) == null)
-                return false;
-            if (node.MotherId != 0 && tree.Nodes.SingleOrDefault(n => n.NodeId == node.MotherId) == null)
-                return false;
-            foreach (int child in node.Children)
-            {
-                var childNode = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
-                if (childNode == null)
-                    return false;
-                if (childNode.Parents.Count > 1 && childNode.Parents[0].ParentId != node.NodeId && childNode.Parents[1].ParentId != node.NodeId)
-                    return false;
-            }
-            foreach (int partner in node.Partners)
-            {
-                var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
-                if (partnerNode == null)
-                    return false;
-            }
-            return true;
-        }
-
         public bool DeleteTree(int userId, int treeId)
         {
             var user = GetUserFromContext(userId);
