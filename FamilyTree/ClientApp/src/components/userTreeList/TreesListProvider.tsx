@@ -34,6 +34,7 @@ const UserTreeListProvider = (props: any) => {
   useEffect(() => {
     dispatch(getUserTrees(currentUser!.id));
   }, []);
+
   if (userTreesState.status.loading) {
     return null;
   }

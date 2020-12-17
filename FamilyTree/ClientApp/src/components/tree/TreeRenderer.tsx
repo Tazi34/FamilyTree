@@ -33,12 +33,15 @@ import { FamilyNode } from "./model/FamilyNode";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import {
-  deleteNode,
   selectAllFamilies,
   selectAllNodesLocal,
   selectAllPersonNodes,
   TreeState,
 } from "./reducer/treeReducer";
+import {
+  removeNodeFromTree,
+  requestDeleteNode,
+} from "./reducer/updateNodes/deleteNode";
 import { moveNode } from "./reducer/updateNodes/moveNode";
 
 import {
@@ -58,6 +61,7 @@ import { connectAsChildAsync } from "./reducer/updateNodes/connectAsChild";
 import "./treeRenderer.css";
 import { addParentAsync } from "./reducer/updateNodes/addParent";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
+import { DeleteNodeRequestData } from "./API/deleteNode/deleteNodeRequest";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -99,10 +103,11 @@ const TreeRenderer = (props: TreeRendererProps) => {
   const allNodes = useSelector(selectAllNodesLocal);
   const allPersonNodes = useSelector(selectAllPersonNodes);
   useEffect(() => {
-    initializeTree();
+    console.log("Repaint tree");
+    renderTree();
   });
 
-  const initializeTree = () => {
+  const renderTree = () => {
     const d3Container = selectContainer();
     d3Container.append("path").attr("id", "connectionPath");
     d3Container.attr("id", "main-group");
@@ -197,7 +202,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
     nodes: PersonNode[],
     familyNodes: FamilyNode[]
   ) => {
-    console.log("RERENDER");
     var allNodes = [...nodes, ...familyNodes];
 
     if (allNodes.length == 0) {
@@ -306,7 +310,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
       }
     );
     addDeleteIcon(peopleNodesSelector, (node: PersonNode) => {
-      dispatch(deleteNode(node));
+      dispatch(requestDeleteNode(node.id as number));
     });
     //TODO ID
     const newFakePerson = Math.floor(Math.random() * 1000000 + 10000) + 100;

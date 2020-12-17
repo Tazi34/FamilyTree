@@ -32,6 +32,7 @@ import GuestRoute from "./components/navigation/GuestRoute";
 import UnknownPage from "./components/navigation/UnknownPage";
 import Registration from "./components/registration/Registration";
 import Tree from "./components/tree/Tree";
+
 import { ApplicationState } from "./helpers";
 
 export const theme = createMuiTheme({
@@ -49,9 +50,10 @@ const App = (props: any) => {
   const loggedUser = authenticationState.user;
   const isVerifyingUser = authenticationState.status.loading;
 
-  if (loggedUser && isVerifyingUser) {
+  if (isVerifyingUser) {
     return null;
   }
+
   const { alertSuccess, alertError, alertInfo } = props;
 
   return (
@@ -61,7 +63,7 @@ const App = (props: any) => {
 
         <Switch>
           <AuthorizedPrivateRoute
-            path={TREE_PAGE_URI}
+            path={`${TREE_PAGE_URI}/:treeId`}
             component={Tree}
             layout={ThreeColumnLayout}
             user={loggedUser}

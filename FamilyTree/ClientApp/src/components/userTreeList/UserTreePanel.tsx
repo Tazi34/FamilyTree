@@ -9,6 +9,7 @@ import {
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
+import { TreeInformation } from "../../model/TreeInformation";
 import TreesList from "./TreesList";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -45,8 +46,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     color: theme.palette.primary.dark,
   },
 }));
-
-const UserTreePanel = ({ userTrees }: any) => {
+type Props = {
+  userTrees: TreeInformation[];
+  onTreeSelect: (tree: TreeInformation) => void;
+};
+const UserTreePanel = ({ userTrees, onTreeSelect }: Props) => {
   const classes = useStyles();
 
   return (
@@ -64,7 +68,10 @@ const UserTreePanel = ({ userTrees }: any) => {
           </Typography>
 
           <div className={classes.treeList}>
-            <TreesList trees={userTrees}></TreesList>;
+            <TreesList
+              onTreeSelect={onTreeSelect}
+              trees={userTrees}
+            ></TreesList>
           </div>
 
           <Button

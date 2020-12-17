@@ -6,24 +6,22 @@ import TreeCard from "./TreeCard";
 
 interface TreeListProps {
   trees: TreeInformation[];
+  onTreeSelect: (tree: TreeInformation) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
-  card: {
-    padding: "5px 10px",
-  },
   root: {
     height: "100%",
     overflow: "auto",
   },
 }));
 
-const TreesList = ({ trees }: TreeListProps) => {
+const TreesList = ({ trees, onTreeSelect }: TreeListProps) => {
   const classes = useStyles();
   return (
     <List className={classes.root}>
       {trees.map((tree) => (
-        <TreeCard className={classes.card} tree={tree} />
+        <TreeCard key={tree.treeId} onTreeSelect={onTreeSelect} tree={tree} />
       ))}
     </List>
   );
