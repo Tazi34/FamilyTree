@@ -1,7 +1,7 @@
-import { moveNode } from "../treeReducer";
+import { moveNode } from "../reducer/updateNodes/moveNode";
 import { EntityId } from "@reduxjs/toolkit";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../../d3/RectMapper";
-import { Point } from "../treeReducer";
+import { Point } from "../Point";
 import { Node } from "./NodeClass";
 
 export class PersonNode extends Node {

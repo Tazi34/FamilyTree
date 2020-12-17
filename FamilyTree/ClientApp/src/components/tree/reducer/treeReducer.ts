@@ -1,10 +1,3 @@
-import { treeNodeMapper } from "./API/utils/NodeMapper";
-import { UpdateNodeRequestData } from "./API/updateNode/updateNodeRequest";
-import { treeAPI } from "./API/treeAPI";
-import {
-  CreateNodeResponse,
-  CreateNodeRequestData,
-} from "./API/createNode/createNodeRequest";
 import {
   createAction,
   createAsyncThunk,
@@ -15,23 +8,42 @@ import {
   EntityState,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
-import { X_SEP, Y_SEP } from "../../d3/RectMapper";
-import { GetTreeStructures } from "../../d3/treeStructureGenerator";
-import { baseURL } from "../../helpers/apiHelpers";
+import { X_SEP, Y_SEP } from "../../../d3/RectMapper";
+import { GetTreeStructures } from "../../../d3/treeStructureGenerator";
+import { baseURL } from "../../../helpers/apiHelpers";
 import {
   createActionWithPayload,
   mapCollectionToEntity,
-} from "../../helpers/helpers";
-import { ApplicationState } from "../../helpers/index";
-import { TreeInformation } from "../../model/TreeInformation";
-import { Family, Person } from "../../model/TreeStructureInterfaces";
-import { selectSelf } from "../loginPage/authenticationReducer";
-import { isGraphCyclic } from "./graphAlgorithms/cycleDetection";
-import { getLinkId } from "./helpers/idHelpers";
-import { FamilyNode } from "./model/FamilyNode";
-import { Node } from "./model/NodeClass";
-import { PersonInformation, PersonNode } from "./model/PersonNode";
-import { GetTreeResponse } from "./API/getTree/getTreeRequest";
+} from "../../../helpers/helpers";
+import { ApplicationState } from "../../../helpers/index";
+import { Family, Person } from "../../../model/TreeStructureInterfaces";
+import { selectSelf } from "../../loginPage/authenticationReducer";
+import {
+  CreateNodeRequestData,
+  CreateNodeResponse,
+} from "../API/createNode/createNodeRequest";
+import { GetTreeResponse } from "../API/getTree/getTreeRequest";
+import { treeAPI } from "../API/treeAPI";
+import { treeNodeMapper } from "../API/utils/NodeMapper";
+import { getLinkId } from "../helpers/idHelpers";
+import { FamilyNode } from "../model/FamilyNode";
+import { Node } from "../model/NodeClass";
+import { PersonNode } from "../model/PersonNode";
+import { Point } from "../Point";
+import { Link } from "../model/Link";
+import { addFamily, connectAsChild } from "./updateNodes/connectAsChild";
+import {
+  createLink,
+  getIncomingLinks,
+  getOutboundLinks,
+  randomFamilyId,
+} from "./utils/getOutboundLinks";
+import { connectToFamily } from "./updateNodes/connectToFamily";
+import { deleteLink } from "./updateLinks/deleteLink";
+import {
+  DeleteNodeRequestData,
+  DeleteNodeResponse,
+} from "../API/deleteNode/deleteNodeRequest";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -46,18 +58,6 @@ export type TreeState = {
   nextFamilyId: number;
   treeId: EntityId | null;
 };
-
-export class Link {
-  source: EntityId;
-  target: EntityId;
-  id: string;
-
-  constructor(source: EntityId, target: EntityId) {
-    this.id = getLinkId(source, target);
-    this.source = source;
-    this.target = target;
-  }
-}
 
 //ADAPTERS
 export const personNodesAdapter = createEntityAdapter<PersonNode>();
@@ -126,100 +126,71 @@ export const { selectAll: selectAllLinks } = linksAdapter.getSelectors(
 );
 
 //ACTIONS
-const actionNamePrefix = "tree";
-const PersonNodesPrefix = "nodes";
-const familyNodesPrefix = "families";
-const linksPrefix = "links";
+export const treeActionsPrefix = "tree";
+export const personNodesActionsPrefix = "nodes";
+export const familyNodesActionsPrefix = "families";
+export const linksActionsPrefix = "links";
 
 export const changeNodePosition = createAction(
-  `${actionNamePrefix}/nodeMoved`,
+  `${treeActionsPrefix}/nodeMoved`,
   (nodeId: number, location: Point): any => ({
     payload: { nodeId, location },
   })
 );
-export const connectAsChild = createAction(
-  `${actionNamePrefix}/parentConnected`,
-  (childId: EntityId, parentId: EntityId): any => ({
-    payload: { childId, parentId },
-  })
-);
-export const connectToFamily = createAction(
-  `${actionNamePrefix}/connectedToFamily`,
-  (childId: EntityId, familyId: EntityId): any => ({
-    payload: { childId, familyId },
-  })
-);
+
 export const deleteNode = createActionWithPayload<PersonNode>(
-  `${actionNamePrefix}/${PersonNodesPrefix}/nodeDeleted`
+  `${treeActionsPrefix}/${personNodesActionsPrefix}/nodeDeleted`
 );
 
 export const setPersonNodes = createActionWithPayload<PersonNode[]>(
-  `${actionNamePrefix}/${PersonNodesPrefix}/nodesSet`
+  `${treeActionsPrefix}/${personNodesActionsPrefix}/nodesSet`
 );
 
-export const deleteLink = createActionWithPayload<string>(
-  `${actionNamePrefix}/${linksPrefix}/linkDeleted`
-);
 export const setLinks = createActionWithPayload<Link[]>(
-  `${actionNamePrefix}/${linksPrefix}/linksSet`
+  `${treeActionsPrefix}/${linksActionsPrefix}/linksSet`
 );
 
 export const deleteFamily = createActionWithPayload<string>(
-  `${actionNamePrefix}/${familyNodesPrefix}/familyDeleted`
+  `${treeActionsPrefix}/${familyNodesActionsPrefix}/familyDeleted`
 );
 export const setFamilyNodes = createActionWithPayload<FamilyNode[]>(
-  `${actionNamePrefix}/${familyNodesPrefix}/familiesSet`
+  `${treeActionsPrefix}/${familyNodesActionsPrefix}/familiesSet`
 );
 
 export const getTree = createAsyncThunk<AxiosResponse<GetTreeResponse>, number>(
-  `${actionNamePrefix}/treeGenerated`,
+  `${treeActionsPrefix}/treeGenerated`,
   async (id) => {
     return await Axios.get(`${baseURL}/tree/${id}`);
   }
 );
 
 export const addParent = createAction(
-  `${actionNamePrefix}/${PersonNodesPrefix}/parentAdded`,
+  `${treeActionsPrefix}/${personNodesActionsPrefix}/parentAdded`,
   (sourceId: number, parent: Person): any => ({
     payload: { source: sourceId, parent },
   })
 );
-export const addEmptyNode = createAsyncThunk<
+export const addNode = createAsyncThunk<
   AxiosResponse<CreateNodeResponse>,
   CreateNodeRequestData
 >(
-  `${actionNamePrefix}/${PersonNodesPrefix}/addNewNode`,
+  `${treeActionsPrefix}/${personNodesActionsPrefix}/addNewNode`,
   async (createNodeRequestData): Promise<AxiosResponse<any>> => {
     return await treeAPI.createTreeNode(createNodeRequestData);
   }
 );
 export const addChild = createAction(
-  `${actionNamePrefix}/${PersonNodesPrefix}/childAdded`,
+  `${treeActionsPrefix}/${personNodesActionsPrefix}/childAdded`,
   (parentId: number, child: Person): any => ({
     payload: { parentId, child },
   })
 );
 export const moveNode = createAction(
-  `${actionNamePrefix}/${PersonNodesPrefix}/nodeMoved`,
+  `${treeActionsPrefix}/${personNodesActionsPrefix}/nodeMoved`,
   (node: Node, x: number, y: number): any => ({
     payload: { node, x, y },
   })
 );
-
-export const connectAsChildAsync = (childId: number, parentId: number) => (
-  dispatch: any,
-  getState: any
-) => {
-  const state = getState();
-  const child = personNodesLocalSelectors.selectById(state.tree.nodes, childId);
-  if (!child) {
-    throw "Unrecognized child node " + childId;
-  }
-  const updateNodeData: UpdateNodeRequestData = treeNodeMapper.mapToAPI(child);
-  treeAPI
-    .updateTreeNode(updateNodeData)
-    .then((response) => dispatch(connectAsChild(childId, parentId)));
-};
 
 //REDUCER
 export const treeReducer = createReducer(treeInitialState, (builder) => {
@@ -334,10 +305,8 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     .addCase(getTree.rejected, (state) => {
       state.isLoading = false;
     })
-    .addCase(addEmptyNode.fulfilled, (state, action) => {
-      const tree = action.payload.data;
-      const nodes = tree.nodes;
-      const newNode = nodes.pop();
+    .addCase(addNode.fulfilled, (state, action) => {
+      const newNode = action.payload.data;
       if (!newNode) {
         throw "Unrecognized new node ";
       }
@@ -626,210 +595,3 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       const { parentId, child } = action.payload;
     });
 });
-
-const createLink = (source: Node, target: Node): Link => {
-  var linkId = getLinkId(source.id, target.id);
-  const link: Link = {
-    id: linkId,
-    source: source.id,
-    target: target.id,
-  };
-
-  return link;
-};
-
-export const getNodeById = function (
-  state: TreeState,
-  id: string | number
-): PersonNode | FamilyNode | undefined {
-  if (!isInt(id)) {
-    return selectFamily(state.families, id);
-  }
-  return selectPersonNodeLocal(state.nodes, id);
-};
-
-export const getLinkNodes = (state: TreeState, link: Link) => {
-  return {
-    sourceNode: getNodeById(state, link.source),
-    targetNode: getNodeById(state, link.target),
-  };
-};
-
-export interface Point {
-  x: number;
-  y: number;
-}
-function isInt(value: any) {
-  var x = parseFloat(value);
-  return !isNaN(value) && (x | 0) === x;
-}
-export const familyIdGenerator = (
-  state: TreeState,
-  graphNumber: number
-): string => {
-  const id = `${graphNumber}u${state.nextFamilyId}`;
-  state.nextFamilyId++;
-  return id;
-};
-
-export const getOutboundLinks = (state: TreeState, node: Node): Link[] => {
-  var links: Link[] = [];
-  if (node instanceof PersonNode) {
-    //szukamy rodziny gdzie jest rodzicem
-    const families = node.families
-      .map((family) => selectFamily(state.families, family))
-      .filter((f) => f) as FamilyNode[];
-
-    const childFamilies = families.filter(
-      (family) =>
-        family.firstParent == node.id || family.secondParent == node.id
-    );
-    childFamilies.forEach((childFamily) => {
-      if (childFamily) {
-        const linkId = getLinkId(node.id, childFamily.id);
-        const link = selectLinkLocal(state.links, linkId);
-        if (link) {
-          links.push(link);
-        }
-      }
-    });
-  } else {
-    const foundLinks = node.children
-      .map((childId) =>
-        selectLinkLocal(state.links, getLinkId(node.id, childId))
-      )
-      .filter((a) => a) as Link[];
-    links.push(...foundLinks);
-  }
-
-  return links;
-};
-
-export const getIncomingLinks = (state: TreeState, node: Node): Link[] => {
-  var links: Link[] = [];
-
-  if (node instanceof PersonNode) {
-    //szukamy rodziny gdzie jest dzieckiem
-    const families = node.families
-      .map((family) => selectFamily(state.families, family))
-      .filter((f) => f) as FamilyNode[];
-
-    //rodzina w ktorej node jest dzieckiem
-    const parentFamily = families.find((family) =>
-      family.children.includes(node.id)
-    );
-
-    if (parentFamily) {
-      const linkId = getLinkId(parentFamily.id, node.id);
-      const link = selectLinkLocal(state.links, linkId);
-      if (link) {
-        return [link];
-      } else {
-        return [];
-      }
-    }
-  } else {
-    if (node.firstParent) {
-      var id = getLinkId(node.firstParent, node.id);
-      var link = selectLinkLocal(state.links, id);
-      if (link) {
-        links.push(link);
-      }
-    }
-    if (node.secondParent) {
-      var link = selectLinkLocal(
-        state.links,
-        getLinkId(node.secondParent, node.id)
-      );
-      if (link) {
-        links.push(link);
-      }
-    }
-    return links;
-  }
-  return [];
-};
-// TODO OUTGOING LINKS
-export const getNodeLinks = (state: TreeState, node: Node): Link[] => {
-  return [...getIncomingLinks(state, node), ...getOutboundLinks(state, node)];
-};
-
-const addFamily = (
-  state: TreeState,
-  familyId: EntityId,
-  firstParentId: EntityId | null,
-  secondParentId: EntityId | null,
-  children: EntityId[]
-) => {
-  const childrenNodes = children
-    .map((child) => personNodesLocalSelectors.selectById(state.nodes, child))
-    .filter((a) => a) as PersonNode[];
-
-  if (childrenNodes.length !== children.length) {
-    //TODO komunikat jakie dzieci
-    throw "Unrecognized child";
-  }
-  if (!firstParentId && !secondParentId) {
-    throw "Missing parents";
-  }
-
-  const linksToAdd: Link[] = [];
-
-  var firstParent: PersonNode | undefined = undefined;
-  var secondParent: PersonNode | undefined = undefined;
-
-  if (firstParentId) {
-    firstParent = selectPersonNodeLocal(state.nodes, firstParentId);
-  }
-  if (secondParentId) {
-    secondParent = selectPersonNodeLocal(state.nodes, secondParentId);
-  }
-  if (!firstParent && !secondParent) {
-    throw "Missing parents";
-  }
-
-  const treeId = firstParent ? firstParent.treeId : secondParent!.treeId;
-  const newFamily = new FamilyNode(
-    familyId,
-    treeId,
-    0,
-    0,
-    children,
-    firstParentId,
-    secondParentId
-  );
-
-  //dodawanie rodzica mozna wydzielic
-  if (firstParent) {
-    linksToAdd.push(createLink(firstParent, newFamily));
-    newFamily.firstParent = firstParentId;
-    childrenNodes.forEach(
-      (childNode) => (childNode.firstParent = firstParentId)
-    );
-    firstParent.children = childrenNodes.map((child) => child.id);
-    firstParent.families.push(newFamily.id);
-  }
-  if (secondParent) {
-    linksToAdd.push(createLink(secondParent, newFamily));
-    newFamily.secondParent = secondParentId;
-
-    childrenNodes.forEach(
-      (childNode) => (childNode.firstParent = secondParentId)
-    );
-    secondParent.children = childrenNodes.map((child) => child.id);
-    secondParent.families.push(newFamily.id);
-  }
-
-  //dodawanie dzieci mozna wydzielic
-  childrenNodes.forEach((childNode) => {
-    linksToAdd.push(createLink(newFamily, childNode));
-    childNode.families.push(newFamily.id);
-  });
-  familyNodesAdapter.addOne(state.families, newFamily);
-  linksAdapter.addMany(state.links, linksToAdd);
-};
-
-export const randomFamilyId = () => {
-  // TODO generator id rodziny
-  return `100u${Math.floor(Math.random() * 100000 + 1000)}`;
-};

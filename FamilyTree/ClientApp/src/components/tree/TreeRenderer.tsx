@@ -34,24 +34,28 @@ import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import {
   addParent,
-  connectAsChild,
-  connectToFamily,
   deleteNode,
+  selectAllFamilies,
+  selectAllNodesLocal,
+  selectAllPersonNodes,
+  TreeState,
+} from "./reducer/treeReducer";
+import { moveNode } from "./reducer/updateNodes/moveNode";
+
+import {
+  connectToFamily,
+  connectToFamilyAsync,
+} from "./reducer/updateNodes/connectToFamily";
+import { Link } from "./model/Link";
+import {
   getIncomingLinks,
   getLinkNodes,
   getNodeById,
   getNodeLinks,
   getOutboundLinks,
-  Link,
-  moveNode,
   randomFamilyId,
-  selectAllFamilies,
-  selectAllFamiliesLocal,
-  selectAllNodesLocal as selectAllNodes,
-  selectAllPersonNodes,
-  selectAllPersonNodesLocal,
-  TreeState,
-} from "./treeReducer";
+} from "./reducer/utils/getOutboundLinks";
+import { connectAsChildAsync } from "./reducer/updateNodes/connectAsChild";
 import "./treeRenderer.css";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -91,7 +95,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
   const allFamilyNodes = useSelector(selectAllFamilies);
   const isConnecting = useSelector(isConnectingSelector);
   const connectionStartPoint = useSelector(connectionStartPointSelector);
-  const allNodes = useSelector(selectAllNodes);
+  const allNodes = useSelector(selectAllNodesLocal);
   const allPersonNodes = useSelector(selectAllPersonNodes);
   useEffect(() => {
     initializeTree();
@@ -229,7 +233,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
         if (canConnectTo[familyNode.id]) {
           setConnectingMode(false);
           setCanConnectTo({});
-          dispatch(connectToFamily(startPoint!.id, familyNode.id));
+          dispatch(connectToFamilyAsync(startPoint!.id, familyNode.id));
         } else {
           console.log("Cant connect to " + familyNode.id);
         }
@@ -281,7 +285,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
           console.log(canConnectToDict);
         } else {
           if (canConnectTo[point.id]) {
-            dispatch(connectAsChild(startPoint!.id, point.id));
+            dispatch(connectAsChildAsync(startPoint!.id, point.id));
             setConnectingMode(false);
             setStartPoint(null);
             d3.select("connectionPath").attr("d", "");

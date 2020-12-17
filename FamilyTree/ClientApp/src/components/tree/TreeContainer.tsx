@@ -17,11 +17,12 @@ import data2 from "../../samples/complex.json";
 import TreeInformationPanel from "./TreeInformationPanel";
 import {
   getTree,
+  addNode,
   selectAllFamilies,
   selectAllLinks,
   selectAllPersonNodes,
-  addEmptyNode,
-} from "./treeReducer";
+} from "./reducer/treeReducer";
+
 import {
   changeTreeName,
   changeTreeVisibility,
@@ -177,7 +178,7 @@ const mapDispatch = {
   getTree,
   changeTreeName,
   changeTreeVisibility,
-  addEmptyNode,
+  addEmptyNode: addNode,
 };
 const mapState = (state: ApplicationState) => ({
   nodes: selectAllPersonNodes(state),

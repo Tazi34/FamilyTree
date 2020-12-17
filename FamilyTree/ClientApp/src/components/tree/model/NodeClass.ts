@@ -1,5 +1,5 @@
 import { EntityId } from "@reduxjs/toolkit";
-import { Point } from "../treeReducer";
+import { Point } from "../Point";
 
 export type NodeId = string | number | null;
 

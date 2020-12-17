@@ -1,4 +1,4 @@
-import { TreeAPI } from "./../utils/TreeModel";
+import { TreeAPI, TreeNodeAPI } from "./../utils/TreeModel";
 import axios from "axios";
 import { baseURL, TREE_API_URL } from "../../../../helpers/apiHelpers";
 
@@ -18,7 +18,7 @@ export type CreateNodeRequestData = {
   partners: number[];
 };
 
-export type CreateNodeResponse = TreeAPI;
+export type CreateNodeResponse = TreeNodeAPI;
 
 export const createTreeNode = (data: CreateNodeRequestData) => {
   return axios.post<CreateNodeResponse>(CREATE_NODE_API_URL, data);

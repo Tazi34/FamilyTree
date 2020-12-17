@@ -3,7 +3,7 @@ import {
   initialUserTreesState,
   userTreesReducer,
 } from "./../components/userTreeList/usersTreeReducer";
-import { treeInitialState } from "./../components/tree/treeReducer";
+import { treeInitialState } from "../components/tree/reducer/treeReducer";
 import {
   chatInitialState,
   chatReducer,
@@ -14,7 +14,7 @@ import {
 } from "./../components/loginPage/authenticationReducer";
 
 import { combineReducers } from "redux";
-import { treeReducer, TreeState } from "../components/tree/treeReducer";
+import { treeReducer, TreeState } from "../components/tree/reducer/treeReducer";
 import {
   postsInitialState,
   postsReducer,

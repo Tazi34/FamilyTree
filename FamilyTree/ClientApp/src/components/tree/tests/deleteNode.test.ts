@@ -5,11 +5,10 @@ import { initialAppState } from "../../../helpers/index";
 import { createMockFamily } from "../../../helpers/testUtils";
 import { PersonNode } from "../model/PersonNode";
 import {
-  deleteNode,
   selectAllFamiliesLocal,
   selectAllPersonNodesLocal,
   treeReducer,
-} from "../treeReducer";
+} from "../reducer/treeReducer";
 
 const setupState = () => {
   const state = initialAppState;
