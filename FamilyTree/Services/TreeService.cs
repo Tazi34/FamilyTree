@@ -18,6 +18,8 @@ namespace FamilyTree.Services
         public TreeResponse ModifyTree(int userId, ModifyTreeRequest model);
         public NodeResponse CreateNode(int userId, CreateNodeRequest model);
         public TreeResponse ModifyNode(int userId, ModifyNodeRequest model);
+        public bool DeleteNode(int userId, int NodeId);
+        public bool DeleteTree(int userId, int TreeId);
     }
     public class TreeService : ITreeService
     {
@@ -29,12 +31,7 @@ namespace FamilyTree.Services
 
         public NodeResponse CreateNode(int userId, CreateNodeRequest model)
         {
-            var tree = context.Trees
-                .Include(x => x.Nodes).ThenInclude(x => x.Children)
-                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
-                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
-                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
-                .SingleOrDefault(tree => tree.TreeId == model.TreeId);
+            var tree = GetTreeFromContext(model.TreeId);
 
             if (tree == null || (!IsUserInTree(tree, userId) && tree.IsPrivate) || !ValidateNode(model, tree))
                 return null;
@@ -140,14 +137,42 @@ namespace FamilyTree.Services
             return GetTree(tree.TreeId, user.UserId);
         }
 
-        public NodeResponse GetNode(int id, int userId)
+        public bool DeleteNode(int userId, int NodeId)
         {
-            var node = context.Nodes
-                .Include(n => n.Children)
-                .Include(n => n.Parents)
-                .Include(n => n.Partners1)
-                .Include(n => n.Partners2)
-                .SingleOrDefault(node => node.NodeId == id);
+            var node = context.Nodes.SingleOrDefault(n => n.NodeId == NodeId);
+            if (node == null)
+                return true;
+            var tree = context.Trees.Include(x => x.Nodes).SingleOrDefault(tree => tree.TreeId == node.TreeId);
+            if (tree != null && IsUserInTree(tree, userId))
+            {
+                DeleteNode(node.NodeId);
+                return true;
+            }
+            return false;
+        }
+        private bool DeleteNode(int nodeId)
+        {
+            var node = GetNodeFromContext(nodeId);
+            if (node.Parents.Count > 0)
+            {
+                var parentsNodeNodes = node.Parents.Where(nn => nn.ChildId == node.NodeId);
+                foreach (var nodeNode in parentsNodeNodes)
+                    context.NodeNode.Remove(nodeNode);
+            }
+            if (node.Partners1.Count > 0)
+            {
+                var partnersNodeNodes = node.Partners1.Where(nnm => nnm.Partner2Id == node.NodeId);
+                foreach (var nodeNode in partnersNodeNodes)
+                    context.NodeNodeMarriage.Remove(nodeNode);
+            }
+            context.Nodes.Remove(node);
+            context.SaveChanges();
+            return true;
+        }
+
+        public NodeResponse GetNode(int nodeId, int userId)
+        {
+            var node = GetNodeFromContext(nodeId);
             if (node == null)
                 return null;
             var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == node.TreeId);
@@ -158,14 +183,9 @@ namespace FamilyTree.Services
             return null;
         }
 
-        public TreeResponse GetTree(int id, int userId)
+        public TreeResponse GetTree(int treeId, int userId)
         {
-            var tree = context.Trees
-                .Include(x => x.Nodes).ThenInclude(x => x.Children)
-                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
-                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
-                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
-                .SingleOrDefault(tree => tree.TreeId == id);
+            var tree = GetTreeFromContext(treeId);
             if (tree != null && (!tree.IsPrivate || IsUserInTree(tree, userId)))
             {
                 return new TreeResponse(tree);
@@ -202,12 +222,7 @@ namespace FamilyTree.Services
 
         public TreeResponse ModifyNode(int userId, ModifyNodeRequest model)
         {
-            var tree = context.Trees
-                .Include(x => x.Nodes).ThenInclude(x => x.Children)
-                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
-                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
-                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
-                .SingleOrDefault(tree => tree.TreeId == model.TreeId);
+            var tree = GetTreeFromContext(model.TreeId);
             if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
                 return null;
             var node = tree.Nodes.SingleOrDefault(n => n.NodeId == model.NodeId);
@@ -307,8 +322,6 @@ namespace FamilyTree.Services
                 if (childNode.Parents.Count > 1)
                     return false;
             }
-            if (node.Partners == null)
-                return false;
             foreach(int partner in node.Partners)
             {
                 var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
@@ -325,10 +338,49 @@ namespace FamilyTree.Services
                 return false;
             foreach (int child in node.Children)
             {
-                if (tree.Nodes.SingleOrDefault(n => n.NodeId == child) == null)
+                var childNode = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
+                if (childNode == null)
+                    return false;
+                if (childNode.Parents.Count > 1 && childNode.Parents[0].ParentId != node.NodeId && childNode.Parents[1].ParentId != node.NodeId)
+                    return false;
+            }
+            foreach (int partner in node.Partners)
+            {
+                var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
+                if (partnerNode == null)
                     return false;
             }
             return true;
+        }
+
+        public bool DeleteTree(int userId, int treeId)
+        {
+            var tree = GetTreeFromContext(treeId);
+            if (tree == null || !IsUserInTree(tree, userId))
+                return false;
+            while(tree.Nodes.Count > 0)
+                DeleteNode(tree.Nodes.First().NodeId);
+            context.Trees.Remove(tree);
+            context.SaveChanges();
+            return true;
+        }
+        private Tree GetTreeFromContext(int treeId)
+        {
+            return context.Trees
+                .Include(x => x.Nodes).ThenInclude(x => x.Children)
+                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
+                .SingleOrDefault(tree => tree.TreeId == treeId);
+        }
+        private Node GetNodeFromContext(int nodeId)
+        {
+            return context.Nodes
+                .Include(n => n.Children)
+                .Include(n => n.Parents)
+                .Include(n => n.Partners1)
+                .Include(n => n.Partners2)
+                .SingleOrDefault(n => n.NodeId == nodeId);
         }
     }
 }
