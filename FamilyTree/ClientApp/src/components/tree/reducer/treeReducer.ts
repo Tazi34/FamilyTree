@@ -45,6 +45,7 @@ import {
   DeleteNodeResponse,
 } from "../API/deleteNode/deleteNodeRequest";
 import { addParent, addParentReducerHandler } from "./updateNodes/addParent";
+import { removeNodeFromTree } from "./updateNodes/deleteNode";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -139,10 +140,6 @@ export const changeNodePosition = createAction(
   })
 );
 
-export const deleteNode = createActionWithPayload<PersonNode>(
-  `${treeActionsPrefix}/${personNodesActionsPrefix}/nodeDeleted`
-);
-
 export const setPersonNodes = createActionWithPayload<PersonNode[]>(
   `${treeActionsPrefix}/${personNodesActionsPrefix}/nodesSet`
 );
@@ -190,11 +187,13 @@ export const moveNode = createAction(
 //REDUCER
 export const treeReducer = createReducer(treeInitialState, (builder) => {
   builder
-    .addCase(deleteNode, (state, action) => {
-      const node = action.payload;
+    .addCase(removeNodeFromTree, (state, action) => {
+      const nodeId = action.payload;
+      const node = selectPersonNodeLocal(state.nodes, nodeId);
+      if (!node) {
+        throw "Unrecognized node. Cant delete";
+      }
 
-      //usun z svg
-      //PersonNodesAdapter.removeOne(state.nodes, node.id);
       var links = [
         ...getOutboundLinks(state, node),
         ...getIncomingLinks(state, node),
@@ -239,7 +238,7 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
           }
         }
       });
-      personNodesAdapter.removeOne(state.nodes, action.payload.id);
+      personNodesAdapter.removeOne(state.nodes, action.payload);
     })
     .addCase(setPersonNodes, (state, action) => {
       personNodesAdapter.setAll(state.nodes, action.payload);
@@ -348,14 +347,21 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
         var nodes = dag.descendants();
 
         const newRoots = nodes.filter((a: any) => a.layer == 0);
-        roots.push(...newRoots);
         links = [...links, ...tree.links];
+        const treeRoot = {
+          id:
+            "connecting_subtree_root_" +
+            selectAllPersonNodesLocal(tree.people)[0].graph,
+        };
+        console.log(newRoots);
 
-        roots.forEach((root: any) => {
-          links.push([connectingNode.id, root.id]);
+        newRoots.forEach((root: any) => {
+          links.push([treeRoot.id, root.id]);
         });
+        links.push([connectingNode.id, treeRoot.id]);
         families = [...families, ...tree.families];
       });
+      console.log(links);
 
       var tree = d3
         .sugiyama()
@@ -373,28 +379,10 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       var d3Links = dag.links();
 
       d3Nodes.forEach((d3Node: any) => {
-        var person = selectPersonNodeLocal(nodesNormalized, d3Node.id);
-        if (person) {
-          person.location = {
-            x: d3Node.x,
-            y: d3Node.y,
-          };
-        } else {
-          var family = families.find((family) => family.id == d3Node.id);
-          if (family) {
-            family.location = {
-              x: d3Node.x,
-              y: d3Node.y,
-            };
-          } else {
-            d3Node.isVisible = false;
-          }
-        }
+        setNodeLocation(nodesNormalized, d3Node, families);
       });
       d3Links.forEach((l: any) => {
-        l.id = getLinkId(l.source.id, l.target.id);
-        l.source = l.source.id;
-        l.target = l.target.id;
+        setLinkEnds(l);
       });
 
       families.forEach((node: FamilyNode) => {
@@ -438,3 +426,32 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       const { parentId, child } = action.payload;
     });
 });
+function setLinkEnds(l: any) {
+  l.id = getLinkId(l.source.id, l.target.id);
+  l.source = l.source.id;
+  l.target = l.target.id;
+}
+
+function setNodeLocation(
+  nodesNormalized: EntityState<PersonNode>,
+  d3Node: any,
+  families: FamilyNode[]
+) {
+  var person = selectPersonNodeLocal(nodesNormalized, d3Node.id);
+  if (person) {
+    person.location = {
+      x: d3Node.x,
+      y: d3Node.y,
+    };
+  } else {
+    var family = families.find((family) => family.id == d3Node.id);
+    if (family) {
+      family.location = {
+        x: d3Node.x,
+        y: d3Node.y,
+      };
+    } else {
+      d3Node.isVisible = false;
+    }
+  }
+}
