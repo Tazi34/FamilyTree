@@ -30,8 +30,8 @@ namespace FamilyTree.Models
             Name = node.Name;
             Surname = node.Surname;
             PictureUrl = node.PictureUrl;
-            FatherId = node.FatherId;
-            MotherId = node.MotherId;
+            FatherId = node.Parents.Count > 0 ? node.Parents[0].ParentId : 0;
+            MotherId = node.Parents.Count > 1 ? node.Parents[1].ParentId : 0;
             Children = new List<int>();
             foreach(var child in node.Children)
             {

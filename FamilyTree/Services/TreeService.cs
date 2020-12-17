@@ -301,7 +301,18 @@ namespace FamilyTree.Services
                 return false;
             foreach(int child in node.Children)
             {
-                if (tree.Nodes.SingleOrDefault(n => n.NodeId == child) == null)
+                var childNode = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
+                if (childNode == null)
+                    return false;
+                if (childNode.Parents.Count > 1)
+                    return false;
+            }
+            if (node.Partners == null)
+                return false;
+            foreach(int partner in node.Partners)
+            {
+                var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
+                if (partnerNode == null)
                     return false;
             }
             return true;
