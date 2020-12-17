@@ -20,8 +20,7 @@ export const getOutboundLinks = (state: TreeState, node: Node): Link[] => {
       .filter((f) => f) as FamilyNode[];
 
     const childFamilies = families.filter(
-      (family) =>
-        family.firstParent == node.id || family.secondParent == node.id
+      (family) => family.fatherId == node.id || family.motherId == node.id
     );
     childFamilies.forEach((childFamily) => {
       if (childFamily) {
@@ -68,17 +67,17 @@ export const getIncomingLinks = (state: TreeState, node: Node): Link[] => {
       }
     }
   } else {
-    if (node.firstParent) {
-      var id = getLinkId(node.firstParent, node.id);
+    if (node.fatherId) {
+      var id = getLinkId(node.fatherId, node.id);
       var link = selectLinkLocal(state.links, id);
       if (link) {
         links.push(link);
       }
     }
-    if (node.secondParent) {
+    if (node.motherId) {
       var link = selectLinkLocal(
         state.links,
-        getLinkId(node.secondParent, node.id)
+        getLinkId(node.motherId, node.id)
       );
       if (link) {
         links.push(link);

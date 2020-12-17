@@ -91,20 +91,16 @@ export const addFamily = (
   //dodawanie rodzica mozna wydzielic
   if (firstParent) {
     linksToAdd.push(createLink(firstParent, newFamily));
-    newFamily.firstParent = firstParentId;
-    childrenNodes.forEach(
-      (childNode) => (childNode.firstParent = firstParentId)
-    );
+    newFamily.fatherId = firstParentId;
+    childrenNodes.forEach((childNode) => (childNode.fatherId = firstParentId));
     firstParent.children = childrenNodes.map((child) => child.id);
     firstParent.families.push(newFamily.id);
   }
   if (secondParent) {
     linksToAdd.push(createLink(secondParent, newFamily));
-    newFamily.secondParent = secondParentId;
+    newFamily.motherId = secondParentId;
 
-    childrenNodes.forEach(
-      (childNode) => (childNode.firstParent = secondParentId)
-    );
+    childrenNodes.forEach((childNode) => (childNode.fatherId = secondParentId));
     secondParent.children = childrenNodes.map((child) => child.id);
     secondParent.families.push(newFamily.id);
   }

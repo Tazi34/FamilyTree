@@ -34,8 +34,8 @@ export const connectToFamilyAsync = (childId: EntityId, familyId: EntityId) => (
   }
 
   const updateNodeData: UpdateNodeRequestData = treeNodeMapper.mapToAPI(child);
-  updateNodeData.fatherId = (family.firstParent ?? 0) as number;
-  updateNodeData.motherId = (family.secondParent ?? 0) as number;
+  updateNodeData.fatherId = (family.fatherId ?? 0) as number;
+  updateNodeData.motherId = (family.motherId ?? 0) as number;
 
   dispatch(updateTreeNode(updateNodeData)).then(() =>
     dispatch(connectToFamily(childId, familyId))
