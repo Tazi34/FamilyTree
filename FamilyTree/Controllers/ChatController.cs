@@ -50,5 +50,19 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return Ok(resultList);
         }
+        /// <summary>
+        /// Pobiera podstawowe informacje o userze
+        /// </summary>
+        /// <param name="chatUser">Id użytkownika z którym była prowadzona rozmowa</param>
+        /// <returns></returns>
+        [Route("GetChat/{chatUser:int}")]
+        [HttpGet]
+        public ActionResult<UserInfoResponse> GetChatUserInfo(int chatUser)
+        {
+            var resultList = chatService.GetChatUserInfo(chatUser);
+            if (resultList == null)
+                return BadRequest();
+            return Ok(resultList);
+        }
     }
 }
