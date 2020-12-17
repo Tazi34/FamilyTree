@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using FamilyTree.Services;
 using FamilyTree.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyTree.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ChatController: ControllerBase

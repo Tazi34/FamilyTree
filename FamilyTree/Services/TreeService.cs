@@ -56,7 +56,6 @@ namespace FamilyTree.Services
                     ChildId = child_node.NodeId
                 });
             }
-
             var parents = new List<NodeNode>();
             var fatherNode = tree.Nodes.SingleOrDefault(n => n.NodeId == model.FatherId);
             if(fatherNode != null)
@@ -130,9 +129,8 @@ namespace FamilyTree.Services
                 Parents = new List<NodeNode>(),
                 Partners1 = new List<NodeNodeMarriage>(),
                 Partners2 = new List<NodeNodeMarriage>(),
-                FatherId = 0,
-                MotherId = 0,
-                Description = ""
+                Description = "",
+                Sex = user.Sex
             };
             Tree tree = new Tree
             {
@@ -153,25 +151,9 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return false;
+            if (!treeValidationService.ValidateDeletedNode(node, tree))
+                return false;
             return DeleteNode(node);
-        }
-        private bool DeleteNode(Node node)
-        {
-            if (node.Parents.Count > 0)
-            {
-                var parentsNodeNodes = node.Parents.Where(nn => nn.ChildId == node.NodeId);
-                foreach (var nodeNode in parentsNodeNodes)
-                    context.NodeNode.Remove(nodeNode);
-            }
-            if (node.Partners1.Count > 0)
-            {
-                var partnersNodeNodes = node.Partners1.Where(nnm => nnm.Partner2Id == node.NodeId);
-                foreach (var nodeNode in partnersNodeNodes)
-                    context.NodeNodeMarriage.Remove(nodeNode);
-            }
-            context.Nodes.Remove(node);
-            context.SaveChanges();
-            return true;
         }
 
         public NodeResponse GetNode(int nodeId, int userId)
@@ -231,61 +213,57 @@ namespace FamilyTree.Services
                 node.Surname = model.Surname;
             if (!string.IsNullOrWhiteSpace(model.PictureUrl))
                 node.PictureUrl = model.PictureUrl;
-            if (model.Children != null)
+            foreach (int child in model.Children)
             {
-                foreach (int child in model.Children)
+                var currentChild = node.Children.SingleOrDefault(c => c.ChildId == child);
+                if (currentChild == null)
                 {
-                    var currentChild = node.Children.SingleOrDefault(c => c.ChildId == child);
-                    if (currentChild == null)
+                    var child_node = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
+                    if(child_node != null)
                     {
-                        var child_node = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
-                        if(child_node != null)
+                        var rel = new NodeNode
                         {
-                            var rel = new NodeNode
-                            {
-                                ChildId = child_node.NodeId,
-                                Child = child_node,
-                                ParentId = node.NodeId,
-                                Parent = node
-                            };
-                            context.NodeNode.Add(rel);
-                        }
-                        return null;
+                            ChildId = child_node.NodeId,
+                            Child = child_node,
+                            ParentId = node.NodeId,
+                            Parent = node
+                        };
+                        context.NodeNode.Add(rel);
                     }
+                    return null;
                 }
             }
-            if(model.Partners != null)
+            foreach (int partner in model.Partners)
             {
-                foreach (int partner in model.Partners)
+                var currentPartner1 = node.Partners1.SingleOrDefault(c => c.Partner1Id == partner);
+                if (currentPartner1 == null)
                 {
-                    var currentPartner1 = node.Partners1.SingleOrDefault(c => c.Partner1Id == partner);
-                    if (currentPartner1 == null)
+                    var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
+                    if (partnerNode != null)
                     {
-                        var partnerNode = tree.Nodes.SingleOrDefault(n => n.NodeId == partner);
-                        if (partnerNode != null)
+                        var rel1 = new NodeNodeMarriage
                         {
-                            var rel1 = new NodeNodeMarriage
-                            {
-                                Partner1 = partnerNode,
-                                Partner1Id = partnerNode.NodeId,
-                                Partner2 = node,
-                                Partner2Id = node.NodeId,
-                            };
-                            var rel2 = new NodeNodeMarriage
-                            {
-                                Partner2 = partnerNode,
-                                Partner2Id = partnerNode.NodeId,
-                                Partner1 = node,
-                                Partner1Id = node.NodeId,
-                            };
-                            context.NodeNodeMarriage.Add(rel1);
-                            context.NodeNodeMarriage.Add(rel2);
-                        }
-                        return null;
+                            Partner1 = partnerNode,
+                            Partner1Id = partnerNode.NodeId,
+                            Partner2 = node,
+                            Partner2Id = node.NodeId,
+                        };
+                        var rel2 = new NodeNodeMarriage
+                        {
+                            Partner2 = partnerNode,
+                            Partner2Id = partnerNode.NodeId,
+                            Partner1 = node,
+                            Partner1Id = node.NodeId,
+                        };
+                        context.NodeNodeMarriage.Add(rel1);
+                        context.NodeNodeMarriage.Add(rel2);
                     }
+                    return null;
                 }
             }
             node.UserId = model.UserId;
+            if (!string.IsNullOrWhiteSpace(model.Sex))
+                node.Sex = model.Sex;
             context.SaveChanges();
             return GetTree(model.TreeId, userId);
         }
@@ -313,6 +291,24 @@ namespace FamilyTree.Services
             while(tree.Nodes.Count > 0)
                 DeleteNode(tree.Nodes.First());
             context.Trees.Remove(tree);
+            context.SaveChanges();
+            return true;
+        }
+        private bool DeleteNode(Node node)
+        {
+            if (node.Parents.Count > 0)
+            {
+                var parentsNodeNodes = node.Parents.Where(nn => nn.ChildId == node.NodeId);
+                foreach (var nodeNode in parentsNodeNodes)
+                    context.NodeNode.Remove(nodeNode);
+            }
+            if (node.Partners1.Count > 0)
+            {
+                var partnersNodeNodes = node.Partners1.Where(nnm => nnm.Partner2Id == node.NodeId);
+                foreach (var nodeNode in partnersNodeNodes)
+                    context.NodeNodeMarriage.Remove(nodeNode);
+            }
+            context.Nodes.Remove(node);
             context.SaveChanges();
             return true;
         }

@@ -8,6 +8,7 @@ using FamilyTree.Services;
 using FamilyTree.Entities;
 using FamilyTree.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyTree.Controllers
 {
@@ -74,6 +75,7 @@ namespace FamilyTree.Controllers
         /// <param name="model">CreateTreeRequest</param>
         /// <returns>Zwraca stworzone drzewo</returns>
         [HttpPost]
+        [Authorize]
         [Route("")]
         public ActionResult<TreeResponse> CreateTree(CreateTreeRequest model)
         {
@@ -89,6 +91,7 @@ namespace FamilyTree.Controllers
         /// <param name="model"></param>
         /// <returns>Zwraca całe zmodyfikowane drzewo</returns>
         [HttpPut]
+        [Authorize]
         [Route("")]
         public ActionResult<TreeResponse> ModifyTree(ModifyTreeRequest model)
         {
@@ -104,6 +107,7 @@ namespace FamilyTree.Controllers
         /// <param name="model">CreateNodeRequest</param>
         /// <returns>Zwraca całe drzewo</returns>
         [HttpPost]
+        [Authorize]
         [Route("node")]
         public ActionResult<NodeResponse> CreateNode(CreateNodeRequest model)
         {
@@ -119,6 +123,7 @@ namespace FamilyTree.Controllers
         /// <param name="model">ModifyNodeRequest</param>
         /// <returns>Zwraca całe drzewo</returns>
         [HttpPut]
+        [Authorize]
         [Route("node")]
         public ActionResult<TreeResponse> ModifyNode(ModifyNodeRequest model)
         {
@@ -134,6 +139,7 @@ namespace FamilyTree.Controllers
         /// <param name="node_id">id node do usunięcia</param>
         /// <returns>status</returns>
         [HttpDelete]
+        [Authorize]
         [Route("node/{node_id:int}")]
         public ActionResult DeleteNode(int node_id)
         {
@@ -144,6 +150,7 @@ namespace FamilyTree.Controllers
             return Ok();
         }
         [HttpDelete]
+        [Authorize]
         [Route("{tree_id:int}")]
         public ActionResult DeleteTree(int tree_id)
         {

@@ -11,9 +11,22 @@ namespace FamilyTree.Services
     {
         public bool ValidateNewNode(CreateNodeRequest model, Tree tree);
         public bool ValidateModifiedNode(ModifyNodeRequest model, Tree tree);
+        public bool ValidateDeletedNode(Node node, Tree tree);
     }
     public class TreeValidationService : ITreeValidationService
     {
+        public bool ValidateDeletedNode(Node node, Tree tree)
+        {
+            if (node.UserId == 0)
+                return true;
+            foreach(var n in tree.Nodes)
+            {
+                if (n.UserId != 0 && n.NodeId != node.NodeId)
+                    return true;
+            }
+            return false;
+        }
+
         public bool ValidateModifiedNode(ModifyNodeRequest model, Tree tree)
         {
             if(model.FatherId != 0 && tree.Nodes.SingleOrDefault(n => n.NodeId == model.FatherId) == null)
