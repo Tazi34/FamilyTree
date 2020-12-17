@@ -24,16 +24,22 @@ namespace FamilyTree.Services
     public class TreeService : ITreeService
     {
         private DataContext context;
-        public TreeService(DataContext dataContext)
+        private ITreeAuthService treeAuthService;
+        public TreeService(DataContext dataContext, ITreeAuthService treeAuthService)
         {
             context = dataContext;
+            this.treeAuthService = treeAuthService;
         }
 
         public NodeResponse CreateNode(int userId, CreateNodeRequest model)
         {
             var tree = GetTreeFromContext(model.TreeId);
+            var user = GetUserFromContext(userId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
+                return null;
 
-            if (tree == null || (!IsUserInTree(tree, userId) && tree.IsPrivate) || !ValidateNode(model, tree))
+            if (!ValidateNode(model, tree))
                 return null;
 
             var children = new List<NodeNode>();
@@ -108,8 +114,9 @@ namespace FamilyTree.Services
 
         public TreeResponse CreateTree(int userId, CreateTreeRequest model)
         {
-            var user = context.Users.SingleOrDefault(user => user.UserId == userId);
-            if (user == null)
+            var user = GetUserFromContext(userId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.Everybody, authLevel))
                 return null;
             Node node = new Node
             {
@@ -137,22 +144,18 @@ namespace FamilyTree.Services
             return GetTree(tree.TreeId, user.UserId);
         }
 
-        public bool DeleteNode(int userId, int NodeId)
-        {
-            var node = context.Nodes.SingleOrDefault(n => n.NodeId == NodeId);
-            if (node == null)
-                return true;
-            var tree = context.Trees.Include(x => x.Nodes).SingleOrDefault(tree => tree.TreeId == node.TreeId);
-            if (tree != null && IsUserInTree(tree, userId))
-            {
-                DeleteNode(node.NodeId);
-                return true;
-            }
-            return false;
-        }
-        private bool DeleteNode(int nodeId)
+        public bool DeleteNode(int userId, int nodeId)
         {
             var node = GetNodeFromContext(nodeId);
+            var user = GetUserFromContext(userId);
+            var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
+                return false;
+            return DeleteNode(node);
+        }
+        private bool DeleteNode(Node node)
+        {
             if (node.Parents.Count > 0)
             {
                 var parentsNodeNodes = node.Parents.Where(nn => nn.ChildId == node.NodeId);
@@ -173,41 +176,36 @@ namespace FamilyTree.Services
         public NodeResponse GetNode(int nodeId, int userId)
         {
             var node = GetNodeFromContext(nodeId);
-            if (node == null)
+            var user = GetUserFromContext(userId);
+            var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
-            var tree = context.Trees.Include(x => x.Nodes).ThenInclude(x => x.Children).SingleOrDefault(tree => tree.TreeId == node.TreeId);
-            if (tree != null && (!tree.IsPrivate || IsUserInTree(tree, userId)))
-            {
-                return new NodeResponse(node);
-            }
-            return null;
+            return new NodeResponse(node);
         }
 
         public TreeResponse GetTree(int treeId, int userId)
         {
+            var user = GetUserFromContext(userId);
             var tree = GetTreeFromContext(treeId);
-            if (tree != null && (!tree.IsPrivate || IsUserInTree(tree, userId)))
-            {
-                return new TreeResponse(tree);
-            }
-            return null;
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
+                return null;
+            return new TreeResponse(tree);
         }
 
-        public TreeUserResponse GetUserTrees(int id, int claimId)
+        public TreeUserResponse GetUserTrees(int userId, int askingUserId)
         {
-            var trees = context.Trees.Include(x => x.Nodes).Where(tree => tree.Nodes.Any(node => node.UserId == id));
-            if (trees == null)
-                return null;
+            var askingUser = GetUserFromContext(askingUserId);
+            var treeList = GetUserTreesFromContext(userId);
             var authorizedTrees = new List<FlatTree>();
-            foreach(Tree tree in trees)
+            foreach(Tree tree in treeList)
             {
-                if (!tree.IsPrivate || IsUserInTree(tree, claimId))
+                var authLevel = treeAuthService.GetTreeAuthLevel(askingUser, tree);
+                if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                     authorizedTrees.Add(new FlatTree(tree));
             }
-            return new TreeUserResponse
-            {
-                Trees = authorizedTrees
-            };
+            return new TreeUserResponse(authorizedTrees);
         }
 
         public bool IsUserInTree(Tree tree, int userId)
@@ -222,12 +220,16 @@ namespace FamilyTree.Services
 
         public TreeResponse ModifyNode(int userId, ModifyNodeRequest model)
         {
-            var tree = GetTreeFromContext(model.TreeId);
-            if (tree == null || !IsUserInTree(tree, userId) || !ValidateNode(model, tree))
+            var node = GetNodeFromContext(model.NodeId);
+            var user = GetUserFromContext(userId);
+            var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InNode, authLevel))
                 return null;
-            var node = tree.Nodes.SingleOrDefault(n => n.NodeId == model.NodeId);
-            if (node == null)
+
+            if (!ValidateNode(model, tree))
                 return null;
+
             if(model.Birthday != null)
                 node.Birthday = model.Birthday;
             if (!string.IsNullOrWhiteSpace(model.Description))
@@ -299,8 +301,10 @@ namespace FamilyTree.Services
 
         public TreeResponse ModifyTree(int userId, ModifyTreeRequest model)
         {
-            var tree = context.Trees.Include(x => x.Nodes).SingleOrDefault(tree => tree.TreeId == model.TreeId);
-            if (!IsUserInTree(tree, userId))
+            var user = GetUserFromContext(userId);
+            var tree = GetTreeFromContext(model.TreeId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return null;
             tree.Name = model.Name;
             tree.IsPrivate = model.IsPrivate;
@@ -355,16 +359,18 @@ namespace FamilyTree.Services
 
         public bool DeleteTree(int userId, int treeId)
         {
+            var user = GetUserFromContext(userId);
             var tree = GetTreeFromContext(treeId);
-            if (tree == null || !IsUserInTree(tree, userId))
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return false;
             while(tree.Nodes.Count > 0)
-                DeleteNode(tree.Nodes.First().NodeId);
+                DeleteNode(tree.Nodes.First());
             context.Trees.Remove(tree);
             context.SaveChanges();
             return true;
         }
-        private Tree GetTreeFromContext(int treeId)
+        private Tree GetTreeFromContext (int treeId)
         {
             return context.Trees
                 .Include(x => x.Nodes).ThenInclude(x => x.Children)
@@ -373,7 +379,7 @@ namespace FamilyTree.Services
                 .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
                 .SingleOrDefault(tree => tree.TreeId == treeId);
         }
-        private Node GetNodeFromContext(int nodeId)
+        private Node GetNodeFromContext (int nodeId)
         {
             return context.Nodes
                 .Include(n => n.Children)
@@ -381,6 +387,21 @@ namespace FamilyTree.Services
                 .Include(n => n.Partners1)
                 .Include(n => n.Partners2)
                 .SingleOrDefault(n => n.NodeId == nodeId);
+        }
+        private User GetUserFromContext (int userId)
+        {
+            if (userId == 0)//user with no token
+                return new User { UserId = 0 };
+            return context.Users.SingleOrDefault(u => u.UserId == userId);
+        }
+        private List<Tree> GetUserTreesFromContext (int userId)
+        {
+            return context.Trees
+                .Include(x => x.Nodes).ThenInclude(x => x.Children)
+                .Include(x => x.Nodes).ThenInclude(x => x.Parents)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
+                .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
+                .Where(tree => tree.Nodes.Any(node => node.UserId == userId)).ToList();
         }
     }
 }
