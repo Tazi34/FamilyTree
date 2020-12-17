@@ -50,12 +50,15 @@ namespace FamilyTree
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
+            services.AddHttpClient();
+
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITreeService, TreeService>();
             services.AddScoped<IBlogService, BlogService>();
             services.AddScoped<IChatService, ChatService>();
             services.AddScoped<IPasswordService, PasswordService>();
+            services.AddScoped<IFacebookService, FacebookService>();
 
             services.AddSwaggerGen(c =>
             {
