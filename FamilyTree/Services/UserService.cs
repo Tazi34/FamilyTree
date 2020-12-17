@@ -11,6 +11,7 @@ namespace FamilyTree.Services
     public interface IUserService
     {
         AuthenticateResponse Authenticate(string email, string password);
+        AuthenticateResponse AuthenticateFacebook(FacebookUserInfoResult userInfo);
         User GetUserById(int userId);
         AuthenticateResponse CreateUser(CreateUserRequest model);
         AuthenticateResponse Modify(ModifyUserRequest model);
@@ -35,6 +36,32 @@ namespace FamilyTree.Services
             if (user == null || !passwordService.Compare(user.PasswordHash, password, user.Salt))
                 return null;
 
+            return CreateResponse(user);
+        }
+
+        public AuthenticateResponse AuthenticateFacebook(FacebookUserInfoResult userInfo)
+        {
+            var user = context.Users.Include(u => u.PrevSurnames).SingleOrDefault(u => u.Email.Equals(userInfo.Email));
+            if(user == null)
+            {
+                user = new User
+                {
+                    Name = userInfo.FirstName,
+                    Surname = userInfo.LastName,
+                    Email = userInfo.Email,
+                    Role = Role.User,
+                    PrevSurnames = new List<PreviousSurname>(),
+                    PictureUrl = userInfo.Picture.Details.Url.ToString()
+                };
+                context.Users.Add(user);
+                context.SaveChanges();
+                return CreateResponse(user);
+            }
+            user.PictureUrl = userInfo.Picture.Details.Url.ToString();
+            user.Name = userInfo.FirstName;
+            user.Surname = userInfo.LastName;
+            context.Users.Update(user);
+            context.SaveChanges();
             return CreateResponse(user);
         }
 
@@ -153,7 +180,8 @@ namespace FamilyTree.Services
                 UserId = user.UserId,
                 Token = tokenService.GetToken(user.UserId),
                 Role = user.Role,
-                PreviousSurnames = user.PrevSurnames.Select(x => x.Surname).ToList()
+                PreviousSurnames = user.PrevSurnames.Select(x => x.Surname).ToList(),
+                PictureUrl = user.PictureUrl
             };
         }
     }
