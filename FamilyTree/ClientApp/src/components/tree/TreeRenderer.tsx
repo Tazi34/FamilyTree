@@ -33,7 +33,6 @@ import { FamilyNode } from "./model/FamilyNode";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import {
-  addParent,
   deleteNode,
   selectAllFamilies,
   selectAllNodesLocal,
@@ -57,6 +56,8 @@ import {
 } from "./reducer/utils/getOutboundLinks";
 import { connectAsChildAsync } from "./reducer/updateNodes/connectAsChild";
 import "./treeRenderer.css";
+import { addParentAsync } from "./reducer/updateNodes/addParent";
+import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -309,24 +310,22 @@ const TreeRenderer = (props: TreeRendererProps) => {
     });
     //TODO ID
     const newFakePerson = Math.floor(Math.random() * 1000000 + 10000) + 100;
-    const newPerson: Person = {
-      id: newFakePerson,
+    const newPerson: CreateNodeRequestData = {
       treeId: props.nodes[0].treeId,
-      information: {
-        name: "New",
-        surname: "Node",
-        birthday: "20-05-1454",
-        description: "",
-        pictureUrl: "",
-      },
-      fatherId: null,
-      motherId: null,
+      name: "New",
+      surname: "Node",
+      birthday: "2020-12-17T07:15:08.998Z",
+      description: "",
+      pictureUrl: "",
+      userId: 0,
+      fatherId: 0,
+      motherId: 0,
       children: [],
       partners: [],
     };
 
     addPlusIcon(peopleNodesSelector, (node: PersonNode) => {
-      dispatch(addParent(node.id as number, newPerson));
+      dispatch(addParentAsync(node.id as number, newPerson));
     });
 
     //addGearIcon(peopleNodesSelector);
@@ -511,7 +510,7 @@ const checkIfCanConnectAsChild = (
 
   const childNode = nodesCopy.find((n) => n.id == childId) as PersonNode;
   childNode.families.push(familyNode.id);
-  childNode.firstParent = parentId;
+  childNode.fatherId = parentId;
 
   nodesCopy.push(familyNode);
   var hasCycle = isGraphCyclic(nodesCopy);
@@ -528,7 +527,7 @@ const checkIfCanConnectToFamily = (
 
   familyNode.children.push(childId);
 
-  const parentsIds = [familyNode.firstParent, familyNode.secondParent].filter(
+  const parentsIds = [familyNode.fatherId, familyNode.motherId].filter(
     (a) => a
   ) as EntityId[];
 
@@ -540,8 +539,8 @@ const checkIfCanConnectToFamily = (
 
   const childNode = nodesCopy.find((node) => node.id == childId) as PersonNode;
 
-  childNode.firstParent = familyNode.firstParent;
-  childNode.secondParent = familyNode.secondParent;
+  childNode.fatherId = familyNode.fatherId;
+  childNode.motherId = familyNode.motherId;
 
   return !isGraphCyclic(nodesCopy);
 };

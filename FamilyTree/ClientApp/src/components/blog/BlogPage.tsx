@@ -28,7 +28,6 @@ interface ParamTypes {
 const BlogPage = (props: any) => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const c = useParams<ParamTypes>();
   const blogId = props.computedMatch.params.blogId;
 
   useEffect(() => {

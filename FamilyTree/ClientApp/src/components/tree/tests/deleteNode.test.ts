@@ -76,7 +76,7 @@ describe("delete-node", () => {
 
     const family = selectAllFamiliesLocal(newState.families)[0];
 
-    expect(family.firstParent).toBeNull();
+    expect(family.fatherId).toBeNull();
   });
 
   it("deleting second parent should remove node from family", () => {
@@ -86,6 +86,6 @@ describe("delete-node", () => {
 
     const family = selectAllFamiliesLocal(newState.families)[0];
 
-    expect(family.secondParent).toBeNull();
+    expect(family.motherId).toBeNull();
   });
 });

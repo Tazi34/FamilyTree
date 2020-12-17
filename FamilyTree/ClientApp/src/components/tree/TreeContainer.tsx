@@ -13,26 +13,22 @@ import { compose } from "recompose";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
 import { ApplicationState } from "../../helpers";
 import { TreeInformation } from "../../model/TreeInformation";
-import data2 from "../../samples/complex.json";
-import TreeInformationPanel from "./TreeInformationPanel";
-import {
-  getTree,
-  addNode,
-  selectAllFamilies,
-  selectAllLinks,
-  selectAllPersonNodes,
-} from "./reducer/treeReducer";
-
 import {
   changeTreeName,
   changeTreeVisibility,
   usersTreesSelectors,
 } from "../userTreeList/usersTreeReducer";
+import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
+import {
+  addNode,
+  getTree,
+  selectAllFamilies,
+  selectAllLinks,
+  selectAllPersonNodes,
+} from "./reducer/treeReducer";
+import TreeInformationPanel from "./TreeInformationPanel";
 import TreeRenderer from "./TreeRenderer";
 import { ZoomContainer } from "./Zoom";
-import { PersonInformation } from "./model/PersonNode";
-import { Person } from "../../model/TreeStructureInterfaces";
-import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 
 type TreeContainerState = {
   isAddMenuOpen: boolean;
@@ -45,6 +41,12 @@ const styles = (theme: Theme) => ({
     left: 0,
     position: `relative`,
   } as any,
+  treeBackground: {
+    width: "100%",
+    margin: "0 auto",
+    height: "100%",
+    background: "radial-gradient(#e0e0e0,grey)",
+  },
 });
 
 class TreeContainer extends React.Component<any, TreeContainerState> {
@@ -67,7 +69,7 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
 
   componentDidMount() {
     this.props.getTree(1);
-
+    console.log(this.props);
     document.addEventListener("mousedown", this.handleCloseMenu);
   }
 
@@ -113,13 +115,13 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
     };
     this.props.addEmptyNode(createNodeData);
   };
-  handleConnectChild = () => {};
+
   render() {
     if (this.props.isLoading) return null;
 
     const { classes, treeInformation } = this.props;
     return (
-      <div style={{ width: "100%", height: "100%" }}>
+      <div className={classes.treeBackground}>
         <div className={classes.treeInformationPanel}>
           <TreeInformationPanel
             treeInformation={treeInformation}
@@ -159,14 +161,14 @@ class TreeContainer extends React.Component<any, TreeContainerState> {
               display: this.state.isAddMenuOpen ? "" : "none",
             }}
           >
-            <MenuList>
+            {/* <MenuList>
               <MenuItem>Add parent</MenuItem>
               <MenuItem>Connect parent</MenuItem>
               <MenuItem>Add child</MenuItem>
               <MenuItem onClick={this.handleConnectChild}>
                 Connect child
               </MenuItem>
-            </MenuList>
+            </MenuList> */}
           </Paper>
         </ClickAwayListener>
       </div>
