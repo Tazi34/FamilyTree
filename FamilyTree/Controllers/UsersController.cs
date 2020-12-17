@@ -19,9 +19,11 @@ namespace FamilyTree.Controllers
     public class UsersController : ControllerBase
     {
         private UserService userService;
-        public UsersController(IUserService userService)
+        private IFacebookService facebookService;
+        public UsersController(IUserService userService, IFacebookService facebookService)
         {
             this.userService = (UserService)userService;
+            this.facebookService = facebookService;
         }
         /// <summary>
         /// Uzyskanie tokena
@@ -73,10 +75,16 @@ namespace FamilyTree.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        [Route("facebook")]
-        public string Facebook()
+        [Route("facebook/{access_token}")]
+        public async Task<ActionResult<AuthenticateResponse>> Facebook(string access_token)
         {
-            return "facebook test";
+            FacebookUserInfoResult userInfo = await facebookService.GetUserInfo(access_token);
+            if (userInfo == null)
+                return BadRequest();
+            var response = userService.AuthenticateFacebook(userInfo);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
         }
         /// <summary>
         /// TODO

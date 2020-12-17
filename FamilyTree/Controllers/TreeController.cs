@@ -128,5 +128,30 @@ namespace FamilyTree.Controllers
                 return BadRequest("No authorization or other error");
             return Ok(tree);
         }
+        /// <summary>
+        /// Usuwa node z drzewa
+        /// </summary>
+        /// <param name="node_id">id node do usunięcia</param>
+        /// <returns>status</returns>
+        [HttpDelete]
+        [Route("node/{node_id:int}")]
+        public ActionResult DeleteNode(int node_id)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            bool result = treeService.DeleteNode(userId, node_id);
+            if (!result)
+                return BadRequest();
+            return Ok();
+        }
+        [HttpDelete]
+        [Route("{tree_id:int}")]
+        public ActionResult DeleteTree(int tree_id)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            bool result = treeService.DeleteTree(userId, tree_id);
+            if (!result)
+                return BadRequest();
+            return Ok();
+        }
     }
 }
