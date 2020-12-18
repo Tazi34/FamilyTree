@@ -1,7 +1,7 @@
 import { Box, Divider, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
-import FriendsListProvider from "./FriendsListProvider";
+import LatestChatsProvider from "./LatestChatsProvider";
 import InvitationIcon from "@material-ui/icons/InsertInvitation";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -42,7 +42,7 @@ const FriendsPanel = (props: any) => {
         </Box>
 
         <Divider></Divider>
-        <FriendsListProvider></FriendsListProvider>
+        <LatestChatsProvider></LatestChatsProvider>
       </Paper>
     </Box>
   );

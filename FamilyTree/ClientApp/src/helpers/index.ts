@@ -1,9 +1,20 @@
+import { ChatsState } from "../components/chat/chatReducer";
+import { AuthenticationState } from "../components/loginPage/authenticationReducer";
 import {
-  UserTreesState,
-  initialUserTreesState,
-  userTreesReducer,
-} from "./../components/userTreeList/usersTreeReducer";
-import { treeInitialState } from "../components/tree/reducer/treeReducer";
+  connectionReducer,
+  connectionsInitialState,
+  ConnectionState,
+} from "../components/tree/connectionReducer";
+import {
+  treeInitialState,
+  treeReducer,
+  TreeState,
+} from "../components/tree/reducer/treeReducer";
+import {
+  postsInitialState,
+  postsReducer,
+  PostsState,
+} from "./../components/blog/redux/postsReducer";
 import {
   chatInitialState,
   chatReducer,
@@ -12,21 +23,11 @@ import {
   authenticationInitialState,
   authenticationReducer,
 } from "./../components/loginPage/authenticationReducer";
-
-import { combineReducers } from "redux";
-import { treeReducer, TreeState } from "../components/tree/reducer/treeReducer";
 import {
-  postsInitialState,
-  postsReducer,
-  PostsState,
-} from "./../components/blog/redux/postsReducer";
-import { AuthenticationState } from "../components/loginPage/authenticationReducer";
-import { ChatsState } from "../components/chat/chatReducer";
-import {
-  connectionReducer,
-  ConnectionState,
-  connectionsInitialState,
-} from "../components/tree/connectionReducer";
+  initialUserTreesState,
+  userTreesReducer,
+  UserTreesState,
+} from "./../components/userTreeList/usersTreeReducer";
 
 // The top-level state object
 export interface ApplicationState {
