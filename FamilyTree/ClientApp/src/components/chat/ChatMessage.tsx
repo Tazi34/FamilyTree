@@ -29,19 +29,21 @@ const useStyles = makeStyles((theme: Theme) => ({
   incomingContainer: { justifyContent: "flex-start" },
 }));
 type Props = {
+  receiverId: number;
   message: Message;
 };
-const ChatMessage = ({ message }: Props) => {
+const ChatMessage = ({ receiverId, message }: Props) => {
   const classes = useStyles();
+  const isOutgoing = message.toId === receiverId;
   return (
     <div
       className={`${classes.messageContainer} ${
-        message.outgoing ? classes.outgoingContainer : classes.incomingContainer
+        isOutgoing ? classes.outgoingContainer : classes.incomingContainer
       }`}
     >
       <div
         className={`${
-          message.outgoing ? classes.outgoingMessage : classes.incomingMessage
+          isOutgoing ? classes.outgoingMessage : classes.incomingMessage
         } ${classes.message}`}
       >
         {message.text}

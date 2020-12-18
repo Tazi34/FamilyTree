@@ -1,4 +1,4 @@
-import { makeStyles, Paper } from "@material-ui/core";
+import { Button, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import { useDispatch, useSelector } from "react-redux";
 import { Post } from "../../model/Post";
@@ -14,12 +14,19 @@ import {
 import React, { useEffect } from "react";
 import { ApplicationState } from "../../helpers";
 import { useParams } from "react-router";
+import { RichTextEditor } from "../richTextEditor/RichTextEditor";
+import { tryOpenChat } from "../chat/chatReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: "80%",
     margin: "50px auto",
     padding: 30,
+  },
+  textEditorContainer: {
+    width: 700,
+    height: 400,
+    background: "grey",
   },
 }));
 interface ParamTypes {
@@ -41,6 +48,9 @@ const BlogPage = (props: any) => {
   const handlePostDelete = (id: number) => {
     dispatch(deletePost(id));
   };
+  const handleContact = () => {
+    dispatch(tryOpenChat(blogId));
+  };
   const posts = useSelector((state: ApplicationState): Post[] => {
     var p = state.posts;
     var r = p.ids.map((i) => p.entities[i]) as Post[];
@@ -53,6 +63,11 @@ const BlogPage = (props: any) => {
 
   return (
     <Paper className={classes.root}>
+      <div className={classes.textEditorContainer}>
+        <Button onClick={handleContact}>Contact</Button>
+        <RichTextEditor></RichTextEditor>
+      </div>
+
       <PostCreator onAddPost={handlePostAdd}></PostCreator>
       <div>
         <PostsList

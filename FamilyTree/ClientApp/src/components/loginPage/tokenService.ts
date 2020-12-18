@@ -1,7 +1,7 @@
 import Axios from "axios";
 
 const authorizationHeader = "Authorization";
-const tokenLocalStorageKey = "userToken";
+export const tokenLocalStorageKey = "userToken";
 
 const appendAuthorizationTokenToRequests = (token: string) => {
   Axios.defaults.headers.common[authorizationHeader] = `Bearer ${token}`;

@@ -4,9 +4,9 @@ import thunk, { ThunkDispatch } from "redux-thunk";
 import { ApplicationState, initialAppState } from "../../../helpers";
 import {
   closeChat,
-  createChat,
-  currentChatsSelector,
   openChat,
+  currentChatsSelector,
+  tryOpenChat,
 } from "../chatReducer";
 import { chatReducer, currentChatsSelectorLocal } from "./../chatReducer";
 type DispatchExts = ThunkDispatch<ApplicationState, void, AnyAction>;
@@ -41,17 +41,17 @@ describe("delete-node", () => {
   });
 
   it("given already opened chat should close it", () => {
-    store.dispatch(openChat(1));
+    store.dispatch(tryOpenChat(1));
 
     var actions = store.getActions();
 
     expect(actions[0].type).toBe(closeChat.type);
   });
   it("given not already opened chat should open it", () => {
-    store.dispatch(openChat(2));
+    store.dispatch(tryOpenChat(2));
 
     var actions = store.getActions();
 
-    expect(actions[0].type).toBe(createChat.pending.type);
+    expect(actions[0].type).toBe(openChat.pending.type);
   });
 });

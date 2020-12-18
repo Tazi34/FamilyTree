@@ -1,4 +1,4 @@
-import * as signalR from "@microsoft/signalr";
+import { AxiosResponse } from "axios";
 import {
   createAction,
   createAsyncThunk,
@@ -7,116 +7,111 @@ import {
   createReducer,
   EntityState,
 } from "@reduxjs/toolkit";
-import Axios, { AxiosResponse } from "axios";
-import { dispatch } from "d3";
 import { ApplicationState } from "../../helpers";
-import { baseURL, CHAT_API_URL, localURL } from "../../helpers/apiHelpers";
-import { Friend } from "../../model/Friend";
+import chatAPI from "./API/chatAPI";
 
-const connectionBuilder = new signalR.HubConnectionBuilder().withUrl(
-  "https://familytree.azurewebsites.net/chatHub",
-  {
-    accessTokenFactory: () =>
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEiLCJuYmYiOjE2MDc3MDk5MTAsImV4cCI6MTYwODMxNDcxMCwiaWF0IjoxNjA3NzA5OTEwfQ.J-8oxsOxnGpLWy3rZ2yRguc4FDR9w8pn4hCYB9moSwY",
-  }
-);
-type ConnectionHub = any;
+import { getLatestChats } from "./reducer/getLatestChats";
+import { GetChatResponse } from "./API/getChat";
 
 export type Message = {
-  date: Date;
-  outgoing: boolean;
+  creationTime: Date;
   text: string;
-  id: number;
+  fromId: number;
+  toId: number;
 };
 export type Chat = {
-  user: {
-    id: number;
-    name: string;
-    surname: string;
-    image: string;
-    messages: Message[];
-  };
+  userId: number;
+  pictureUrl: string;
+  name: string;
+  surname: string;
+  lastMessageTime: string;
+  messages: Message[];
+  loadedMessages: boolean;
 };
 
 export type ChatsState = {
-  latestChats: EntityState<Friend>;
-  currentChats: Chat[];
+  chats: EntityState<Chat>;
+  latestChats: number[];
+  currentChats: number[];
   loadedLatestChats: boolean;
   openChatsLimit: number;
-  connectionHub: ConnectionHub | null;
 };
 
-const prefix = "chat";
+export const chatActionsPrefix = "chat";
 
-const latestChatsAdapter = createEntityAdapter<Friend>();
-
-export const getLatestChats = createAsyncThunk<AxiosResponse<any>, number>(
-  `${prefix}/usersLatestChatsAcquired`,
-  async (userId) => {
-    //TODO zmienic przy deployu backendu
-    return await Axios.get(`${localURL}/latestChats/${userId}`);
-  }
+const chatsAdapter = createEntityAdapter<Chat>({
+  selectId: (chat) => chat.userId,
+});
+export const chatsSelectors = chatsAdapter.getSelectors(
+  (state: ApplicationState) => state.chats.chats
 );
-export const openChat = createAsyncThunk(
+export const chatsSelectorsLocal = chatsAdapter.getSelectors(
+  (state: EntityState<Chat>) => state
+);
+
+export const tryOpenChat = createAsyncThunk(
   "openChat",
-  async (userId: number) => async (dispatch: any, getState: any) => {
-    const state: ApplicationState = getState();
+  async (userId: number, { getState, dispatch }) => {
+    const state = getState() as ApplicationState;
     const openedChats = state.chats.currentChats;
-    var connectionHub = state.chats.connectionHub;
 
-    if (!connectionHub) {
-      var newHub = connectionBuilder.build();
-      await dispatch(connectToHub(newHub)).then(() =>
-        dispatch(setConnectionHub(newHub)).catch(() => dispatch(removeHub()))
-      );
-    }
-
-    if (openedChats.find((chat) => chat.user.id == userId)) {
+    if (openedChats.find((chatId) => chatId == userId)) {
       return dispatch(closeChat(userId));
+    } else {
+      const chat = chatsSelectors.selectById(state, userId);
+      if (chat) {
+        dispatch(openChat(userId));
+        if (!chat.loadedMessages) {
+          dispatch(getMessages(chat));
+        }
+      } else {
+        dispatch(getChat(userId)).then(() => dispatch(tryOpenChat(userId)));
+      }
     }
-
-    return dispatch(createChat(userId));
+  }
+);
+export const getMessages = createAsyncThunk(
+  `${chatActionsPrefix}/getMessages`,
+  async (chat: Chat) => {
+    return await chatAPI.requestMessages({ id: chat.userId });
+  }
+);
+export const getChat = createAsyncThunk<AxiosResponse<GetChatResponse>, number>(
+  `${chatActionsPrefix}/getChat`,
+  async (userId: number) => {
+    return await chatAPI.requestChat({ id: userId });
   }
 );
 
-export const connectToHub = createAsyncThunk<any, any>(
-  `${prefix}/connectToHub`,
-  async (newHub: any) => (dispatch: any, getState: any) => {
-    const state = getState();
-    const connectionHub = state.chats.connectionHub;
-    if (connectionHub) {
-      return;
-    }
-    return newHub.start();
-  }
+export const closeChat = createAction<number>(
+  `${chatActionsPrefix}/chatClosed`
 );
-const removeHub = createAction(`${prefix}/removedConnectionHub`);
 
-const setConnectionHub = createAction<any>(`${prefix}/connectionHubSet`);
-
-export const closeChat = createAction<number>(`${prefix}/chatClosed`);
-
-export const createChat = createAsyncThunk<AxiosResponse<any>, number>(
-  `${prefix}/chatOpened`,
-  async (userId) => {
-    return await Axios.get(`${CHAT_API_URL}/${userId}`);
-  }
-);
+export const openChat = createAction<number>(`${chatActionsPrefix}/chatOpened`);
 
 export const chatInitialState: ChatsState = {
-  latestChats: latestChatsAdapter.getInitialState(),
+  chats: chatsAdapter.getInitialState(),
+  latestChats: [],
   currentChats: [],
   openChatsLimit: 2,
   loadedLatestChats: false,
-  connectionHub: null,
 };
 
 export const sendMessage = createAction(
-  `${prefix}/messageSent`,
-  (userId: number, text: string) => ({
+  `${chatActionsPrefix}/messageSent`,
+  (userId: number, message: string) => ({
     payload: {
       userId,
-      text,
+      message,
+    },
+  })
+);
+export const receiveMessage = createAction(
+  `${chatActionsPrefix}/messageReceived`,
+  (userId: number, message: string) => ({
+    payload: {
+      userId,
+      message,
     },
   })
 );
@@ -125,43 +120,77 @@ export const chatReducer = createReducer<ChatsState>(
   chatInitialState,
   (builder) => {
     builder
+      .addCase(getMessages.fulfilled, (state, action) => {
+        const chatId = action.meta.arg.userId;
+        const chat = state.chats.entities[chatId];
+        if (!chat) {
+          throw "Chat not found";
+        }
+        chat.loadedMessages = true;
+        chat.messages = action.payload.data.messageList;
+      })
       .addCase(getLatestChats.fulfilled, (state, action) => {
-        //TODO finalnie nie bedzie .data.
-        const chats: Friend[] = action.payload.data.users;
+        const chats: Chat[] = action.payload.data.usersList;
+        chats.forEach((chat) => {
+          chat.messages = [];
+          chat.loadedMessages = false;
+        });
 
         state.loadedLatestChats = true;
-        latestChatsAdapter.setAll(state.latestChats, chats);
+        state.latestChats = chats.map((chat) => chat.userId);
+        chatsAdapter.setAll(state.chats, chats);
       })
-      .addCase(createChat.fulfilled, (state, action) => {
-        const friend = action.payload.data;
-        const id = friend.id;
-        const newChat: Chat = {
-          user: friend,
-        };
-
-        var chats = state.currentChats.filter((a) => a.user.id != id);
-
-        if (chats.length >= state.openChatsLimit) {
-          chats = chats.slice(0, state.openChatsLimit - 1);
+      .addCase(openChat, (state, action) => {
+        const chatId = action.payload;
+        var currentChatsExcludingSelected = state.currentChats.filter(
+          (currentChatId) => currentChatId != chatId
+        );
+        if (currentChatsExcludingSelected.length >= state.openChatsLimit) {
+          currentChatsExcludingSelected = currentChatsExcludingSelected.slice(
+            0,
+            state.openChatsLimit - 1
+          );
         }
-        chats.push(newChat);
-        state.currentChats = chats;
+        currentChatsExcludingSelected.push(chatId);
+        state.currentChats = currentChatsExcludingSelected;
       })
       .addCase(closeChat, (state, action) => {
+        const chatId = action.payload;
         state.currentChats = state.currentChats.filter(
-          (a) => a.user.id != action.payload
+          (currentChatId) => currentChatId != chatId
         );
       })
+      .addCase(receiveMessage, (state, action) => {
+        const { message, userId } = action.payload;
+        const chat = state.chats.entities[userId];
+        if (chat && chat.loadedMessages) {
+          chat.messages.push({
+            text: message,
+            fromId: userId,
+            toId: -1,
+            creationTime: new Date(),
+          });
+        }
+      })
+      .addCase(getChat.fulfilled, (state, action) => {
+        const chat = action.payload.data;
+        chat.loadedMessages = false;
+        chat.messages = [];
+
+        chatsAdapter.addOne(state.chats, chat);
+      })
       .addCase(sendMessage, (state, action) => {
-        const chat = state.currentChats.find(
-          (chat) => chat.user.id == action.payload.userId
-        );
-        if (chat) {
-          chat.user.messages.push({
-            id: Math.floor(Math.random() * 100000),
-            date: new Date(),
-            outgoing: true,
-            text: action.payload.text,
+        const { message, userId } = action.payload;
+        const chat = state.chats.entities[userId];
+        if (!chat) {
+          throw "Chat not found";
+        }
+        if (chat && chat.loadedMessages) {
+          chat.messages.push({
+            text: message,
+            fromId: -1,
+            toId: userId,
+            creationTime: new Date(),
           });
         }
       });
@@ -169,9 +198,6 @@ export const chatReducer = createReducer<ChatsState>(
 );
 //SELECTORS
 export const selectChatsState = (state: ApplicationState) => state.chats;
-export const latestsChatsSelector = latestChatsAdapter.getSelectors<ApplicationState>(
-  (state) => state.chats.latestChats
-);
 
 export const currentChatsSelectorLocal = createDraftSafeSelector(
   (state: ChatsState) => state,
@@ -179,9 +205,20 @@ export const currentChatsSelectorLocal = createDraftSafeSelector(
 );
 export const currentChatsSelector = createDraftSafeSelector(
   selectChatsState,
-  (state) => state.currentChats
+  (state) =>
+    state.currentChats
+      .map((chatId) => chatsSelectorsLocal.selectById(state.chats, chatId))
+      .filter((chat) => chat) as Chat[]
 );
 export const finishedChatsLoading = createDraftSafeSelector(
   selectChatsState,
   (state) => state.loadedLatestChats
+);
+
+export const latestChatsSelector = createDraftSafeSelector(
+  selectChatsState,
+  (state) =>
+    state.latestChats
+      .map((chatId) => chatsSelectorsLocal.selectById(state.chats, chatId))
+      .filter((chat) => chat) as Chat[]
 );
