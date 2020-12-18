@@ -1,31 +1,28 @@
 import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useThunkDispatch } from "../..";
-import { Friend } from "../../model/Friend";
-import { friendsList } from "../../samples/componentsSampleData";
 import {
-  latestsChatsSelector,
+  Chat,
   finishedChatsLoading,
-  getLatestChats,
-  openChat,
-  closeChat,
-  currentChatsSelector,
+  latestChatsSelector,
+  tryOpenChat,
 } from "../chat/chatReducer";
+import { getLatestChats } from "../chat/reducer/getLatestChats";
 import { getUser } from "../loginPage/authenticationReducer";
-import FriendsList from "./FriendsList";
+import ChatsList from "./ChatsList";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 
-const FriendsListProvider = (props: any) => {
+const LatestChatsProvider = (props: any) => {
   const dispatch = useThunkDispatch();
   const loadedChats = useSelector(finishedChatsLoading);
-  const latestChats = useSelector(latestsChatsSelector.selectAll);
+  const latestChats = useSelector(latestChatsSelector);
   const user = useSelector(getUser);
 
-  const handleChatClick = (friend: Friend) => {
-    dispatch(openChat(friend.id));
+  const handleChatClick = (friend: Chat) => {
+    dispatch(tryOpenChat(friend.userId));
   };
 
   useEffect(() => {
@@ -35,12 +32,12 @@ const FriendsListProvider = (props: any) => {
   });
 
   return (
-    <FriendsList
+    <ChatsList
       onChatClick={handleChatClick}
-      friendsLimit={5}
-      friends={latestChats}
-    ></FriendsList>
+      chatsLimit={5}
+      chats={latestChats}
+    ></ChatsList>
   );
 };
 
-export default FriendsListProvider;
+export default LatestChatsProvider;
