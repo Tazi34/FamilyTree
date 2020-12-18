@@ -22,13 +22,13 @@ export class PersonNode extends Node {
     x: number,
     y: number,
     children: EntityId[] = [],
-    firstParent: EntityId | null = null,
-    secondParent: EntityId | null = null,
+    fatherId: EntityId | null = null,
+    motherId: EntityId | null = null,
     families: EntityId[] = [],
     partners: EntityId[] = [],
     userId: number | null = null
   ) {
-    super(id, treeId, x, y, false, children, firstParent, secondParent);
+    super(id, treeId, x, y, false, children, fatherId, motherId);
 
     this.personDetails = personDetails;
     this.families = families;

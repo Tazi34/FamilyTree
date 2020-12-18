@@ -44,6 +44,8 @@ import {
   DeleteNodeRequestData,
   DeleteNodeResponse,
 } from "../API/deleteNode/deleteNodeRequest";
+import { addParent, addParentReducerHandler } from "./updateNodes/addParent";
+import { removeNodeFromTree } from "./updateNodes/deleteNode";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -138,10 +140,6 @@ export const changeNodePosition = createAction(
   })
 );
 
-export const deleteNode = createActionWithPayload<PersonNode>(
-  `${treeActionsPrefix}/${personNodesActionsPrefix}/nodeDeleted`
-);
-
 export const setPersonNodes = createActionWithPayload<PersonNode[]>(
   `${treeActionsPrefix}/${personNodesActionsPrefix}/nodesSet`
 );
@@ -164,12 +162,6 @@ export const getTree = createAsyncThunk<AxiosResponse<GetTreeResponse>, number>(
   }
 );
 
-export const addParent = createAction(
-  `${treeActionsPrefix}/${personNodesActionsPrefix}/parentAdded`,
-  (sourceId: number, parent: Person): any => ({
-    payload: { source: sourceId, parent },
-  })
-);
 export const addNode = createAsyncThunk<
   AxiosResponse<CreateNodeResponse>,
   CreateNodeRequestData
@@ -195,11 +187,13 @@ export const moveNode = createAction(
 //REDUCER
 export const treeReducer = createReducer(treeInitialState, (builder) => {
   builder
-    .addCase(deleteNode, (state, action) => {
-      const node = action.payload;
+    .addCase(removeNodeFromTree, (state, action) => {
+      const nodeId = action.payload;
+      const node = selectPersonNodeLocal(state.nodes, nodeId);
+      if (!node) {
+        throw "Unrecognized node. Cant delete";
+      }
 
-      //usun z svg
-      //PersonNodesAdapter.removeOne(state.nodes, node.id);
       var links = [
         ...getOutboundLinks(state, node),
         ...getIncomingLinks(state, node),
@@ -216,23 +210,23 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
             const familyData = family;
 
             const id = node.id;
-            if (familyData.firstParent == id) {
-              familyData.firstParent = null;
-            } else if (familyData.secondParent == id) {
-              familyData.secondParent = null;
+            if (familyData.fatherId == id) {
+              familyData.fatherId = null;
+            } else if (familyData.motherId == id) {
+              familyData.motherId = null;
             } else {
               familyData.children = familyData.children.filter(
                 (a: any) => a != id
               );
             }
             if (
-              (!familyData.firstParent && !familyData.secondParent) ||
+              (!familyData.fatherId && !familyData.motherId) ||
               familyData.children.length == 0
             ) {
               var linksToDelete = [
                 getLinkId(node.id, familyData.id),
-                getLinkId(familyData.firstParent, familyData.id),
-                getLinkId(familyData.secondParent, familyData.id),
+                getLinkId(familyData.fatherId, familyData.id),
+                getLinkId(familyData.motherId, familyData.id),
                 ...familyData.children.map((c: EntityId) =>
                   getLinkId(familyData.id, c)
                 ),
@@ -244,7 +238,7 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
           }
         }
       });
-      personNodesAdapter.removeOne(state.nodes, action.payload.id);
+      personNodesAdapter.removeOne(state.nodes, action.payload);
     })
     .addCase(setPersonNodes, (state, action) => {
       personNodesAdapter.setAll(state.nodes, action.payload);
@@ -274,10 +268,9 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       }
       familyNode.children.push(childId);
 
-      const parentsIds = [
-        familyNode.firstParent,
-        familyNode.secondParent,
-      ].filter((a) => a) as EntityId[];
+      const parentsIds = [familyNode.fatherId, familyNode.motherId].filter(
+        (a) => a
+      ) as EntityId[];
 
       const parents = parentsIds.map((id) =>
         personNodesLocalSelectors.selectById(state.nodes, id)
@@ -287,8 +280,8 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
         parent.children.push(childId);
       });
 
-      childNode.firstParent = familyNode.firstParent;
-      childNode.secondParent = familyNode.secondParent;
+      childNode.fatherId = familyNode.fatherId;
+      childNode.motherId = familyNode.motherId;
       childNode.families.push(familyId);
       const newLink = createLink(familyNode, childNode);
       linksAdapter.addOne(state.links, newLink);
@@ -317,164 +310,28 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       const { childId, parentId } = action.payload;
       addFamily(state, randomFamilyId(), parentId, null, [childId]);
     })
-    .addCase(addParent, (state, action: any) => {
-      const sourceId = action.payload.source as number;
-      const parent = action.payload.parent as Person;
-
-      const sourceNode = selectPersonNodeLocal(state.nodes, sourceId);
-      if (!sourceNode) {
-        return;
-      }
-
-      //ma obu rodzicow
-      //TODO czy dopuszczac cos takieg? pewnie rzucic blad wyzej
-      if (sourceNode.firstParent && sourceNode.secondParent) {
-        return;
-      }
-
-      var newNode: PersonNode = new PersonNode(
-        parent.id,
-        //TODO zmienic
-        1,
-        parent.information,
-        sourceNode.location.x + 100,
-        sourceNode.location.y + 100,
-        [],
-        null,
-        null,
-        [],
-        []
-      );
-      var linksToAdd: Link[];
-
-      if (sourceNode.firstParent || sourceNode.secondParent) {
-        //ma juz jednego rodzica -> dodaj do rodziny
-
-        const familyLink = getIncomingLinks(state, sourceNode)[0];
-        const familyId = familyLink.source;
-        const family = selectFamily(state.families, familyId);
-        if (family) {
-          if (family.firstParent) {
-            family.secondParent = newNode.id;
-            sourceNode.secondParent = newNode.id;
-            newNode.location.x = sourceNode.location.x + X_SEP;
-          } else {
-            family.firstParent = newNode.id;
-            sourceNode.firstParent = newNode.id;
-            newNode.location.x = sourceNode.location.x - X_SEP;
-          }
-          newNode.location.y = family.location.y - Y_SEP;
-          newNode.families.push(family.id);
-
-          linksToAdd = [createLink(newNode, family)];
-        } else {
-          return;
-        }
-      } else {
-        const id = randomFamilyId();
-
-        var familyNode: FamilyNode = new FamilyNode(
-          id,
-          sourceNode.treeId,
-          sourceNode.location.x,
-          sourceNode.location.y - Y_SEP,
-          [sourceNode.id],
-          newNode.id
-        );
-
-        newNode.location.x = familyNode.location.x - X_SEP;
-        newNode.location.y = familyNode.location.y - Y_SEP;
-
-        linksToAdd = [
-          createLink(newNode, familyNode),
-          createLink(familyNode, sourceNode),
-        ];
-        sourceNode.families.push(familyNode.id);
-        sourceNode.firstParent = newNode.id;
-        familyNodesAdapter.addOne(state.families, familyNode);
-        newNode.families.push(familyNode.id);
-      }
-      newNode.children.push(sourceNode.id);
-
-      linksAdapter.addMany(state.links, linksToAdd);
-      personNodesAdapter.addOne(state.nodes, newNode);
-    })
+    .addCase(addParent, addParentReducerHandler)
     .addCase(getTree.fulfilled, (state, action) => {
-      //TODO wyrzucic peopleAdapter
-      const peopleArray: Person[] = action.payload.data.nodes.map((n) => {
-        const information = treeNodeMapper.getPersonInformation(n);
-        var person: Person = {
-          treeId: n.treeId,
-          children: n.children,
-          fatherId: n.fatherId,
-          partners: n.partners,
-          motherId: n.motherId,
-          id: n.nodeId,
-          information,
-        };
+      const nodes: PersonNode[] = action.payload.data.nodes.map((node) =>
+        treeNodeMapper.mapToLocal(node)
+      );
 
-        return person;
-      });
+      var nodesNormalized = mapCollectionToEntity(nodes);
 
-      peopleArray.forEach((p) => {
-        // p.information.name = names[p.nodeId];
-        // p.information.surname = surnames[p.nodeId];
-      });
-
-      peopleArray
-        .filter((p) => p)
-        .forEach((p) => {
-          p!.children = [];
-          p!.families = [];
-          p!.partners = [];
-        });
-
-      //Categorize partners and children
-      peopleArray.forEach((person: Person) => {
-        const { id: id } = person;
-
-        var firstParent: Person | undefined;
-        var secondParent: Person | undefined;
-        if (person.fatherId) {
-          firstParent = peopleArray.find((a) => a.id == person.fatherId);
-          if (!firstParent) {
-            person.fatherId = null;
-          } else {
-            firstParent!.children.push(id);
-          }
-        }
-
-        if (person.motherId) {
-          secondParent = peopleArray.find((a) => a.id == person.motherId);
-          if (!secondParent) {
-            person.motherId = null;
-          } else {
-            secondParent!.children.push(id);
-          }
-        }
-        if (firstParent && secondParent) {
-          if (!firstParent!.partners.includes(secondParent.id)) {
-            firstParent!.partners.push(secondParent.id);
-          }
-          if (!secondParent!.partners.includes(firstParent.id)) {
-            secondParent!.partners.push(firstParent.id);
-          }
-        }
-      });
-
-      var people = mapCollectionToEntity(peopleArray);
-
-      const trees = GetTreeStructures(people);
+      const trees = GetTreeStructures(nodesNormalized);
 
       var roots: any = [];
       var links: string[][] = [];
-      var families: Family[] = [];
+      var families: FamilyNode[] = [];
 
       var connectingNode = {
         id: "connecting_node",
       };
 
       trees.forEach((tree) => {
+        if (tree.people.ids.length == 0) {
+          return;
+        }
         var d3tree = d3
           .sugiyama()
           .nodeSize([100, 100])
@@ -489,14 +346,22 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
         d3tree(dag);
         var nodes = dag.descendants();
 
-        roots.push(nodes.find((a: any) => a.layer == 0));
+        const newRoots = nodes.filter((a: any) => a.layer == 0);
         links = [...links, ...tree.links];
+        const treeRoot = {
+          id:
+            "connecting_subtree_root_" +
+            selectAllPersonNodesLocal(tree.people)[0].graph,
+        };
+        console.log(newRoots);
 
-        roots.forEach((root: any) => {
-          links.push([connectingNode.id, root.id]);
+        newRoots.forEach((root: any) => {
+          links.push([treeRoot.id, root.id]);
         });
+        links.push([connectingNode.id, treeRoot.id]);
         families = [...families, ...tree.families];
       });
+      console.log(links);
 
       var tree = d3
         .sugiyama()
@@ -513,60 +378,26 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       var d3Nodes = dag.descendants();
       var d3Links = dag.links();
 
-      var familyNodes: FamilyNode[] = [];
-      var peopleNodes: PersonNode[] = [];
-      d3Nodes.forEach((n: any) => {
-        var person = selectPersonByIdLocal(people, n.id);
-        if (person) {
-          const personNode = new PersonNode(
-            person.id,
-            person.treeId,
-            person.information,
-            n.x,
-            n.y,
-            person.children,
-            person.fatherId,
-            person.motherId,
-            n.families
-          );
-          peopleNodes.push(personNode);
-        } else {
-          var family = families.find((family) => family.id == n.id);
-          if (family) {
-            const familyNode = new FamilyNode(
-              n.id,
-              n.treeId,
-              n.x,
-              n.y,
-              family.children,
-              family.firstParent,
-              family.secondParent
-            );
-            familyNodes.push(familyNode);
-          } else {
-            n.isVisible = false;
-          }
-        }
+      d3Nodes.forEach((d3Node: any) => {
+        setNodeLocation(nodesNormalized, d3Node, families);
       });
       d3Links.forEach((l: any) => {
-        l.id = getLinkId(l.source.id, l.target.id);
-        l.source = l.source.id;
-        l.target = l.target.id;
+        setLinkEnds(l);
       });
 
-      familyNodes.forEach((node: FamilyNode) => {
+      families.forEach((node: FamilyNode) => {
         var familyMembers: EntityId[] = [];
         const familyId = node.id;
-        if (node.firstParent) {
-          familyMembers.push(node.firstParent);
+        if (node.fatherId) {
+          familyMembers.push(node.fatherId);
         }
-        if (node.secondParent) {
-          familyMembers.push(node.secondParent);
+        if (node.motherId) {
+          familyMembers.push(node.motherId);
         }
         familyMembers = [...node.children, ...familyMembers];
 
         familyMembers.forEach((memberId) => {
-          const memberNode = peopleNodes.find((n) => n.id == memberId);
+          const memberNode = nodes.find((n) => n.id == memberId);
           if (memberNode && !memberNode.families.includes(familyId)) {
             memberNode.families.push(familyId);
           }
@@ -575,8 +406,8 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
 
       state.isLoading = false;
       linksAdapter.setAll(state.links, d3Links);
-      personNodesAdapter.setAll(state.nodes, peopleNodes);
-      familyNodesAdapter.setAll(state.families, familyNodes);
+      personNodesAdapter.setAll(state.nodes, nodes);
+      familyNodesAdapter.setAll(state.families, families);
 
       const { treeId } = action.payload.data;
       state.treeId = treeId;
@@ -595,3 +426,32 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
       const { parentId, child } = action.payload;
     });
 });
+function setLinkEnds(l: any) {
+  l.id = getLinkId(l.source.id, l.target.id);
+  l.source = l.source.id;
+  l.target = l.target.id;
+}
+
+function setNodeLocation(
+  nodesNormalized: EntityState<PersonNode>,
+  d3Node: any,
+  families: FamilyNode[]
+) {
+  var person = selectPersonNodeLocal(nodesNormalized, d3Node.id);
+  if (person) {
+    person.location = {
+      x: d3Node.x,
+      y: d3Node.y,
+    };
+  } else {
+    var family = families.find((family) => family.id == d3Node.id);
+    if (family) {
+      family.location = {
+        x: d3Node.x,
+        y: d3Node.y,
+      };
+    } else {
+      d3Node.isVisible = false;
+    }
+  }
+}

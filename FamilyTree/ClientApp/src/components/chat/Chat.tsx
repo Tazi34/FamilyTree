@@ -12,7 +12,7 @@ import {
 import * as signalR from "@microsoft/signalr";
 
 import { Theme } from "@material-ui/core/styles";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import { Chat as ChatType } from "./chatReducer";
 import SendIcon from "@material-ui/icons/Send";
@@ -72,23 +72,31 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderWidth: 2,
   },
   profilePicture: {
+    fontSize: 34,
     height: "100%",
     width: "100%",
     borderRadius: "50%",
   },
   defaultProfileIcon: {
     border: "50%",
-    fontSize: 42,
+    height: "100%",
+    width: "100%",
+    fontSize: 34,
   },
   chatTextArea: {
     flexGrow: 1,
-    overflowY: "hidden",
+    overflowY: "auto",
+    overscrollBehavior: "contain",
+    overflowX: "hidden",
+    position: "relative",
     padding: 8,
+    flexBasis: 0,
   },
   bottomChatBar: {
-    height: 50,
+    flexBasis: 50,
     display: "flex",
     padding: 8,
+    flexShrink: 0,
   },
   textInputContainer: {
     flexGrow: 1,
@@ -116,43 +124,18 @@ type Props = {
 };
 const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
   const classes = useStyles();
-  const { user } = chat;
 
   const handleChatClose = () => {
-    onChatClose(user.id);
+    onChatClose(chat.userId);
   };
-  const connection = new signalR.HubConnectionBuilder()
-    .withUrl("https://familytree.azurewebsites.net/chatHub", {
-      accessTokenFactory: () =>
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEiLCJuYmYiOjE2MDc3MDk5MTAsImV4cCI6MTYwODMxNDcxMCwiaWF0IjoxNjA3NzA5OTEwfQ.J-8oxsOxnGpLWy3rZ2yRguc4FDR9w8pn4hCYB9moSwY",
-    })
-    .build();
+  const scrollRef = useRef(null);
 
-  connection
-    .start()
-    .then((val: any) => console.log(val))
-    .catch((err: any) => console.log(err));
+  useEffect(() => {
+    const element = scrollRef.current as any;
+    element.scrollTop = element.scrollHeight;
+  }, [chat]);
 
-  connection.on("ReceiveMessage", function (user, message) {
-    var msg = message
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-    var encodedMsg = user + " says " + msg;
-    console.log(`Received ${encodedMsg}`);
-  });
-
-  const sendMessage = (id: number, msg: string) => {
-    console.log(id);
-    console.log(msg);
-    connection
-      .invoke("SendMessage", id.toString(), msg)
-      .then((val: any) => console.log(val))
-      .catch(function (err) {
-        return console.error(err.toString());
-      });
-  };
-
+  const hasPicture = chat.pictureUrl && chat.pictureUrl.length > 0;
   return (
     <div className={classes.chatTab}>
       <Box
@@ -169,8 +152,11 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
                 borderColor="primary.dark"
                 className={classes.pictureContainer}
               >
-                {user.image.length > 0 ? (
-                  <img src={user.image} className={classes.profilePicture} />
+                {hasPicture ? (
+                  <img
+                    src={chat.pictureUrl}
+                    className={classes.profilePicture}
+                  />
                 ) : (
                   <AccountCircleIcon
                     className={classes.defaultProfileIcon}
@@ -179,7 +165,7 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
               </Box>
               <div className={classes.titleContainer}>
                 <Typography variant="h6">
-                  {user.name} {user.surname}
+                  {chat.name} {chat.surname}
                 </Typography>
               </div>
             </div>
@@ -195,9 +181,9 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
           </Box>
           <Divider />
           <div className={classes.chatBody}>
-            <div className={classes.chatTextArea}>
-              {chat.user.messages.map((m) => (
-                <ChatMessage message={m} />
+            <div className={classes.chatTextArea} ref={scrollRef}>
+              {chat.messages.map((message) => (
+                <ChatMessage message={message} receiverId={chat.userId} />
               ))}
             </div>
             <Divider />
@@ -205,8 +191,7 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
             <Formik
               initialValues={{ message: "" }}
               onSubmit={(values, { resetForm }) => {
-                sendMessage(chat.user.id, values.message);
-                //onMessageSend(chat.user.id, values.message);
+                onMessageSend(chat.userId, values.message);
                 resetForm();
               }}
             >

@@ -55,6 +55,7 @@ namespace FamilyTree.Services
             int lesserUserId = user1Id < user2Id ? user1Id : user2Id;
             int greaterUserId = user1Id < user2Id ? user2Id : user1Id;
             var chat = context.Chats.SingleOrDefault(c => c.User1Id == lesserUserId && c.User2Id == greaterUserId);
+            var chats = context.Chats.ToArray();
             if (chat == null)
                 return -1;
             return chat.ChatId;
@@ -77,7 +78,10 @@ namespace FamilyTree.Services
         {
             int chatId = GetChatId(user1, user2);
             if (chatId == -1)
-                return null;
+            {
+                chatId = AddNewChat(user1, user2);
+            }
+
             var messagesList = context.Messages.Where(m => m.ChatId == chatId).OrderByDescending(m => m.CreationTime).Take(100).ToList();
             var resultList = new MessagesListResponse
             {

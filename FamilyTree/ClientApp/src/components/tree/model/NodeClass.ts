@@ -9,8 +9,8 @@ export class Node {
   isVisible: boolean = true;
   isFamily: boolean;
   children: EntityId[] = [];
-  firstParent: EntityId | null = null;
-  secondParent: EntityId | null = null;
+  fatherId: EntityId | null = null;
+  motherId: EntityId | null = null;
   graph: number | undefined = undefined;
   d3Node: any;
   treeId: number;
@@ -33,24 +33,24 @@ export class Node {
     this.location = { x, y };
     this.isFamily = isFamily;
     this.children = children;
-    this.firstParent = firstParent;
-    this.secondParent = secondParent;
-    if (this.firstParent === 0) {
-      this.firstParent = null;
+    this.fatherId = firstParent;
+    this.motherId = secondParent;
+    if (this.fatherId === 0) {
+      this.fatherId = null;
     }
-    if (this.secondParent === 0) {
-      this.secondParent = null;
+    if (this.motherId === 0) {
+      this.motherId = null;
     }
   }
 
   addParent = (parentId: number) => {
-    if (this.firstParent && this.secondParent) {
+    if (this.fatherId && this.motherId) {
       throw "Node has both parents";
     }
-    if (!this.firstParent) {
-      this.firstParent = parentId;
+    if (!this.fatherId) {
+      this.fatherId = parentId;
     } else {
-      this.secondParent = parentId;
+      this.motherId = parentId;
     }
   };
   addChild = (childId: number) => {

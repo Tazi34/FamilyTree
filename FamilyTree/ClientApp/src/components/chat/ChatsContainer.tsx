@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const ChatsContainer = (props: any) => {
   const classes = useStyles();
   const currentChats = useSelector(currentChatsSelector);
+
   const dispatch = useDispatch();
 
   const handleChatClose = (id: number) => {
@@ -35,12 +36,14 @@ const ChatsContainer = (props: any) => {
   const handleMessageSend = (userId: number, text: string) => {
     dispatch(sendMessage(userId, text));
   };
+
   return (
     <div className={classes.chatContainer}>
       <div className={classes.otherContainer}>
         <div className={classes.heightZeroContainer}>
           {currentChats.map((chat) => (
             <Chat
+              key={chat.userId}
               chat={chat}
               onChatClose={handleChatClose}
               onMessageSend={handleMessageSend}

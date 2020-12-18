@@ -2,18 +2,21 @@ import { Box, ButtonBase, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import * as React from "react";
-import { Friend } from "../../model/Friend";
+import { Chat } from "../chat/chatReducer";
 import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
 type Props = {
-  friend: Friend;
+  chatEntry: Chat;
 
-  onChatClick: (friend: Friend) => void;
+  onChatClick: (chatEntry: Chat) => void;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
   accountIcon: {
-    fontSize: 43,
+    fontSize: 44,
+    borderRadius: "50%",
+
+    objectFit: "cover",
   },
   profilePictureContainer: {
     width: 42,
@@ -36,19 +39,20 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const FriendEntry = ({ friend, onChatClick }: Props) => {
+const ChatEntry = ({ chatEntry, onChatClick }: Props) => {
   const classes = useStyles();
+  const hasPicture = chatEntry.pictureUrl && chatEntry.pictureUrl.length > 0;
   return (
-    <TooltipMouseFollow title={`${friend.name} ${friend.surname}`}>
+    <TooltipMouseFollow title={`${chatEntry.name} ${chatEntry.surname}`}>
       <Box
         border={0}
         borderColor="primary.dark"
         component={ButtonBase}
         className={classes.profilePictureContainer}
-        onClick={() => onChatClick(friend)}
+        onClick={() => onChatClick(chatEntry)}
       >
-        {friend.image.length > 0 ? (
-          <img src={friend.image} className={classes.profilePicture} />
+        {hasPicture ? (
+          <img src={chatEntry.pictureUrl} className={classes.profilePicture} />
         ) : (
           <AccountCircleIcon
             className={classes.accountIcon}
@@ -59,4 +63,4 @@ const FriendEntry = ({ friend, onChatClick }: Props) => {
   );
 };
 
-export default FriendEntry;
+export default ChatEntry;

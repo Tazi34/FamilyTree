@@ -1,4 +1,6 @@
-import { EntityState } from "@reduxjs/toolkit";
+import { FamilyNode } from "./../components/tree/model/FamilyNode";
+import { PersonNode } from "./../components/tree/model/PersonNode";
+import { EntityId, EntityState } from "@reduxjs/toolkit";
 import { PersonInformation } from "../components/tree/model/PersonNode";
 
 export interface Person {
@@ -6,7 +8,7 @@ export interface Person {
   treeId: number;
   fatherId: number | null;
   motherId: number | null;
-  information: PersonInformation;
+  personDetails: PersonInformation;
   children: number[];
   partners: number[];
   graph?: number;
@@ -14,16 +16,16 @@ export interface Person {
 }
 
 export interface Family {
-  firstParent: number | null;
-  secondParent: number | null;
-  children: number[];
+  fatherId: EntityId | null;
+  motherId: EntityId | null;
+  children: EntityId[];
   id: string;
 }
 
 export interface TreeStructure {
-  people: EntityState<Person>;
+  people: EntityState<PersonNode>;
   links: string[][];
-  families: Family[];
+  families: FamilyNode[];
 }
 export interface PeopleCollection {
   [key: number]: Person;

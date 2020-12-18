@@ -1,41 +1,37 @@
-import { WorkPersonNode } from "./../model/TreeStructureInterfaces";
+import { FamilyNode } from "./../components/tree/model/FamilyNode";
 import { EntityState } from "@reduxjs/toolkit";
+import { PersonNode } from "../components/tree/model/PersonNode";
+import { selectAllPersonNodesLocal } from "../components/tree/reducer/treeReducer";
+import { IDictionary } from "../components/tree/TreeRenderer";
 import { mapCollectionToEntity } from "../helpers/helpers";
-import {
-  Family,
-  Person,
-  TreeStructure,
-} from "../model/TreeStructureInterfaces";
-import { peopleAdapter } from "../components/tree/reducer/treeReducer";
+import { Family, TreeStructure } from "../model/TreeStructureInterfaces";
+import { WorkPersonNode } from "./../model/TreeStructureInterfaces";
+
+const emptyTree: TreeStructure = {
+  links: [],
+  people: {
+    ids: [],
+    entities: {},
+  },
+  families: [],
+};
 
 export const GetTreeStructures = (
-  people: EntityState<Person>
+  personNodesEntity: EntityState<PersonNode>
 ): TreeStructure[] => {
-  var allPeopleEntities = people.ids.map(
-    (id) => people.entities[id]
-  ) as Person[];
+  var allPeopleEntities = selectAllPersonNodesLocal(personNodesEntity);
 
   if (allPeopleEntities.length == 0) {
-    return [
-      {
-        links: [["lfakeNode1_fakeNode2"]],
-        people: {
-          ids: [],
-          entities: {},
-        },
-        families: [],
-      },
-    ];
+    return [emptyTree];
   }
-  const personNodes = allPeopleEntities.map((p) => personToNode(p));
+  const personNodes = allPeopleEntities.map((p) => personNodeToLabaledNode(p));
   var labeledNodes = LabelGraphs(personNodes);
 
   for (var i = 0; i < allPeopleEntities.length; i++) {
-    allPeopleEntities[i] = Object.assign({}, allPeopleEntities[i]);
     allPeopleEntities[i].graph = labeledNodes[i].graph;
   }
 
-  var graphsDict: Dictionary = [];
+  var graphsDict: IDictionary<PersonNode[]> = {};
 
   allPeopleEntities.forEach((p: any) => {
     const graphIndex = p.graph as number;
@@ -53,31 +49,35 @@ export const GetTreeStructures = (
   }
   return treeStructures;
 };
-export const GetTreeStructure = (people: Person[]): TreeStructure => {
+export const GetTreeStructure = (people: PersonNode[]): TreeStructure => {
   var familyIdCounter = 0;
-  var families: Family[] = [];
+  var families: FamilyNode[] = [];
   var links: string[][] = [];
-  var family: Family | undefined;
+  var family: FamilyNode | undefined;
   people.forEach((person) => {
     const { id: id } = person;
 
     family = families.find(
       (family) =>
-        (family.firstParent == person.fatherId &&
-          family.secondParent == person.motherId) ||
-        (family.secondParent == person.fatherId &&
-          family.firstParent == person.motherId)
+        (family.fatherId == person.fatherId &&
+          family.motherId == person.motherId) ||
+        (family.motherId == person.fatherId &&
+          family.fatherId == person.motherId)
     );
     if (family) {
       family.children.push(id);
     } else {
       if (person.fatherId || person.motherId) {
-        family = {
-          firstParent: person.fatherId,
-          secondParent: person.motherId,
-          children: [id],
-          id: person.graph + "u" + familyIdCounter++,
-        };
+        const familyId = person.graph + "u" + familyIdCounter++;
+        family = new FamilyNode(
+          familyId,
+          person.treeId,
+          0,
+          0,
+          [id],
+          person.fatherId,
+          person.motherId
+        );
 
         families.push(family);
       }
@@ -87,17 +87,6 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
       person.families!.push(family!.id);
     }
   });
-  families.forEach((family) => {
-    if (family.firstParent) {
-      links.push([(family.firstParent as number).toString(), family.id]);
-    }
-    if (family.secondParent) {
-      links.push([(family.secondParent as number).toString(), family.id]);
-    }
-    family.children.forEach((child) =>
-      links.push([family.id, child.toString()])
-    );
-  });
 
   //uzupelnij rodziny o rodziny bez dzieci
   people.forEach((p) => {
@@ -105,33 +94,52 @@ export const GetTreeStructure = (people: Person[]): TreeStructure => {
       p.partners.forEach((partner) => {
         const foundFamily = families.find(
           (family) =>
-            (family.firstParent == p.id && family.secondParent == partner) ||
-            (family.secondParent == p.id && family.firstParent == partner)
+            (family.fatherId == p.id && family.motherId == partner) ||
+            (family.motherId == p.id && family.fatherId == partner)
         );
         if (!foundFamily) {
-          const newFamily: Family = {
-            firstParent: p.id,
-            secondParent: partner,
-            children: [],
-            id: "u" + familyIdCounter++,
-          };
+          const familyId = p.graph + "u" + familyIdCounter++;
+          const newFamily = new FamilyNode(
+            familyId,
+            p.treeId,
+            0,
+            0,
+            [],
+            p.id,
+            partner
+          );
 
           families.push(newFamily);
         }
       });
     }
   });
-
+  families.forEach((family) => {
+    if (family.fatherId) {
+      links.push([
+        (family.fatherId as number).toString(),
+        family.id.toString(),
+      ]);
+    }
+    if (family.motherId) {
+      links.push([
+        (family.motherId as number).toString(),
+        family.id.toString(),
+      ]);
+    }
+    family.children.forEach((child) =>
+      links.push([family.id.toString(), child.toString()])
+    );
+  });
   const peopleCount = people.length;
   if (peopleCount == 1) {
     var person = people[0];
-
     links = [[person.id.toString(), "fakeNode1"]];
   } else if (peopleCount == 0) {
     links = [["fakeNode1", "fakeNode2"]];
   }
 
-  const personNodes = people.map((p) => personToNode(p));
+  //const personNodes = people.map((p) => personToNode(p));
   //const isAP = AP(personNodes);
 
   return {
@@ -357,7 +365,7 @@ const APRecursive = (
   });
 };
 
-const personToNode = (person: Person): WorkPersonNode => {
+const personNodeToLabaledNode = (person: PersonNode): WorkPersonNode => {
   var childrenIds = person.children.map((a) => a.toString());
   var neighbours = [...childrenIds];
   if (person.fatherId) {

@@ -8,9 +8,9 @@ export class FamilyNode extends Node {
     x: number,
     y: number,
     children: EntityId[] = [],
-    firstParent: EntityId | null = null,
-    secondParent: EntityId | null = null
+    fatherId: EntityId | null = null,
+    motherId: EntityId | null = null
   ) {
-    super(id, treeId, x, y, true, children, firstParent, secondParent);
+    super(id, treeId, x, y, true, children, fatherId, motherId);
   }
 }

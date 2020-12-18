@@ -1,11 +1,4 @@
-import {
-  Box,
-  Button,
-  ButtonBase,
-  Icon,
-  IconButton,
-  Paper,
-} from "@material-ui/core";
+import { Box, Icon, Paper } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import InputBase from "@material-ui/core/InputBase";
 import { createStyles, fade, makeStyles } from "@material-ui/core/styles";
@@ -16,12 +9,6 @@ import { loadCSS } from "fg-loadcss";
 import * as React from "react";
 import { useHistory } from "react-router";
 import { ApplicationName } from "../../ApplicationData";
-import {
-  HOME_PAGE_URI,
-  BLOG_PAGE_URI,
-  LOGIN_PAGE_URI,
-  TREE_PAGE_URI,
-} from "../../applicationRouting";
 import { RedirectButton } from "../UI/RedirectButton";
 import AuthenticatedNavbar from "./AuthenticatedNavbar";
 import GuestNavbar from "./GuestNavbar";
