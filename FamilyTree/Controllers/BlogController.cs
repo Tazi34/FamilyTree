@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using FamilyTree.Services;
 using FamilyTree.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyTree.Controllers
 {
@@ -51,6 +52,7 @@ namespace FamilyTree.Controllers
         /// <param name="model">JSON CreatePostRequest</param>
         /// <returns>Zwraca nowo dodany post</returns>
         [Route("")]
+        [Authorize]
         [HttpPost]
         public ActionResult<PostResponse> CreatePost(CreatePostRequest model)
         {
@@ -66,6 +68,7 @@ namespace FamilyTree.Controllers
         /// <param name="model">JSON ModifyPostRequest</param>
         /// <returns>Zwraca zmodyfikowany post</returns>
         [Route("")]
+        [Authorize]
         [HttpPut]
         public ActionResult<PostResponse> ModifyPost(ModifyPostRequest model)
         {

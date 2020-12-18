@@ -30,8 +30,9 @@ namespace FamilyTree.Models
             Name = node.Name;
             Surname = node.Surname;
             PictureUrl = node.PictureUrl;
-            FatherId = node.Parents.Count > 0 ? node.Parents[0].ParentId : 0;
-            MotherId = node.Parents.Count > 1 ? node.Parents[1].ParentId : 0;
+            var parentsTuple = MapParents(node);
+            FatherId = parentsTuple.Item1;
+            MotherId = parentsTuple.Item2;
             Children = new List<int>();
             foreach(var child in node.Children)
             {
@@ -41,6 +42,30 @@ namespace FamilyTree.Models
             foreach (var partner in node.Partners1)
             {
                 Partners.Add(partner.Partner1Id);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns>item1 - father, item2 - mother</returns>
+        private (int, int) MapParents (Node node)
+        {
+            if (node.Parents.Count == 0)
+                return (0, 0);
+            else if (node.Parents.Count == 1)
+            {
+                if (node.Parents[0].Parent.Sex.Equals(Sex.Female))
+                    return (0, node.Parents[0].ParentId);
+                else
+                    return (node.Parents[0].ParentId, 0);
+            }
+            else
+            {
+                if (node.Parents[0].Parent.Sex.Equals(Sex.Female))
+                    return (node.Parents[1].ParentId, node.Parents[0].ParentId);
+                else
+                    return (node.Parents[0].ParentId, node.Parents[1].ParentId);
             }
         }
     }

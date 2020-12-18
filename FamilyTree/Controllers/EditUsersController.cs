@@ -8,6 +8,7 @@ using FamilyTree.Helpers;
 using FamilyTree.Models;
 using FamilyTree.Services;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyTree.Controllers
 {
@@ -26,6 +27,7 @@ namespace FamilyTree.Controllers
         /// <param name="model">ModifyUserRequest</param>
         /// <returns>Zwraca token i zmodyfikowane informacje o użytkowniku</returns>
         [HttpPut]
+        [Authorize]
         [Route("")]
         public ActionResult<AuthenticateResponse> ModifyUser(ModifyUserRequest model)
         {
@@ -43,6 +45,7 @@ namespace FamilyTree.Controllers
         /// <param name="model"></param>
         /// <returns>Zwraca token i informacje o użytkowniku</returns>
         [HttpPut]
+        [Authorize]
         [Route("passwordChange")]
         public ActionResult<AuthenticateResponse> ChangePassword(ChangePasswordRequest model)
         {

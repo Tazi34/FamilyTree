@@ -31,7 +31,8 @@ namespace FamilyTree.Helpers
                         PasswordHash = "8IgJYYFdGqHdnopG+aNYqOunLjU4MZ3Q5iMpDmKQeE4=",//haslo123
                         Salt = "PA0w+FFm3WaD0/AvLx7PkA==",
                         Role = Role.User,
-                        PrevSurnames = new List<PreviousSurname>()
+                        PrevSurnames = new List<PreviousSurname>(),
+                        Sex = Sex.Male
                     },
                     new User
                     {
@@ -41,7 +42,8 @@ namespace FamilyTree.Helpers
                         Birthday = DateTime.Today,
                         PasswordHash = "Qt8W/CRBgFMaTpQoMM5JoNCNFurnC+omBFp0gZVHII8=",//brat
                         Salt = "EIUd/75Vg7e/ojBPaDefjw==",
-                        Role = Role.User
+                        Role = Role.User,
+                        Sex = Sex.Male
                     },
                     new User
                     {
@@ -51,7 +53,8 @@ namespace FamilyTree.Helpers
                         Birthday = DateTime.Today,
                         PasswordHash = "+V7/hmL+ZyQamZ4VoY62EPXPDNU+5X/yyEStQ96mXdk=",//siostra
                         Salt = "oM0gjDPfDTJXzaiZg0MDNw==",
-                        Role = Role.User
+                        Role = Role.User,
+                        Sex = Sex.Female
                     },
                     new User
                     {
@@ -61,7 +64,8 @@ namespace FamilyTree.Helpers
                         Birthday = DateTime.Today,
                         PasswordHash = "TgwYrtlm4O8dw8WM/mXdb5n/FWSvaGjuxpMAc6YK5bc=",//ojciec
                         Salt = "rkdBhkTfK5GaGbHwUX6fnQ==",
-                        Role = Role.User
+                        Role = Role.User,
+                        Sex = Sex.Male
                     },
                     new User
                     {
@@ -71,7 +75,8 @@ namespace FamilyTree.Helpers
                         Birthday = DateTime.Today,
                         PasswordHash = "zhgxmJU0andmdWBxIiMGs+vCHQXh4LkqoBLivGaFF8s=",//mama
                         Salt = "fLBGVyxXeEZ3dGI/TgaH7w==",
-                        Role = Role.User
+                        Role = Role.User,
+                        Sex = Sex.Female
                     },
                     new User
                     {
@@ -81,7 +86,8 @@ namespace FamilyTree.Helpers
                         Birthday = DateTime.Today,
                         PasswordHash = "rIFSQY588V8c2t25qJSMSt+92XgIVfr3DWWgb+Tk+W8=",//dziadek
                         Salt = "I9kJRE7Z77p0TMqLq/o0yg==",
-                        Role = Role.User
+                        Role = Role.User,
+                        Sex = Sex.Male
                     },
                     new User
                     {
@@ -91,7 +97,8 @@ namespace FamilyTree.Helpers
                         Birthday = DateTime.Today,
                         PasswordHash = "Da7FrdKr4Uz49HTDIzYyN5ajHlccUSJ79MvlaDdZNyI=",//babcia
                         Salt = "XhdnT8bZsgzF6ohmR2s5dA==",
-                        Role = Role.User
+                        Role = Role.User,
+                        Sex = Sex.Female
                     }
                 );
 

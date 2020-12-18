@@ -59,6 +59,9 @@ namespace FamilyTree
             services.AddScoped<IChatService, ChatService>();
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IFacebookService, FacebookService>();
+            services.AddScoped<ITreeAuthService, TreeAuthService>();
+            services.AddScoped<ITreeValidationService, TreeValidationService>();
+
 
             services.AddSwaggerGen(c =>
             {

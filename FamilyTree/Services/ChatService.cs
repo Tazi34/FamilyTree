@@ -15,6 +15,7 @@ namespace FamilyTree.Services
         public List<Message> MarkAsSent(int userId);
         public MessagesListResponse GetMessages(int user1, int user2);
         public UsersListResponse GetLastUsersList(int userId);
+        public UserInfoResponse GetChatUserInfo(int userId); 
     }
     public class ChatService : IChatService
     {
@@ -137,6 +138,20 @@ namespace FamilyTree.Services
                 }
             }
             return resultList;
+        }
+
+        public UserInfoResponse GetChatUserInfo(int userId)
+        {
+            var user = context.Users.SingleOrDefault(u => u.UserId == userId);
+            if (user == null)
+                return null;
+            return new UserInfoResponse
+            {
+                Name = user.Name,
+                Surname = user.Surname,
+                PictureUrl = user.PictureUrl,
+                UserId = user.UserId
+            };
         }
     }
 }

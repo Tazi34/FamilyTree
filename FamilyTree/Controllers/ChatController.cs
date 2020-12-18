@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using FamilyTree.Services;
 using FamilyTree.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FamilyTree.Controllers
 {
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ChatController: ControllerBase
@@ -44,6 +46,20 @@ namespace FamilyTree.Controllers
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var resultList = chatService.GetLastUsersList(userId);
+            if (resultList == null)
+                return BadRequest();
+            return Ok(resultList);
+        }
+        /// <summary>
+        /// Pobiera podstawowe informacje o userze
+        /// </summary>
+        /// <param name="chatUser">Id użytkownika z którym była prowadzona rozmowa</param>
+        /// <returns></returns>
+        [Route("{chatUser:int}")]
+        [HttpGet]
+        public ActionResult<UserInfoResponse> GetChatUserInfo(int chatUser)
+        {
+            var resultList = chatService.GetChatUserInfo(chatUser);
             if (resultList == null)
                 return BadRequest();
             return Ok(resultList);

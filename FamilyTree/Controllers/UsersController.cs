@@ -71,7 +71,7 @@ namespace FamilyTree.Controllers
             return newUser;
         }
         /// <summary>
-        /// TODO
+        /// Zwraca wewnętrzy token, przyjmuje access_token z facebook-a
         /// </summary>
         /// <returns></returns>
         [HttpGet]

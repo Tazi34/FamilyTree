@@ -21,8 +21,12 @@ namespace FamilyTree.Models
         [Required]
         [MinLength(6)]
         public string Password { get; set; }
+        [Required]
         public DateTime Birthday { get; set; }
+        [Required]
         public List<string> PreviousSurnames { get; set; }
+        [RegularExpression(@"Male|Female|NotSure")]
+        [Required]
         public string Sex { get; set; }
     }
 }
