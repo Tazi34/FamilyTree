@@ -1,3 +1,5 @@
+import { initialAppState } from "./index";
+import { logoutUser } from "./../components/loginPage/authenticationReducer";
 import { signalRMiddleware } from "./../components/chat/reducer/signalRMiddleware";
 import { connectRouter, routerMiddleware } from "connected-react-router";
 import { History } from "history";
@@ -23,10 +25,21 @@ export default function configureStore(
     signalRMiddleware,
   ];
 
-  const rootReducer = combineReducers({
+  const appReducer = combineReducers({
     ...reducers,
     router: connectRouter(history),
   });
+
+  const rootReducer = (state: any, action: any) => {
+    if (action.type == logoutUser.toString()) {
+      console.log(state.router);
+      return {
+        ...initialAppState,
+        router: state.router,
+      };
+    }
+    return appReducer(state, action);
+  };
 
   const enhancers = [];
   const windowIfDefined =
