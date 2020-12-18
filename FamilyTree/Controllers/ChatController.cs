@@ -55,7 +55,7 @@ namespace FamilyTree.Controllers
         /// </summary>
         /// <param name="chatUser">Id użytkownika z którym była prowadzona rozmowa</param>
         /// <returns></returns>
-        [Route("GetChat/{chatUser:int}")]
+        [Route("{chatUser:int}")]
         [HttpGet]
         public ActionResult<UserInfoResponse> GetChatUserInfo(int chatUser)
         {

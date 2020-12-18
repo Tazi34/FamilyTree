@@ -185,7 +185,7 @@ namespace FamilyTree.Services
             foreach(Tree tree in treeList)
             {
                 var authLevel = treeAuthService.GetTreeAuthLevel(askingUser, tree);
-                if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
+                if (treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                     authorizedTrees.Add(new FlatTree(tree));
             }
             return new TreeUserResponse(authorizedTrees);
