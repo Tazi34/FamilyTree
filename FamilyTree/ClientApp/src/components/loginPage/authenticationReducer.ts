@@ -12,6 +12,8 @@ import {
   LOGIN_API_URL,
 } from "./../../helpers/apiHelpers";
 import { StatusState } from "./../../helpers/helpers";
+import { AuthenticateTokenResponse } from "./API/authenticateToken";
+import authenticationAPI from "./API/authenticationAPI";
 import {
   CreateUserRequestData,
   CreateUserSuccessResponse,
@@ -40,7 +42,7 @@ export type User = {
   token: string;
   previousSurnames: string[];
 };
-
+export const userActionsPrefix = "users";
 //ACTIONS
 export const createUser = createAsyncThunk(
   "users/createUser",
@@ -62,7 +64,12 @@ export const loginUser = createAsyncThunk(
     );
   }
 );
-
+export const authenticateToken = createAsyncThunk<
+  AxiosResponse<AuthenticateTokenResponse>,
+  string
+>(`${userActionsPrefix}/authenticateToken`, async (token) => {
+  return await authenticationAPI.requestAuthenticateToken({ token });
+});
 export const logoutUser = createAction("users/userLoggedout");
 
 //REDUCER
@@ -97,7 +104,6 @@ export const authenticationReducer = createReducer(
         };
         addAuthorizationToken(userData.token);
       })
-
       .addCase(logoutUser, (state) => {
         state.user = null;
         state.isLoggedIn = false;
@@ -109,18 +115,22 @@ export const authenticationReducer = createReducer(
       loginUser,
       (state: AuthenticationState, action: any) => {
         const userData: LoginUserResponseSuccessData = action.payload.data;
-        addAuthorizationToken(userData.token);
+        setUserLoggedIn(userData, state);
+      },
+      undefined,
+      (state: AuthenticationState, action: any) => {
+        state.isLoggedIn = false;
+        state.user = null;
+        removeAuthorizationToken();
+      }
+    );
 
-        state.isLoggedIn = true;
-        state.user = {
-          email: userData.email,
-          id: userData.userId,
-          name: userData.name,
-          surname: userData.surname,
-          role: userData.role,
-          token: userData.token,
-          previousSurnames: userData.previousSurnames,
-        };
+    addThunkWithStatusHandlers(
+      builder,
+      authenticateToken,
+      (state: AuthenticationState, action: any) => {
+        const userData: AuthenticateTokenResponse = action.payload.data;
+        setUserLoggedIn(userData, state);
       },
       undefined,
       (state: AuthenticationState, action: any) => {
@@ -143,3 +153,20 @@ export const isLoggedIn = createDraftSafeSelector(
   selectSelf,
   (state) => state.authentication.user != null
 );
+const setUserLoggedIn = (
+  userData: LoginUserResponseSuccessData,
+  state: AuthenticationState
+) => {
+  addAuthorizationToken(userData.token);
+
+  state.isLoggedIn = true;
+  state.user = {
+    email: userData.email,
+    id: userData.userId,
+    name: userData.name,
+    surname: userData.surname,
+    role: userData.role,
+    token: userData.token,
+    previousSurnames: userData.previousSurnames,
+  };
+};

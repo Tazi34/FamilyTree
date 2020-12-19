@@ -6,6 +6,7 @@ import * as ReactDOM from "react-dom";
 import { Provider, useDispatch } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import App from "./App";
+import { authenticateToken } from "./components/loginPage/authenticationReducer";
 import {
   addAuthorizationToken,
   tokenLocalStorageKey,
@@ -27,16 +28,14 @@ export const useThunkDispatch = () => useDispatch<any>();
 
 const token = localStorage.getItem(tokenLocalStorageKey);
 if (token) {
-  addAuthorizationToken(token);
+  store.dispatch(authenticateToken(token));
 }
-//store.dispatch(loginUser(loginData));
+
 ReactDOM.render(
   <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
-      <ConnectedRouter history={history}>
-        <App />
-      </ConnectedRouter>
-    </PersistGate>
+    <ConnectedRouter history={history}>
+      <App />
+    </ConnectedRouter>
   </Provider>,
   document.getElementById("root")
 );
