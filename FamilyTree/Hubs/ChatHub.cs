@@ -20,29 +20,25 @@ namespace FamilyTree.Hubs
             connectionsService = connService;
             chatService = chatSer;
         }
-        public async Task SendMessage(string userIdString, string message)
+        public async Task SendMessage(string toIdString, string message)
         {
-            int userId = int.Parse(userIdString);
+            int toId = int.Parse(toIdString);
             var fromId = int.Parse(Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value);
             var mess = new Message
             {
                 CreationTime = DateTime.Now,
                 FromId = fromId,
-                ToId = userId,
+                ToId = toId,
                 Text = message
             };
-            var connectionIdList = connectionsService.GetUserConnections(userId);
-            if(connectionIdList.Count == 0)
-            {
-                mess.Sent = false;
-                chatService.AddMessage(mess, fromId, userId);
-            }
-            else
-            {
-                await Clients.Clients(connectionIdList).SendAsync("ReceiveMessage", fromId, message, mess.CreationTime.ToString());
+            var (connectionIdList, isToIdActive) = connectionsService.GetMessageConnections(toId, fromId, Context.ConnectionId);
+            if(isToIdActive)
                 mess.Sent = true;
-                chatService.AddMessage(mess, fromId, userId);
-            }
+            else
+                mess.Sent = false;
+            chatService.AddMessage(mess, fromId, toId);
+            if (connectionIdList.Count != 0)
+                await Clients.Clients(connectionIdList).SendAsync("ReceiveMessage", fromId, message, mess.CreationTime.ToString());
         }
         public override async Task OnConnectedAsync()
         {
