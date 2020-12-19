@@ -10,6 +10,7 @@ import {
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { TreeInformation } from "../../model/TreeInformation";
+import CreateTreeDialog from "./CreateTreeDialog";
 import TreesList from "./TreesList";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -49,10 +50,20 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Props = {
   userTrees: TreeInformation[];
   onTreeSelect: (tree: TreeInformation) => void;
+  onTreeCreate: (treeName: string) => void;
 };
-const UserTreePanel = ({ userTrees, onTreeSelect }: Props) => {
+const UserTreePanel = ({ userTrees, onTreeSelect, onTreeCreate }: Props) => {
   const classes = useStyles();
 
+  const [createTreeDialogOpen, setCreateTreeDialogOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setCreateTreeDialogOpen(true);
+  };
+
+  const handleClose = () => {
+    setCreateTreeDialogOpen(false);
+  };
   return (
     <Box display="flex" flexDirection="column" className={classes.container}>
       {/* <div className={classes.flexGrow}></div> */}
@@ -79,9 +90,15 @@ const UserTreePanel = ({ userTrees, onTreeSelect }: Props) => {
             color="primary"
             className={classes.createButton}
             size={"small"}
+            onClick={handleClickOpen}
           >
             Create
           </Button>
+          <CreateTreeDialog
+            open={createTreeDialogOpen}
+            onClose={handleClose}
+            onSubmit={onTreeCreate}
+          />
         </Box>
       </Paper>
     </Box>

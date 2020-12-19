@@ -2,17 +2,16 @@ import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Redirect, useHistory } from "react-router";
+import { useHistory } from "react-router";
 import { useThunkDispatch } from "../..";
 import { TREE_PAGE_URI } from "../../applicationRouting";
 import { TreeInformation } from "../../model/TreeInformation";
-import { sampleTreesInformations } from "../../samples/componentsSampleData";
+import { withAlertMessage } from "../alerts/withAlert";
 import { getUser } from "../loginPage/authenticationReducer";
-import TreesList from "./TreesList";
 import {
+  createTree,
   getUserTrees,
   usersTreesSelectors,
-  userTreesAdapter,
   userTreesStateSelector,
 } from "./usersTreeReducer";
 import UserTreePanel from "./UserTreePanel";
@@ -30,6 +29,17 @@ const UserTreeListProvider = (props: any) => {
   const handleTreeSelect = (tree: TreeInformation) => {
     history.push(`${TREE_PAGE_URI}/${tree.treeId}`);
   };
+  const handleTreeCreate = (treeName: string) => {
+    dispatch(createTree(treeName)).then((resp: any) => {
+      if (resp.error) {
+        props.alertError("Couldn't create tree. Contact service provider");
+      } else {
+        props.alertSuccess("Tree created");
+        const treeId = resp.payload.data.treeId;
+        history.push(`${TREE_PAGE_URI}/${treeId}`);
+      }
+    });
+  };
 
   useEffect(() => {
     dispatch(getUserTrees(currentUser!.id));
@@ -43,8 +53,9 @@ const UserTreeListProvider = (props: any) => {
     <UserTreePanel
       userTrees={userTrees}
       onTreeSelect={handleTreeSelect}
+      onTreeCreate={handleTreeCreate}
     ></UserTreePanel>
   );
 };
 
-export default UserTreeListProvider;
+export default withAlertMessage(UserTreeListProvider);
