@@ -21,6 +21,12 @@ namespace FamilyTree.Services
         {
             var result = new List<string>();
             var IsToIdActive = true;
+            if(toId == fromId)
+            {
+                if (activeConnections.ContainsKey(toId))
+                    result.AddRange(activeConnections[fromId].Where(c => !c.Equals(fromConnection)).ToList());
+                return (result, IsToIdActive);
+            }
             if (activeConnections.ContainsKey(toId))
                 result.AddRange(activeConnections[toId]);
             else
