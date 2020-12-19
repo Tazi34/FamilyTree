@@ -35,6 +35,7 @@ type Props = {
 const ChatMessage = ({ receiverId, message }: Props) => {
   const classes = useStyles();
   const isOutgoing = message.toId === receiverId;
+
   return (
     <div
       className={`${classes.messageContainer} ${

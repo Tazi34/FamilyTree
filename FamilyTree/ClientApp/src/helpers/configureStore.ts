@@ -1,4 +1,4 @@
-import { initialAppState } from "./index";
+import { initialAppState, reducersToPersis } from "./index";
 import { logoutUser } from "./../components/loginPage/authenticationReducer";
 import { signalRMiddleware } from "./../components/chat/reducer/signalRMiddleware";
 import { connectRouter, routerMiddleware } from "connected-react-router";
@@ -9,10 +9,6 @@ import { ApplicationState, reducers } from ".";
 import logger from "redux-logger";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/es/storage";
-const persistConfig = {
-  key: "root",
-  storage,
-};
 
 export default function configureStore(
   history: History,
@@ -24,6 +20,21 @@ export default function configureStore(
     logger,
     signalRMiddleware,
   ];
+
+  for (const key in reducersToPersis) {
+    if (Object.prototype.hasOwnProperty.call(reducersToPersis, key)) {
+      // const persistConfig = {
+      //   key: key.toString(),
+      //   storage,
+      // };
+      // const persistedReducer = persistReducer(
+      //   persistConfig,
+      //   reducersToPersis[key]
+      // );
+      // reducers[key] = persistedReducer;
+      reducers[key] = reducersToPersis[key];
+    }
+  }
 
   const appReducer = combineReducers({
     ...reducers,
@@ -47,9 +58,8 @@ export default function configureStore(
   if (windowIfDefined && windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__) {
     enhancers.push(windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__());
   }
-  const persistedReducer = persistReducer(persistConfig, rootReducer);
   const store = createStore(
-    persistedReducer,
+    rootReducer,
     initialState,
     compose(applyMiddleware(...middleware), ...enhancers)
   );

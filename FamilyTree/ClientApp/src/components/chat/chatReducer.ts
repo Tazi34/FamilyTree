@@ -108,10 +108,11 @@ export const sendMessage = createAction(
 );
 export const receiveMessage = createAction(
   `${chatActionsPrefix}/messageReceived`,
-  (userId: number, message: string) => ({
+  (userId: number, message: string, receiverId) => ({
     payload: {
       userId,
       message,
+      receiverId,
     },
   })
 );
@@ -127,7 +128,7 @@ export const chatReducer = createReducer<ChatsState>(
           throw "Chat not found";
         }
         chat.loadedMessages = true;
-        chat.messages = action.payload.data.messageList;
+        chat.messages = action.payload.data.messageList.reverse();
       })
       .addCase(getLatestChats.fulfilled, (state, action) => {
         const chats: Chat[] = action.payload.data.usersList;
@@ -161,13 +162,13 @@ export const chatReducer = createReducer<ChatsState>(
         );
       })
       .addCase(receiveMessage, (state, action) => {
-        const { message, userId } = action.payload;
+        const { message, userId, receiverId } = action.payload;
         const chat = state.chats.entities[userId];
         if (chat && chat.loadedMessages) {
           chat.messages.push({
             text: message,
             fromId: userId,
-            toId: -1,
+            toId: receiverId,
             creationTime: new Date(),
           });
         }
@@ -180,15 +181,15 @@ export const chatReducer = createReducer<ChatsState>(
         chatsAdapter.addOne(state.chats, chat);
       })
       .addCase(sendMessage, (state, action) => {
-        const { message, userId } = action.payload;
+        const { message, userId, senderId } = action.payload as any;
         const chat = state.chats.entities[userId];
         if (!chat) {
           throw "Chat not found";
         }
-        if (chat && chat.loadedMessages) {
+        if (chat) {
           chat.messages.push({
             text: message,
-            fromId: -1,
+            fromId: senderId,
             toId: userId,
             creationTime: new Date(),
           });

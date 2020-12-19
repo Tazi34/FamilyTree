@@ -29,7 +29,7 @@ const LatestChatsProvider = (props: any) => {
     if (!loadedChats) {
       dispatch(getLatestChats(user!.id));
     }
-  });
+  }, []);
 
   return (
     <ChatsList
