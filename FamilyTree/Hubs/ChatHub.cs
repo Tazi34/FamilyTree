@@ -39,7 +39,7 @@ namespace FamilyTree.Hubs
             }
             else
             {
-                await Clients.Clients(connectionIdList).SendAsync("ReceiveMessage", userId, message, mess.CreationTime.ToString());
+                await Clients.Clients(connectionIdList).SendAsync("ReceiveMessage", fromId, message, mess.CreationTime.ToString());
                 mess.Sent = true;
                 chatService.AddMessage(mess, fromId, userId);
             }
