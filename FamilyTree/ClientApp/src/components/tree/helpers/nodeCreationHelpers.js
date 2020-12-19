@@ -109,6 +109,13 @@ export const renderFamilyNode = (nodes) => {
     .attr("fill-opacity", 0);
 
   nodes
+    .append("text")
+    .attr("x", 72)
+    .attr("y", 25)
+    .text((d) => {
+      return d.id;
+    });
+  nodes
     .append("circle")
     .attr("r", 5)
     .attr("stroke", "black")

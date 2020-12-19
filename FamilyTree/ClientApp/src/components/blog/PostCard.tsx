@@ -6,8 +6,10 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
+import { convertFromRaw, EditorState } from "draft-js";
 import * as React from "react";
+import { Editor } from "react-draft-wysiwyg";
+import "../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { Post } from "../../model/Post";
 
 const useStyles = makeStyles({
@@ -33,6 +35,17 @@ type PostCardProps = {
 
 const PostCard = ({ post, onPostDelete }: PostCardProps) => {
   const classes = useStyles();
+  let editorState: EditorState;
+  try {
+    const raw = JSON.parse(post.text);
+    console.log(raw);
+    const contentState = convertFromRaw(raw as any);
+
+    editorState = EditorState.createWithContent(contentState);
+  } catch (err) {
+    editorState = EditorState.createEmpty();
+  }
+
   return (
     <Card>
       <CardContent>
@@ -45,16 +58,19 @@ const PostCard = ({ post, onPostDelete }: PostCardProps) => {
         </Typography>
         <Typography variant="h5" component="h2"></Typography>
 
-        <Typography variant="body2" component="p">
-          {post.text}
-        </Typography>
+        <Editor
+          editorState={editorState}
+          toolbarHidden={true}
+          readOnly
+          onChange={() => {}}
+        />
       </CardContent>
       <CardActions>
         <Button size="small" color="primary">
           Read More
         </Button>
         <Button
-          onClick={() => onPostDelete(post.id)}
+          onClick={() => onPostDelete(post.postId)}
           size="small"
           color="secondary"
         >

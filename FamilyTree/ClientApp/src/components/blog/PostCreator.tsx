@@ -17,19 +17,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const sampleNewPost: Post = {
-  author: {
-    id: 1,
-    name: "Nowy",
-    surname: "Autor",
-  },
-  id: -1,
-  publicationDate: new Date(),
-  text: "New post test",
-  title: "Title",
-};
-
-const PostCreator = (props: any) => {
+const PostCreator = ({ redirectToPostForm }: any) => {
   const classes = useStyles();
   return (
     <Paper className={classes.root}>
@@ -42,7 +30,7 @@ const PostCreator = (props: any) => {
           id="postCreatorInput"
           label="What would you want to share?"
           fullWidth
-          onClick={() => props.onAddPost(sampleNewPost)}
+          onClick={redirectToPostForm}
         />
       </Box>
     </Paper>
