@@ -27,11 +27,12 @@ export type UserRegistrationData = {
   surname: string;
   email: string;
   password: string;
-  birthday: Date;
+  birthday: string;
   previousSurnames: string[];
+  sex: "Male" | "Female" | "Not Sure";
 };
 
-const initialData: UserRegistrationData = {
+const initialData = {
   name: "",
   surname: "",
   email: "",
@@ -52,7 +53,12 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
       <Formik
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
-            onRegister(values);
+            const registerData: UserRegistrationData = {
+              ...values,
+              birthday: values.birthday.toISOString(),
+              sex: "Male",
+            };
+            onRegister(registerData);
             setSubmitting(false);
           }, 400);
         }}
