@@ -180,7 +180,7 @@ namespace FamilyTree.Services
                 UserId = user.UserId,
                 Token = tokenService.GetToken(user.UserId),
                 Role = user.Role,
-                PreviousSurnames = user.PrevSurnames.Select(x => x.Surname).ToList(),
+                PreviousSurnames = user.PrevSurnames?.Select(x => x.Surname).ToList() ?? new List<string>(),
                 PictureUrl = user.PictureUrl
             };
         }
