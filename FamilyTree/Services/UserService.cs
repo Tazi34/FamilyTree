@@ -79,7 +79,7 @@ namespace FamilyTree.Services
 
         public AuthenticateResponse CheckUserId(int userId)
         {
-            var user = context.Users.SingleOrDefault(u => u.UserId == userId);
+            var user = context.Users.Include(u => u.PrevSurnames).SingleOrDefault(u => u.UserId == userId);
             if(user == null)
                 return null;
             return CreateResponse(user);
@@ -121,7 +121,7 @@ namespace FamilyTree.Services
 
         public User GetUserById(int userId)
         {
-            return context.Users.SingleOrDefault(x => x.UserId == userId);
+            return context.Users.Include(u => u.PrevSurnames).SingleOrDefault(x => x.UserId == userId);
         }
 
         public AuthenticateResponse Modify(ModifyUserRequest model)
@@ -180,7 +180,7 @@ namespace FamilyTree.Services
                 UserId = user.UserId,
                 Token = tokenService.GetToken(user.UserId),
                 Role = user.Role,
-                PreviousSurnames = user.PrevSurnames?.Select(x => x.Surname).ToList() ?? new List<string>(),
+                PreviousSurnames = user.PrevSurnames?.Select(x => x.Surname).ToList(),
                 PictureUrl = user.PictureUrl
             };
         }
