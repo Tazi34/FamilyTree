@@ -9,6 +9,8 @@ import TextField from "@material-ui/core/TextField";
 import { Formik } from "formik";
 import React from "react";
 import { TreeInformation } from "../../model/TreeInformation";
+import ValidationErrorText from "../UI/ValidationErrorText";
+import createTreeValidationSchema from "./createTreeValidationSchema";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 
@@ -34,8 +36,16 @@ const CreateTreeDialog = ({ open, onClose, onSubmit }: Props) => {
               onSubmit(values.treeName);
               onClose();
             }}
+            validationSchema={createTreeValidationSchema}
           >
-            {({ setFieldTouched, handleChange, handleSubmit, values }) => {
+            {({
+              setFieldTouched,
+              handleChange,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+            }) => {
               const change = (name: string, e: any) => {
                 e.persist();
                 handleChange(e);
@@ -52,6 +62,8 @@ const CreateTreeDialog = ({ open, onClose, onSubmit }: Props) => {
                     value={values.treeName}
                     onChange={change.bind(null, "message")}
                   />
+                  <ValidationErrorText error={errors.treeName} />
+
                   <DialogActions>
                     <Button variant="contained" color="primary" type="submit">
                       Submit

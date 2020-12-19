@@ -44,7 +44,7 @@ const styles = (theme: Theme) => ({
   treeBackground: {
     width: "100%",
     margin: "0 auto",
-    height: "100%",
+    height: "80%",
     background: "radial-gradient(#e0e0e0,grey)",
   },
 });
