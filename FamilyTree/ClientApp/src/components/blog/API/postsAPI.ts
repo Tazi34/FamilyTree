@@ -1,10 +1,10 @@
 import { requestCreatePost } from "./createPost";
 import { requestDeletePost } from "./deletePost";
 import { requestEditPost } from "./editPost";
-import { requestGetPosts } from "./getPosts";
+import { requestGetBlog } from "./getBlog";
 
 export const postsAPI = {
-  requestGetPosts,
+  requestGetBlog,
   requestDeletePost,
   requestCreatePost,
   requestEditPost,
