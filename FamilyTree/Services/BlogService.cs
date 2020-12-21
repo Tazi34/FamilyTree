@@ -63,8 +63,20 @@ namespace FamilyTree.Services
         public BlogListResponse GetPostsList(int userId)
         {
             var postsList = context.Posts.Where(post => post.UserId == userId);
+            var user = context.Users.SingleOrDefault(user => user.UserId == userId);
+            if (user == null)
+            {
+                return null;
+            }
             var response = new BlogListResponse
             {
+                User = new BlogUserProfileResponse
+                {
+                    UserId = user.UserId,
+                    Name = user.Name,
+                    Surname = user.Surname,
+                    PictureUrl =user.PictureUrl
+                },
                 Posts = new List<PostResponse>()
             };
             foreach(Post p in postsList)
