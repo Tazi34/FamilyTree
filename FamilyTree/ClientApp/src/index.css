@@ -18,3 +18,12 @@ body {
   -o-background-size: cover;
   background-size: cover;
 }
+.postFormTextEditor {
+  height: 800px;
+
+  padding: 5px;
+}
+
+.postFormTextEditorWrapper {
+  width: 100%;
+}
