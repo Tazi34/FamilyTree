@@ -13,7 +13,9 @@ const AuthenticatedNavbar = (props: any) => {
       <RedirectButton to={`${BLOG_PAGE_URI}/${props.user.id}`}>
         Blog
       </RedirectButton>
-
+      <RedirectButton to={`${BLOG_PAGE_URI}/${props.user.id}`}>
+        Profile
+      </RedirectButton>
       <LogoutButton>Logout</LogoutButton>
     </div>
   );
