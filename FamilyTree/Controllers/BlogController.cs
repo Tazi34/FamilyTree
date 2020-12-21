@@ -78,5 +78,20 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return Ok(modifiedPost);
         }
+        /// <summary>
+        /// Usuwa post
+        /// </summary>
+        /// <returns></returns>
+        [Route("{postId:int}")]
+        [Authorize]
+        [HttpDelete]
+        public ActionResult DeletePost(int postId)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var result = blogService.DeletePost(userId, postId);
+            if (!result)
+                return BadRequest();
+            return Ok();
+        }
     }
 }

@@ -14,6 +14,7 @@ namespace FamilyTree.Services
         public PostResponse GetPost(int postId);
         public PostResponse CreatePost(int userId, CreatePostRequest model);
         public PostResponse ModifyPost(int userId, ModifyPostRequest model);
+        public bool DeletePost(int userId, int postId);
     }
     public class BlogService : IBlogService
     {
@@ -39,6 +40,16 @@ namespace FamilyTree.Services
             context.Posts.Add(newPost);
             context.SaveChanges();
             return CreateResponse(newPost);
+        }
+
+        public bool DeletePost(int userId, int postId)
+        {
+            var post = context.Posts.SingleOrDefault(post => post.PostId == postId);
+            if (post == null || post.UserId != userId)
+                return false;
+            context.Posts.Remove(post);
+            context.SaveChanges();
+            return true;
         }
 
         public PostResponse GetPost(int postId)
