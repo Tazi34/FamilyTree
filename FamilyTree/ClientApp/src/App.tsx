@@ -15,8 +15,10 @@ import {
   HOME_PAGE_URI,
   LOGIN_PAGE_URI,
   LOGOUT_PAGE_URI,
+  CREATE_POST_FORM_PAGE_URI,
   REGISTER_PAGE_URI,
   TREE_PAGE_URI,
+  EDIT_POST_FORM_PAGE_URI,
 } from "./applicationRouting";
 import { withAlertMessage } from "./components/alerts/withAlert";
 import BlogPage from "./components/blog/BlogPage";
@@ -33,6 +35,9 @@ import AuthorizedPrivateRoute from "./components/loginPage/AuthorizedPrivateRout
 import LoginPage from "./components/loginPage/UI/LoginPage";
 import GuestRoute from "./components/navigation/GuestRoute";
 import UnknownPage from "./components/navigation/UnknownPage";
+import CreatePostFormContainer from "./components/postForm/CreatePostFormContainer";
+import EditPostFormContainer from "./components/postForm/EditPostFormContainer";
+import PostForm from "./components/postForm/PostForm";
 import Registration from "./components/registration/Registration";
 import Tree from "./components/tree/Tree";
 
@@ -42,6 +47,15 @@ export const theme = createMuiTheme({
   palette: {
     primary: lightGreen,
     secondary: lime,
+  },
+  overrides: {
+    MuiButtonBase: {
+      root: {
+        "&:focus": {
+          outline: "none",
+        },
+      },
+    },
   },
 });
 
@@ -70,8 +84,23 @@ const App = (props: any) => {
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
+            exact
             path={`${BLOG_PAGE_URI}/:blogId`}
             component={BlogPage}
+            layout={ThreeColumnLayout}
+            user={loggedUser}
+          />
+          <AuthorizedPrivateRoute
+            exact
+            path={CREATE_POST_FORM_PAGE_URI}
+            component={CreatePostFormContainer}
+            layout={ThreeColumnLayout}
+            user={loggedUser}
+          />
+          <AuthorizedPrivateRoute
+            exact
+            path={`${EDIT_POST_FORM_PAGE_URI}/:postId`}
+            component={EditPostFormContainer}
             layout={ThreeColumnLayout}
             user={loggedUser}
           />

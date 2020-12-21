@@ -1,32 +1,27 @@
-import { Button, makeStyles, Paper } from "@material-ui/core";
+import { CircularProgress, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import { useThunkDispatch } from "../..";
+import { CREATE_POST_FORM_PAGE_URI } from "../../applicationRouting";
+import { ApplicationState } from "../../helpers";
 import { Post } from "../../model/Post";
+import { withAlertMessage } from "../alerts/withAlert";
+import { tryOpenChat } from "../chat/chatReducer";
 import PostCreator from "./PostCreator";
 import PostsList from "./PostsList";
 import {
-  addPost,
   deletePost,
   getPostsByBlogId,
   postsSelectors,
-  PostsState,
 } from "./redux/postsReducer";
-import React, { useEffect } from "react";
-import { ApplicationState } from "../../helpers";
-import { useParams } from "react-router";
-import { RichTextEditor } from "../richTextEditor/RichTextEditor";
-import { tryOpenChat } from "../chat/chatReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    width: "80%",
+    width: "100%",
     margin: "50px auto",
     padding: 30,
-  },
-  textEditorContainer: {
-    width: 700,
-    height: 400,
-    background: "grey",
   },
 }));
 interface ParamTypes {
@@ -34,50 +29,51 @@ interface ParamTypes {
 }
 const BlogPage = (props: any) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
+  const dispatch = useThunkDispatch();
   const blogId = props.computedMatch.params.blogId;
+  const history = useHistory();
+
+  const posts = useSelector((state: ApplicationState): Post[] => {
+    return postsSelectors.selectAll(state);
+  });
 
   useEffect(() => {
     dispatch(getPostsByBlogId(parseFloat(blogId)));
-  }, []);
+  }, [blogId]);
 
-  const handlePostAdd = (post: Post) => {
-    dispatch(addPost(post));
+  const redirectToPostForm = () => {
+    history.push(CREATE_POST_FORM_PAGE_URI);
   };
 
   const handlePostDelete = (id: number) => {
-    dispatch(deletePost(id));
+    dispatch(deletePost(id)).then((response: any) => {
+      if (!response.error) {
+        props.alertSuccess("Post deleted");
+      } else {
+        props.alertError("Couldn't delete post. Try again later");
+      }
+    });
   };
   const handleContact = () => {
     dispatch(tryOpenChat(blogId));
   };
-  const posts = useSelector((state: ApplicationState): Post[] => {
-    var p = state.posts;
-    var r = p.ids.map((i) => p.entities[i]) as Post[];
-    console.log(r);
-    return r;
-  });
+
   if (!blogId) {
     return null;
   }
 
   return (
     <Paper className={classes.root}>
-      <div className={classes.textEditorContainer}>
-        <Button onClick={handleContact}>Contact</Button>
-        <RichTextEditor></RichTextEditor>
-      </div>
-
-      <PostCreator onAddPost={handlePostAdd}></PostCreator>
+      <PostCreator redirectToPostForm={redirectToPostForm}></PostCreator>
       <div>
-        <PostsList
-          posts={posts}
-          onPostDelete={handlePostDelete}
-          onPostAdd={handlePostAdd}
-        ></PostsList>
+        {!Boolean(posts) ? (
+          <CircularProgress />
+        ) : (
+          <PostsList posts={posts} onPostDelete={handlePostDelete} />
+        )}
       </div>
     </Paper>
   );
 };
 
-export default BlogPage;
+export default withAlertMessage(BlogPage);
