@@ -70,7 +70,7 @@ export const authenticateToken = createAsyncThunk<
 >(`${userActionsPrefix}/authenticateToken`, async (token) => {
   return await authenticationAPI.requestAuthenticateToken({ token });
 });
-export const logoutUser = createAction("users/userLoggedout");
+export const logoutUser = createAction("users/userLoggedOut");
 
 //REDUCER
 export const authenticationInitialState: AuthenticationState = {
@@ -103,11 +103,6 @@ export const authenticationReducer = createReducer(
           previousSurnames: userData.previousSurnames,
         };
         addAuthorizationToken(userData.token);
-      })
-      .addCase(logoutUser, (state) => {
-        state.user = null;
-        state.isLoggedIn = false;
-        removeAuthorizationToken();
       });
 
     addThunkWithStatusHandlers(

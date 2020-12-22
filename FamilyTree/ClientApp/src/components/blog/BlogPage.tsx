@@ -2,20 +2,24 @@ import { CircularProgress, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory } from "react-router";
+import { Redirect, useHistory } from "react-router";
 import { useThunkDispatch } from "../..";
-import { CREATE_POST_FORM_PAGE_URI } from "../../applicationRouting";
+import {
+  CREATE_POST_FORM_PAGE_URI,
+  HOME_PAGE_URI,
+  PROFILE_PAGE_URI,
+} from "../../applicationRouting";
 import { ApplicationState } from "../../helpers";
+import { StatusState } from "../../helpers/helpers";
+import { BlogProfile } from "../../model/BlogProfile";
 import { Post } from "../../model/Post";
 import { withAlertMessage } from "../alerts/withAlert";
 import { tryOpenChat } from "../chat/chatReducer";
-import PostCreator from "./PostCreator";
+import { getUser } from "../loginPage/authenticationReducer";
+import BlogProfileSection from "./BlogProfileSection";
+import BlogOwnerSection from "./BlogOwnerSection";
 import PostsList from "./PostsList";
-import {
-  deletePost,
-  getPostsByBlogId,
-  postsSelectors,
-} from "./redux/postsReducer";
+import { deletePost, getBlog, postsSelectors } from "./redux/postsReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -33,16 +37,26 @@ const BlogPage = (props: any) => {
   const blogId = props.computedMatch.params.blogId;
   const history = useHistory();
 
-  const posts = useSelector((state: ApplicationState): Post[] => {
+  const user = useSelector(getUser);
+  const fetchStatus = useSelector<ApplicationState, StatusState>((state) => {
+    return state.posts.status;
+  });
+  const posts = useSelector<ApplicationState, Post[]>((state) => {
     return postsSelectors.selectAll(state);
+  });
+  const profile = useSelector<ApplicationState, BlogProfile | null>((state) => {
+    return state.posts.profile;
   });
 
   useEffect(() => {
-    dispatch(getPostsByBlogId(parseFloat(blogId)));
-  }, [blogId]);
+    dispatch(getBlog(parseFloat(blogId)));
+  }, []);
 
   const redirectToPostForm = () => {
     history.push(CREATE_POST_FORM_PAGE_URI);
+  };
+  const redirectToProfileEdit = () => {
+    history.push(PROFILE_PAGE_URI);
   };
 
   const handlePostDelete = (id: number) => {
@@ -59,12 +73,24 @@ const BlogPage = (props: any) => {
   };
 
   if (!blogId) {
-    return null;
+    return <Redirect to={HOME_PAGE_URI} />;
+  }
+  if (fetchStatus.loading || !profile) {
+    return <CircularProgress />;
   }
 
+  const isUserOwnerOfBlog = profile.userId === user?.id;
   return (
     <Paper className={classes.root}>
-      <PostCreator redirectToPostForm={redirectToPostForm}></PostCreator>
+      {isUserOwnerOfBlog ? (
+        <BlogOwnerSection
+          onEditProfile={redirectToProfileEdit}
+          redirectToPostForm={redirectToPostForm}
+        ></BlogOwnerSection>
+      ) : (
+        <BlogProfileSection onContact={handleContact} profile={profile} />
+      )}
+
       <div>
         {!Boolean(posts) ? (
           <CircularProgress />

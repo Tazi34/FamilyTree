@@ -19,6 +19,7 @@ import {
   REGISTER_PAGE_URI,
   TREE_PAGE_URI,
   EDIT_POST_FORM_PAGE_URI,
+  PROFILE_PAGE_URI,
 } from "./applicationRouting";
 import { withAlertMessage } from "./components/alerts/withAlert";
 import BlogPage from "./components/blog/BlogPage";
@@ -40,6 +41,7 @@ import EditPostFormContainer from "./components/postForm/EditPostFormContainer";
 import PostForm from "./components/postForm/PostForm";
 import Registration from "./components/registration/Registration";
 import Tree from "./components/tree/Tree";
+import UserProfileContainer from "./components/userProfile/UserProfileContainer";
 
 import { ApplicationState } from "./helpers";
 
@@ -87,6 +89,15 @@ const App = (props: any) => {
             exact
             path={`${BLOG_PAGE_URI}/:blogId`}
             component={BlogPage}
+            layout={ThreeColumnLayout}
+            user={loggedUser}
+          />
+          <AuthorizedPrivateRoute
+            exact
+            path={`${PROFILE_PAGE_URI}`}
+            onSuccess={alertSuccess}
+            onError={alertError}
+            component={UserProfileContainer}
             layout={ThreeColumnLayout}
             user={loggedUser}
           />

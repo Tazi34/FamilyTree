@@ -75,7 +75,7 @@ const UserTreePanel = ({ userTrees, onTreeSelect, onTreeCreate }: Props) => {
           justifyContent="space-between"
         >
           <Typography variant="h6" align="center" className={classes.title}>
-            Trees
+            Your trees
           </Typography>
 
           <div className={classes.treeList}>

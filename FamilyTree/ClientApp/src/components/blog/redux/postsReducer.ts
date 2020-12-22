@@ -1,4 +1,5 @@
-import { GetPostResponse } from "./../API/getPosts";
+import { BlogProfile } from "./../../../model/BlogProfile";
+import { GetBlogResponse } from "../API/getBlog";
 import {
   createAsyncThunk,
   createEntityAdapter,
@@ -43,10 +44,10 @@ export const deletePost = createAsyncThunk<any, number>(
     return postsAPI.requestDeletePost({ postId });
   }
 );
-export const getPostsByBlogId = createAsyncThunk(
+export const getBlog = createAsyncThunk(
   `${BLOG_API_URL}/fetchByBlogId`,
-  async (blogId: number): Promise<any> => {
-    return postsAPI.requestGetPosts({ userId: blogId });
+  async (blogId: number) => {
+    return postsAPI.requestGetBlog({ userId: blogId });
   }
 );
 
@@ -64,10 +65,12 @@ export const initialStatus: Status = {
 
 export type PostsState = EntityState<Post> & {
   status: StatusState;
+  profile: BlogProfile | null;
 };
 
 export const postsInitialState = postsAdapter.getInitialState({
   status: initialStatus,
+  profile: null,
 }) as PostsState;
 
 export const postByIdSelector = (id: number) => {
@@ -90,13 +93,15 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
 
   addThunkWithStatusHandlers(
     builder,
-    getPostsByBlogId,
+    getBlog,
     (state: PostsState, action: any) => {
-      const data: GetPostResponse = action.payload.data;
+      const data: GetBlogResponse = action.payload.data;
 
+      state.profile = data.user;
       postsAdapter.addMany(state, data.posts.reverse());
     },
     (state: PostsState, action: any) => {
+      state.profile = null;
       postsAdapter.removeAll(state);
     }
   );

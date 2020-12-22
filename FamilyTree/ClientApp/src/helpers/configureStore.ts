@@ -9,6 +9,7 @@ import { ApplicationState, reducers } from ".";
 import logger from "redux-logger";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/es/storage";
+import { removeAuthorizationToken } from "../components/loginPage/tokenService";
 
 export default function configureStore(
   history: History,
@@ -43,7 +44,7 @@ export default function configureStore(
 
   const rootReducer = (state: any, action: any) => {
     if (action.type == logoutUser.toString()) {
-      console.log(state.router);
+      removeAuthorizationToken();
       return {
         ...initialAppState,
         router: state.router,
