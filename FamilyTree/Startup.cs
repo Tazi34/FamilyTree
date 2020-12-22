@@ -61,6 +61,7 @@ namespace FamilyTree
             services.AddScoped<IFacebookService, FacebookService>();
             services.AddScoped<ITreeAuthService, TreeAuthService>();
             services.AddScoped<ITreeValidationService, TreeValidationService>();
+            services.AddScoped<IGoogleService, GoogleService>();
 
 
             services.AddSwaggerGen(c =>

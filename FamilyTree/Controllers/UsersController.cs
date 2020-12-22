@@ -20,10 +20,12 @@ namespace FamilyTree.Controllers
     {
         private UserService userService;
         private IFacebookService facebookService;
-        public UsersController(IUserService userService, IFacebookService facebookService)
+        private IGoogleService googleService;
+        public UsersController(IUserService userService, IFacebookService facebookService, IGoogleService googleService)
         {
             this.userService = (UserService)userService;
             this.facebookService = facebookService;
+            this.googleService = googleService;
         }
         /// <summary>
         /// Uzyskanie tokena
@@ -87,14 +89,20 @@ namespace FamilyTree.Controllers
             return Ok(response);
         }
         /// <summary>
-        /// TODO
+        /// Zwraca wewnętrzny JWT na podstawie ID Tokenu z google
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("google")]
-        public string Google()
+        public async Task<ActionResult<AuthenticateResponse>> Google(AuthenticateGoogleRequest model)
         {
-            return "google test";
+            string email = await googleService.ValidateIdToken(model.IdToken);
+            if (email == null)
+                return BadRequest();
+            var response = userService.AuthenticateGoogle(email);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
         }
     }
 }
