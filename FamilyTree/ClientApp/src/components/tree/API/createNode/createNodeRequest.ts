@@ -1,6 +1,7 @@
 import { TreeAPI, TreeNodeAPI } from "./../utils/TreeModel";
 import axios from "axios";
 import { baseURL, TREE_API_URL } from "../../../../helpers/apiHelpers";
+import { Sex } from "../../../../model/Sex";
 
 export const CREATE_NODE_API_URL = `${TREE_API_URL}/node`;
 
@@ -14,6 +15,7 @@ export type CreateNodeRequestData = {
   pictureUrl: string;
   fatherId: number;
   motherId: number;
+  sex: Sex;
   children: number[];
   partners: number[];
 };

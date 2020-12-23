@@ -1,3 +1,5 @@
+import { Sex } from "./Sex";
+
 export type FullUserInformation = {
   userId: number;
   name: string;
@@ -7,4 +9,5 @@ export type FullUserInformation = {
   previousSurnames: string[];
   token: string;
   role: string;
+  sex: Sex;
 };

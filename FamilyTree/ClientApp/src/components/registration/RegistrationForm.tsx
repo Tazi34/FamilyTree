@@ -6,6 +6,7 @@ import Typography from "@material-ui/core/Typography";
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { Formik } from "formik";
 import React from "react";
+import { Sex } from "../../model/Sex";
 import { WithAlert, withAlertMessage } from "../alerts/withAlert";
 import PasswordField from "../loginPage/UI/PasswordField";
 
@@ -29,7 +30,7 @@ export type UserRegistrationData = {
   password: string;
   birthday: string;
   previousSurnames: string[];
-  sex: "Male" | "Female" | "Not Sure";
+  sex: Sex;
 };
 
 const initialData = {

@@ -118,9 +118,11 @@ class Tree extends React.Component<any, TreeContainerState> {
       fatherId: 0,
       motherId: 0,
       pictureUrl: "",
-      description: "",
-      name: "XD",
-      surname: "Pablo",
+      description: "Very fascinating description :0",
+      name: "Adam",
+      sex: "Male",
+
+      surname: "Kowalski",
       birthday: "2020-12-16T20:29:42.677Z",
       partners: [],
     };

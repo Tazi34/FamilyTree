@@ -1,5 +1,6 @@
 import axios from "axios";
 import { LOGIN_API_URL } from "../../../helpers/apiHelpers";
+import { Sex } from "../../../model/Sex";
 
 export type AuthenticateTokenRequestData = {
   token: string;
@@ -15,7 +16,7 @@ export type AuthenticateTokenResponse = {
   previousSurnames: string[];
   birthday: string;
   pictureUrl: string;
-  sex: "Male" | "Female" | "Not Sure";
+  sex: Sex;
 };
 
 export const requestAuthenticateToken = (
