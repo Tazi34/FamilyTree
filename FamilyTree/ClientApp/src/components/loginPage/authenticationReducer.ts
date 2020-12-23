@@ -1,3 +1,4 @@
+import { AuthenticateGmailResponse } from "./API/authenticateGmail";
 import {
   createAction,
   createAsyncThunk,
@@ -70,6 +71,12 @@ export const authenticateToken = createAsyncThunk<
 >(`${userActionsPrefix}/authenticateToken`, async (token) => {
   return await authenticationAPI.requestAuthenticateToken({ token });
 });
+export const authenticateGmailToken = createAsyncThunk<
+  AxiosResponse<AuthenticateGmailResponse>,
+  string
+>(`${userActionsPrefix}/authenticateGmailToken`, async (token) => {
+  return await authenticationAPI.requestAuthenticateGmail({ idToken: token });
+});
 export const logoutUser = createAction("users/userLoggedOut");
 
 //REDUCER
@@ -104,7 +111,20 @@ export const authenticationReducer = createReducer(
         };
         addAuthorizationToken(userData.token);
       });
-
+    addThunkWithStatusHandlers(
+      builder,
+      authenticateGmailToken,
+      (state: AuthenticationState, action: any) => {
+        const userData = action.payload.data;
+        setUserLoggedIn(userData, state);
+      },
+      undefined,
+      (state: AuthenticationState, action: any) => {
+        state.isLoggedIn = false;
+        state.user = null;
+        removeAuthorizationToken();
+      }
+    );
     addThunkWithStatusHandlers(
       builder,
       loginUser,

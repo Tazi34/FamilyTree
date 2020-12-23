@@ -6,6 +6,8 @@ export const PROFILE_API_URL = `${baseURL}/editUsers`;
 export const TREE_API_URL = `${baseURL}/tree`;
 export const CHAT_API_URL = `${baseURL}/chat`;
 export const AUTHENTICATION_API_URL = `${baseURL}/users`;
+export const GOOGLE_AUTHENTICATION_API_URL = `${baseURL}/users/google`;
+
 export const REGISTER_API_URL = AUTHENTICATION_API_URL;
 export const LOGIN_API_URL = `${baseURL}/users`;
 
