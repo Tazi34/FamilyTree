@@ -17,6 +17,7 @@ namespace FamilyTree.Services
         AuthenticateResponse Modify(ModifyUserRequest model);
         AuthenticateResponse ChangePassword(ChangePasswordRequest model);
         AuthenticateResponse CheckUserId(int userId);
+        AuthenticateResponse AuthenticateGoogle(string email);
     }
     public class UserService:IUserService
     {
@@ -62,6 +63,23 @@ namespace FamilyTree.Services
             user.Surname = userInfo.LastName;
             context.Users.Update(user);
             context.SaveChanges();
+            return CreateResponse(user);
+        }
+
+        public AuthenticateResponse AuthenticateGoogle(string email)
+        {
+            var user = context.Users.Include(u => u.PrevSurnames).SingleOrDefault(u => u.Email.Equals(email));
+            if(user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    Role = Role.User,
+                    PrevSurnames = new List<PreviousSurname>()
+                };
+                context.Users.Add(user);
+                context.SaveChanges();
+            }
             return CreateResponse(user);
         }
 
