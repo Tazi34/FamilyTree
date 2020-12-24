@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import React, { useEffect, useState } from "react";
+import ZoomInner from "./ZoomInner";
 
 export function ZoomContainer(props) {
   var svgElement = null;
@@ -18,10 +19,11 @@ export function ZoomContainer(props) {
     svg.call(zoom);
     return;
   }, [svgElement]);
-
   return (
-    <g id="zoom-container" transform={`translate(${x}, ${y}) scale(${k})`}>
-      {props.children}
-    </g>
+    <div id="zoom-container">
+      <ZoomInner x={x} y={y} k={k}>
+        {props.children}
+      </ZoomInner>
+    </div>
   );
 }
