@@ -131,7 +131,6 @@ class Tree extends React.Component<any, TreeContainerState> {
 
   render() {
     const { classes, treeInformation } = this.props;
-    console.log("Tree container redner");
     if (this.props.isLoading)
       return <div className={classes.treeBackground}></div>;
 
@@ -146,7 +145,11 @@ class Tree extends React.Component<any, TreeContainerState> {
           <Button onClick={this.handleAddNode}>Add Node</Button>
         </div>
 
-        <svg id="tree-canvas" ref={this.svgRef} width={"100%"} height={"100%"}>
+        <div
+          id="tree-canvas"
+          ref={this.svgRef}
+          style={{ overflow: "hidden", width: "100%", height: "100%" }}
+        >
           <ZoomContainer
             getSvg={this.getSvg}
             onMouseMove={this.handleCloseMenu}
@@ -159,9 +162,9 @@ class Tree extends React.Component<any, TreeContainerState> {
               onAddNodeMenuClose={this.handleCloseMenu}
               rectHeight={RECT_HEIGHT}
               rectWidth={RECT_WIDTH}
-            ></TreeRenderer>
+            />
           </ZoomContainer>
-        </svg>
+        </div>
         <ClickAwayListener
           onClickAway={this.handleCloseMenu}
           mouseEvent="onClick"

@@ -33,12 +33,14 @@ import { FamilyNode } from "./model/FamilyNode";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import {
+  linkLoader,
   selectAllFamilies,
   selectAllNodesLocal,
   selectAllPersonNodes,
   TreeState,
 } from "./reducer/treeReducer";
 import {
+  deleteNode,
   removeNodeFromTree,
   requestDeleteNode,
 } from "./reducer/updateNodes/deleteNode";
@@ -62,6 +64,11 @@ import "./treeRenderer.css";
 import { addParentAsync } from "./reducer/updateNodes/addParent";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import { DeleteNodeRequestData } from "./API/deleteNode/deleteNodeRequest";
+import PersonNodeCard from "./PersonNodeCard";
+import LinkComponent, { LinkLoaded } from "./LinkComponent";
+import FamilyNodeCard from "./FamilyNodeCard";
+import { Dialog } from "@material-ui/core";
+import TreeNodeDetailsDialog from "./TreeNodeDetailsDialog";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -82,9 +89,11 @@ export interface TreeRendererProps {
   nodes: PersonNode[];
   families: FamilyNode[];
 }
-// const getNode = (id: number | string): FamilyNode | PersonNode | undefined => {
-//   return useSelector((state: ApplicationState) => getNodeById(state, id));
-// };
+
+type NodeDialogProps = {
+  open: boolean;
+  node: PersonNode | null;
+};
 
 const TreeRenderer = (props: TreeRendererProps) => {
   const container = useRef<any>(null);
@@ -93,17 +102,22 @@ const TreeRenderer = (props: TreeRendererProps) => {
   const [connectingMode, setConnectingMode] = useState(false);
   const [startPoint, setStartPoint] = useState<ConnectionPoint | null>(null);
   const [canConnectTo, setCanConnectTo] = useState<IDictionary<boolean>>({});
+  const [nodeDialog, setNodeDialog] = useState<NodeDialogProps>({
+    open: false,
+    node: null,
+  });
 
   const treeState = useSelector<ApplicationState, TreeState>(
     (state) => state.tree
   );
+
   const allFamilyNodes = useSelector(selectAllFamilies);
   const isConnecting = useSelector(isConnectingSelector);
   const connectionStartPoint = useSelector(connectionStartPointSelector);
   const allNodes = useSelector(selectAllNodesLocal);
   const allPersonNodes = useSelector(selectAllPersonNodes);
+
   useEffect(() => {
-    console.log("Repaint tree");
     renderTree();
   });
 
@@ -123,31 +137,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
         path.attr("d", pathData).attr("stroke", "black");
       }
     });
-
-    updateNodesAndLinks(props.nodes, props.families, props.links);
-  };
-
-  const appendStartGroups = () => {
-    const containerGroup = selectContainer();
-    containerGroup.select(`#${linksGroupId}`).remove();
-    containerGroup.select(`#${nodesGroupId}`).remove();
-    containerGroup.append("g").attr("id", linksGroupId);
-    containerGroup.append("g").attr("id", nodesGroupId);
-  };
-
-  const updateNodesAndLinks = (
-    nodes: PersonNode[],
-    familyNodes: FamilyNode[],
-    links: Link[]
-  ) => {
-    appendStartGroups();
-
-    var containerGroup = d3.select(container.current);
-    var linksCanvas = containerGroup.select(`#${linksGroupId}`);
-    var nodesCanvas = containerGroup.select(`#${nodesGroupId}`);
-
-    initializeNodes(nodesCanvas, nodes, familyNodes);
-    initializeLinks(linksCanvas, links);
   };
 
   const changeVisibility = (familyNode: FamilyNode) => {
@@ -211,7 +200,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
       .selectAll()
       .data(allNodes)
       .enter()
-      .append("g")
+      .append("div")
       .attr("class", "node")
       .attr("id", (d: any) => getNodeId(d.id));
 
@@ -220,17 +209,9 @@ const TreeRenderer = (props: TreeRendererProps) => {
 
     peopleNodesSelector.on("contextmenu", props.onAddMenuOpen);
 
-    peopleNodesSelector.attr(
-      "transform",
-      (d: any) =>
-        `translate(${d.location.x - RECT_WIDTH / 2},${
-          d.location.y - RECT_HEIGHT / 2
-        })`
-    );
-
     familyNodesSelector.attr(
       "transform",
-      (d: any) => `translate(${d.location.x},${d.location.y})`
+      (d: any) => `translate(${d.x}px,${d.y}px)`
     );
 
     familyNodesSelector.on("click", (e: any, familyNode: FamilyNode) => {
@@ -247,7 +228,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
       }
     });
     renderFamilyNodes(familyNodesSelector);
-    renderNodeCards(peopleNodesSelector);
 
     peopleNodesSelector.on("mouseover", (e: any, d: PersonNode) => {
       if (connectingMode) {
@@ -260,8 +240,8 @@ const TreeRenderer = (props: TreeRendererProps) => {
       (e: any, selectedNode: PersonNode) => {
         const point = {
           id: selectedNode.id,
-          x: selectedNode.location.x,
-          y: selectedNode.location.y,
+          x: selectedNode.x,
+          y: selectedNode.y,
         };
 
         if (!connectingMode) {
@@ -332,65 +312,8 @@ const TreeRenderer = (props: TreeRendererProps) => {
     addPlusIcon(peopleNodesSelector, (node: PersonNode) => {
       dispatch(addParentAsync(node.id as number, newPerson));
     });
-
-    //addGearIcon(peopleNodesSelector);
-
-    var dragHandler = d3
-      .drag()
-      .subject((e: any, node: Node) => node.location)
-      .on("drag", (e: any, d: any) => {
-        moveNodeOnCanvas(e, d);
-        //close context menu if open
-
-        props.onAddNodeMenuClose(e);
-      })
-      .on("end", (e: D3DragEvent<any, any, Node>, node: Node) => {
-        dispatch(moveNode(node, e.x, e.y));
-      });
-
-    dragHandler(allNodesSelector);
-    dragHandler(familyNodesSelector);
   };
 
-  const initializeLinks = (linksCanvas: any, data: Link[]) => {
-    var linksSelector = linksCanvas.selectAll("line.link").data(data).enter();
-    createLinks(linksCanvas, linksSelector);
-  };
-  const createLinks = (linksCanvas: any, linksSelector: any) => {
-    linksSelector.each(function (link: Link) {
-      const { sourceNode, targetNode } = getLinkNodes(treeState, link);
-
-      if (!sourceNode || !targetNode) {
-        return;
-      }
-      if (!sourceNode.isVisible || !targetNode.isVisible) {
-        return;
-      }
-
-      var pathData = createPath(
-        sourceNode.location.x,
-        sourceNode.location.y,
-        targetNode.location.x,
-        targetNode.location.y
-      );
-
-      linksCanvas
-        .append("g")
-        .attr("class", "link")
-        .attr("id", (link: Link) => {
-          return getLinkId(sourceNode.id, targetNode.id);
-        })
-        .append("path")
-        .attr("d", pathData)
-        .attr("fill", "none")
-        .attr("stroke", (d: Link) => {
-          //TODO
-
-          return "black";
-        })
-        .attr("stroke-width", 1);
-    });
-  };
   const selectContainer = () => {
     return d3.select(container.current);
   };
@@ -406,25 +329,43 @@ const TreeRenderer = (props: TreeRendererProps) => {
   };
 
   const selectLink = (sourceId: any, targetId = null) => {
-    return selectLinks().select(getLinkIdSelector(sourceId, targetId));
+    return d3.selectAll(getLinkIdSelector(sourceId, targetId));
+  };
+  const handleNodeDelete = (id: number) => {
+    //TODO api
+    dispatch(removeNodeFromTree(id));
   };
 
+  const loadedLinks = props.links
+    .map((link) => linkLoader(treeState, link))
+    .filter((a) => a) as LinkLoaded[];
+  console.log(loadedLinks);
+
+  const handleParentAdd = (id: number, data: CreateNodeRequestData) => {
+    dispatch(addParentAsync(id, data));
+  };
+  const handleNodeMove = (node: Node, x: number, y: number) => {
+    dispatch(moveNode(node, x, y));
+  };
   const moveNodeOnCanvas = (e: DragEvent, node: Node) => {
     if (connectingMode) {
       return;
     }
 
-    var svgNode = selectNode(node.id);
+    var svgNode = d3.select("#n" + node.id);
 
     var x = e.x;
     var y = e.y;
     if (!node.isFamily) {
       x -= RECT_WIDTH / 2;
       y -= RECT_HEIGHT / 2;
+    } else {
+      x -= 5;
+      y -= 5;
     }
 
     //move svg without moving node in redux store
-    svgNode.attr("transform", (d: any) => `translate(${x},${y})`);
+    svgNode.style("transform", (d: any) => `translate(${x}px,${y}px)`);
 
     const outbondLinks = getOutboundLinks(treeState, node);
 
@@ -434,11 +375,11 @@ const TreeRenderer = (props: TreeRendererProps) => {
         var path = createPath(
           e.x,
           e.y,
-          otherNodelocation.location.x,
-          otherNodelocation.location.y
+          otherNodelocation.x,
+          otherNodelocation.y
         );
-        var svgLink = selectLink(link.id);
-        svgLink.select("path").attr("d", path);
+        const linksvg = d3.select("#" + link.id);
+        linksvg.attr("d", path);
       }
     });
     const incomingLinks = getIncomingLinks(treeState, node);
@@ -447,20 +388,72 @@ const TreeRenderer = (props: TreeRendererProps) => {
       const otherNodelocation = getNodeById(treeState, link.source);
       if (otherNodelocation) {
         var path = createPath(
-          otherNodelocation.location.x,
-          otherNodelocation.location.y,
+          otherNodelocation.x,
+          otherNodelocation.y,
           e.x,
           e.y
         );
-        var svgLink = selectLink(link.id);
-        svgLink.select("path").attr("d", path);
+        const linksvg = d3.select("#" + link.id);
+        linksvg.attr("d", path);
       }
     });
   };
   const traverseTree = (node: Node, callback: Function) => {
     traverseRec(node, callback, 0, (id: number) => getNodeById(treeState, id));
   };
-  return <g ref={container} key={Math.random().toString()}></g>;
+  const handleNodeSelect = (personNode: PersonNode) => {
+    setNodeDialog({ open: true, node: personNode });
+  };
+  const handleDialogClose = () => {
+    setNodeDialog({ open: false, node: null });
+  };
+
+  return (
+    <div ref={container} key={Math.random().toString()}>
+      <TreeNodeDetailsDialog
+        //TODO na podstawie nodea
+        canEdit={true}
+        open={nodeDialog.open}
+        node={nodeDialog.node}
+        onClose={handleDialogClose}
+      />
+      {props.nodes.map((node) => (
+        <PersonNodeCard
+          x={node.x}
+          y={node.y}
+          onNodeSelect={handleNodeSelect}
+          onNodeMove={handleNodeMove}
+          onParentAdd={handleParentAdd}
+          person={node}
+          onNodeDelete={handleNodeDelete}
+          onMoveNodeOnCanvas={moveNodeOnCanvas}
+        />
+      ))}
+      {props.families.map((family) => (
+        <FamilyNodeCard
+          family={family}
+          onNodeMove={handleNodeMove}
+          onMoveNodeOnCanvas={moveNodeOnCanvas}
+        />
+      ))}
+
+      <svg
+        style={{
+          position: "absolute",
+          width: 10,
+          height: 10,
+          top: 0,
+          left: 0,
+          zIndex: -100000,
+          overflow: "visible",
+        }}
+      >
+        {loadedLinks.map((loadedLink) => (
+          <LinkComponent link={loadedLink} />
+        ))}
+      </svg>
+    </div>
+  );
 };
 
 export default React.memo(TreeRenderer);
