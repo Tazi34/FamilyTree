@@ -24,7 +24,51 @@ namespace FamilyTree.Services
 
         public TreesListSearchResponse FindTrees(string expression)
         {
-            throw new NotImplementedException();
+            string exp = expression.Trim().ToUpper();
+            var surnameExpList = expression.Split().ToList();
+            List<Tree> exactResults = null, contains1Results = null, contains2Results, surnamesResults = new List<Tree>(); ;
+            exactResults = context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Equals(exp)).Take(20).ToList();
+            contains1Results = context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Contains(exp)).Take(20).ToList();
+            contains2Results = context.Trees.Where(t => !t.IsPrivate && exp.Contains(t.Name.ToUpper())).Take(20).ToList();
+            if (surnameExpList.Any())
+                surnamesResults = context.Trees.Include(t => t.Nodes).Where(t => t.Nodes.Any(n => n.Surname.ToUpper().Equals(surnameExpList[0]))).Take(20).ToList();
+            return CreateTreesList(exactResults, contains1Results, contains2Results, surnamesResults);
+        }
+        private TreesListSearchResponse CreateTreesList(List<Tree> exact, List<Tree> contains1, List<Tree> contains2, List<Tree> surnames)
+        {
+            var resultList = new List<Tree>();
+            resultList.AddRange(exact);
+            resultList.AddRange(contains1);
+            resultList.AddRange(contains2);
+            resultList = resultList.Distinct().ToList();
+            if (surnames.Count() > 5)
+            {
+                resultList = resultList.Take(15).ToList();
+                resultList.AddRange(surnames.Take(5));
+            }
+            else
+            {
+                resultList = resultList.Take(20 - surnames.Count).ToList();
+                resultList.AddRange(surnames);
+            }
+            return CreateTreeResponse(resultList.Distinct().ToList());
+        }
+        private TreesListSearchResponse CreateTreeResponse(List<Tree> treeList)
+        {
+            var response = new TreesListSearchResponse
+            {
+                Trees = new List<TreeSearchResponse>()
+            };
+            foreach(Tree t in treeList)
+            {
+                response.Trees.Add(new TreeSearchResponse
+                {
+                    IsPrivate = t.IsPrivate,
+                    Name = t.Name,
+                    TreeId = t.TreeId
+                });
+            }
+            return response;
         }
 
         public UsersListSearchResponse FindUsers(string expression)
