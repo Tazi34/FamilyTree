@@ -98,13 +98,13 @@ export const addParentReducerHandler = (
       if (family.fatherId) {
         family.motherId = parent.id;
         sourceNode.motherId = parent.id;
-        parent.location.x = sourceNode.location.x + X_SEP;
+        parent.x = sourceNode.x + X_SEP;
       } else {
         family.fatherId = parent.id;
         sourceNode.fatherId = parent.id;
-        parent.location.x = sourceNode.location.x - X_SEP;
+        parent.x = sourceNode.x - X_SEP;
       }
-      parent.location.y = family.location.y - Y_SEP;
+      parent.y = family.y - Y_SEP;
       parent.families.push(family.id);
 
       linksToAdd = [createLink(parent, family)];
@@ -117,14 +117,14 @@ export const addParentReducerHandler = (
     var familyNode: FamilyNode = new FamilyNode(
       id,
       sourceNode.treeId,
-      sourceNode.location.x,
-      sourceNode.location.y - Y_SEP,
+      sourceNode.x,
+      sourceNode.y - Y_SEP,
       [sourceNode.id],
       parent.id
     );
 
-    parent.location.x = familyNode.location.x - X_SEP;
-    parent.location.y = familyNode.location.y - Y_SEP;
+    parent.x = familyNode.x - X_SEP;
+    parent.y = familyNode.y - Y_SEP;
 
     linksToAdd = [
       createLink(parent, familyNode),

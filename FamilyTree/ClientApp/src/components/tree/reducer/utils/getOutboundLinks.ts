@@ -13,9 +13,9 @@ import { Link } from "../../model/Link";
 
 export const getOutboundLinks = (state: TreeState, node: Node): Link[] => {
   var links: Link[] = [];
-  if (node instanceof PersonNode) {
+  if (!node.isFamily) {
     //szukamy rodziny gdzie jest rodzicem
-    const families = node.families
+    const families = (node as PersonNode).families
       .map((family) => selectFamily(state.families, family))
       .filter((f) => f) as FamilyNode[];
 
@@ -46,9 +46,9 @@ export const getOutboundLinks = (state: TreeState, node: Node): Link[] => {
 export const getIncomingLinks = (state: TreeState, node: Node): Link[] => {
   var links: Link[] = [];
 
-  if (node instanceof PersonNode) {
+  if (!node.isFamily) {
     //szukamy rodziny gdzie jest dzieckiem
-    const families = node.families
+    const families = (node as PersonNode).families
       .map((family) => selectFamily(state.families, family))
       .filter((f) => f) as FamilyNode[];
 

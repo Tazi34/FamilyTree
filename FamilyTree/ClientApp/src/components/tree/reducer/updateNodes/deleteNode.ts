@@ -27,10 +27,10 @@ export const requestDeleteNode = (nodeId: EntityId) => (
   getState: any
 ) => {
   const state: ApplicationState = getState();
-
-  dispatch(deleteNode({ nodeId: nodeId as number })).then((response: any) => {
-    if (response.type === deleteNode.fulfilled.toString()) {
-      dispatch(removeNodeFromTree(nodeId));
-    }
-  });
+  dispatch(removeNodeFromTree(nodeId));
+  // dispatch(deleteNode({ nodeId: nodeId as number })).then((response: any) => {
+  //   if (response.type === deleteNode.fulfilled.toString()) {
+  //     dispatch(removeNodeFromTree(nodeId));
+  //   }
+  // });
 };

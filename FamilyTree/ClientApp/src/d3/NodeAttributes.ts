@@ -27,8 +27,8 @@ export const RECTANGLE_BORDER_RADIUS = "rx";
 export const IMAGE = "image";
 
 export const rectangleAttributes: any = {
-  [WIDTH]: RECT_WIDTH,
-  [HEIGHT]: RECT_HEIGHT,
+  [WIDTH]: RECT_WIDTH + "px",
+  [HEIGHT]: RECT_HEIGHT + "px",
   [DISPLAY]: displayMap,
   [STROKE]: rectStroke,
   [FILL]: rectFill,

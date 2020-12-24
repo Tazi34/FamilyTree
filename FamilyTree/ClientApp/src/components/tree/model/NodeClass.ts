@@ -5,7 +5,8 @@ export type NodeId = string | number | null;
 
 export class Node {
   id: EntityId;
-  location: Point;
+  x: number;
+  y: number;
   isVisible: boolean = true;
   isFamily: boolean;
   children: EntityId[] = [];
@@ -14,9 +15,6 @@ export class Node {
   graph: number | undefined = undefined;
   d3Node: any;
   treeId: number;
-  getCanvasLocation = (): Point => {
-    return this.location;
-  };
 
   constructor(
     id: EntityId,
@@ -30,7 +28,8 @@ export class Node {
   ) {
     this.treeId = treeId;
     this.id = id;
-    this.location = { x, y };
+    this.x = x;
+    this.y = y;
     this.isFamily = isFamily;
     this.children = children;
     this.fatherId = firstParent;

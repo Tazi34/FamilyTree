@@ -1,7 +1,7 @@
 import { TreeNode } from "../model/TreeInterfaces";
 
-export const RECT_WIDTH = 231;
-export const RECT_HEIGHT = 123;
+export const RECT_WIDTH = 180;
+export const RECT_HEIGHT = 223;
 
 //TODO PRZENIESC DO KOMPONENTOW
 export const X_SEP = RECT_WIDTH + 100;
