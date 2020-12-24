@@ -3,6 +3,7 @@ import { EntityId } from "@reduxjs/toolkit";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../../d3/RectMapper";
 import { Point } from "../Point";
 import { Node } from "./NodeClass";
+import { Sex } from "../../../model/Sex";
 
 export class PersonNode extends Node {
   personDetails: PersonInformation;
@@ -11,8 +12,8 @@ export class PersonNode extends Node {
   partners: EntityId[];
   getCanvasLocation = (): Point => {
     return {
-      x: this.location.x - RECT_WIDTH / 2,
-      y: this.location.y - RECT_HEIGHT / 2,
+      x: this.x - RECT_WIDTH / 2,
+      y: this.y - RECT_HEIGHT / 2,
     };
   };
   constructor(
@@ -43,6 +44,7 @@ export type PersonInformation = {
   birthday: string;
   description: string;
   pictureUrl: string;
+  sex: Sex;
 };
 
 export const mockPerson: PersonInformation = {
@@ -51,4 +53,5 @@ export const mockPerson: PersonInformation = {
   birthday: new Date().toString(),
   description: "",
   pictureUrl: "",
+  sex: "Male",
 };
