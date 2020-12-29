@@ -1,29 +1,30 @@
-import { makeStyles, MenuItem, Popover } from "@material-ui/core";
+import { makeStyles, Paper, Popover } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
+import { SearchResultsDTO } from "./redux/serachReducer";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
+const useStyles = makeStyles((theme: Theme) => ({
+  entryContainer: {
+    width: "100%",
+  },
+}));
 type Props = {
-  anchor: HTMLElement | null;
-  open: boolean;
   onClose: () => void;
-  results: any[];
+  results: SearchResultsDTO;
 };
-const SearchResults = ({ anchor, open, onClose }: Props) => {
+const SearchResults = ({ onClose, results }: Props) => {
   const classes = useStyles();
   return (
-    <Popover
-      anchorEl={anchor}
-      keepMounted
-      open={open}
-      onClose={onClose}
-      anchorOrigin={{
-        horizontal: "left",
-        vertical: "bottom",
-      }}
-    >
-      <MenuItem>Profile</MenuItem>
-    </Popover>
+    <Paper>
+      {results.trees.map((tree) => (
+        <div className={classes.entryContainer}>{tree.name}</div>
+      ))}
+      {results.users.map((user) => (
+        <div className={classes.entryContainer}>
+          {user.name} {user.surname}
+        </div>
+      ))}
+    </Paper>
   );
 };
 
