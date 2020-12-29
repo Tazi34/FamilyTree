@@ -45,6 +45,7 @@ import UserProfileContainer from "./components/userProfile/UserProfileContainer"
 
 import { ApplicationState } from "./helpers";
 import PrivacyPolicyPage from "./components/privacy/PrivacyPolicyPage";
+import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
 
 export const theme = createMuiTheme({
   palette: {
@@ -118,7 +119,7 @@ const App = (props: any) => {
           />
           <AuthorizedPrivateRoute
             exact
-            path={POST_FORM_PAGE_URI}
+            path={CREATE_POST_FORM_PAGE_URI}
             component={CreatePostFormContainer}
             layout={ThreeColumnLayout}
             user={loggedUser}
