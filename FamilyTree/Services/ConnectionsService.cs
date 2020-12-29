@@ -7,7 +7,7 @@ namespace FamilyTree.Services
 {
     public interface IConnectionsService
     {
-        List<string> GetUserConnections(int userId);
+        (List<string>, bool) GetMessageConnections(int toId, int fromId, string fromConnection);
         void RegisterConnection(int userId, string connectionId);
         void DeleteConnection(int userId, string connectionId);
     }
@@ -17,11 +17,23 @@ namespace FamilyTree.Services
 
         public void DeleteConnection(int userId, string connectionId) => activeConnections[userId].Remove(connectionId);
 
-        public List<string> GetUserConnections(int userId)
+        public (List<string>, bool) GetMessageConnections(int toId, int fromId, string fromConnection)
         {
-            if(activeConnections.ContainsKey(userId))
-                return activeConnections[userId];
-            return new List<string>();
+            var result = new List<string>();
+            var IsToIdActive = true;
+            if(toId == fromId)
+            {
+                if (activeConnections.ContainsKey(toId))
+                    result.AddRange(activeConnections[fromId].Where(c => !c.Equals(fromConnection)).ToList());
+                return (result, IsToIdActive);
+            }
+            if (activeConnections.ContainsKey(toId))
+                result.AddRange(activeConnections[toId]);
+            else
+                IsToIdActive = false;
+            if (activeConnections.ContainsKey(fromId))
+                result.AddRange(activeConnections[fromId].Where(c => !c.Equals(fromConnection)).ToList());
+            return (result, IsToIdActive);
         }
 
         public void RegisterConnection(int userId, string connectionId)

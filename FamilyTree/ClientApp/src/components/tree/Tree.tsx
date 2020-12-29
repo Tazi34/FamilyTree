@@ -19,6 +19,7 @@ import {
   usersTreesSelectors,
 } from "../userTreeList/usersTreeReducer";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
+import { PersonNode } from "./model/PersonNode";
 import {
   addNode,
   getTree,
@@ -38,13 +39,16 @@ type TreeContainerState = {
 const styles = (theme: Theme) => ({
   treeInformationPanel: {
     top: 0,
-    left: 0,
-    position: `relative`,
+
+    position: `absolute`,
+  } as any,
+  relative: {
+    position: "relative",
   } as any,
   treeBackground: {
     width: "100%",
     margin: "0 auto",
-    height: "80%",
+    height: "100%",
     background: "radial-gradient(#e0e0e0,grey)",
   },
 });
@@ -118,9 +122,11 @@ class Tree extends React.Component<any, TreeContainerState> {
       fatherId: 0,
       motherId: 0,
       pictureUrl: "",
-      description: "",
-      name: "XD",
-      surname: "Pablo",
+      description: "Very fascinating description :0",
+      name: "Adam",
+      sex: "Male",
+
+      surname: "Kowalski",
       birthday: "2020-12-16T20:29:42.677Z",
       partners: [],
     };
@@ -128,26 +134,44 @@ class Tree extends React.Component<any, TreeContainerState> {
   };
 
   render() {
-    const { classes, treeInformation } = this.props;
-    console.log("Tree container redner");
+    const { classes, treeInformation, nodes } = this.props;
+
+    const nodesXs = nodes.map((node: PersonNode) => node.x);
+    const nodesYs = nodes.map((node: PersonNode) => node.y);
+    const maxX = Math.max(...nodesXs);
+    const maxY = Math.max(...nodesYs);
+    const minX = Math.min(...nodesXs);
+    const minY = Math.min(...nodesYs);
+
     if (this.props.isLoading)
       return <div className={classes.treeBackground}></div>;
 
+    console.log(this.svgRef);
+    console.log(`${maxX} ${minX} ${maxY} ${minY}`);
+    const initialX = -minX + 300;
+    const initialY = -minY + 300;
+
     return (
       <div className={classes.treeBackground}>
-        <div className={classes.treeInformationPanel}>
-          <TreeInformationPanel
-            treeInformation={treeInformation}
-            onTreeNameChange={this.handleTreeNameChange}
-            onTreeVisibilityChange={this.handleTreeVisibilityChange}
-          />
-          <Button onClick={this.handleAddNode}>Add Node</Button>
+        <div className={classes.relative}>
+          <div className={classes.treeInformationPanel}>
+            <TreeInformationPanel
+              treeInformation={treeInformation}
+              onTreeNameChange={this.handleTreeNameChange}
+              onTreeVisibilityChange={this.handleTreeVisibilityChange}
+            />
+            <Button onClick={this.handleAddNode}>Add Node</Button>
+          </div>
         </div>
 
-        <svg id="tree-canvas" ref={this.svgRef} width={"100%"} height={"100%"}>
+        <div
+          id="tree-canvas"
+          ref={this.svgRef}
+          style={{ overflow: "hidden", width: "100%", height: "100%" }}
+        >
           <ZoomContainer
             getSvg={this.getSvg}
-            onMouseMove={this.handleCloseMenu}
+            initialZoom={{ x: initialX, y: initialY, k: 1 }}
           >
             <TreeRenderer
               nodes={this.props.nodes}
@@ -157,9 +181,9 @@ class Tree extends React.Component<any, TreeContainerState> {
               onAddNodeMenuClose={this.handleCloseMenu}
               rectHeight={RECT_HEIGHT}
               rectWidth={RECT_WIDTH}
-            ></TreeRenderer>
+            />
           </ZoomContainer>
-        </svg>
+        </div>
         <ClickAwayListener
           onClickAway={this.handleCloseMenu}
           mouseEvent="onClick"
@@ -201,9 +225,7 @@ const mapState = (state: ApplicationState) => ({
   families: selectAllFamilies(state),
   links: selectAllLinks(state),
 
-  treeInformation: state.tree.treeId
-    ? usersTreesSelectors.selectById(state, state.tree!.treeId)
-    : null,
+  treeInformation: state.tree.treeInformation,
 });
 
 export default compose(

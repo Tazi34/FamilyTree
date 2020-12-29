@@ -20,10 +20,12 @@ body {
 }
 .postFormTextEditor {
   height: 800px;
-  border: 1px solid blue;
   padding: 5px;
 }
 
 .postFormTextEditorWrapper {
   width: 100%;
+}
+.MuiDropzoneArea-root {
+  color: #f4f4f4;
 }

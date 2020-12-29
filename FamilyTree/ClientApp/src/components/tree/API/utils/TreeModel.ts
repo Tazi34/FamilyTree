@@ -1,3 +1,5 @@
+import { Sex } from "../../../../model/Sex";
+
 export type TreeNodeAPI = {
   nodeId: number;
   userId: number;
@@ -11,6 +13,7 @@ export type TreeNodeAPI = {
   motherId: number;
   children: number[];
   partners: number[];
+  sex: Sex;
 };
 
 export type TreeAPI = {

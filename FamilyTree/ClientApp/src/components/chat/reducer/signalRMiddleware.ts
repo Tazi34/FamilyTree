@@ -1,5 +1,6 @@
 import * as signalR from "@microsoft/signalr";
 import { AnyAction } from "redux";
+import { boolean } from "yup/lib/locale";
 import { ApplicationState } from "../../../helpers";
 import { loginUser } from "../../loginPage/authenticationReducer";
 import { tokenLocalStorageKey } from "../../loginPage/tokenService";
@@ -48,6 +49,9 @@ export const signalRMiddleware = (storeAPI: any) => {
   connectionHub.onclose(() => console.log("Closing connection"));
 
   return (next: any) => (action: AnyAction) => {
+    if (!action) {
+      return next();
+    }
     if (action.type === loginUser.fulfilled.toString()) {
       connectionHub = connectionBuilder(action.payload.data.token).build();
     }
@@ -56,13 +60,17 @@ export const signalRMiddleware = (storeAPI: any) => {
       const state: ApplicationState = storeAPI.getState();
       const currentUserId = state.authentication.user!.id;
       action.payload.senderId = currentUserId;
+      var sentMessage = true;
       connectionHub
         .invoke("SendMessage", userId.toString(), message)
         .then(() => console.info("Send message: " + message))
         .catch(function (err: any) {
+          sentMessage = false;
           console.error("Didnt send message");
-          return console.error(err.toString());
         });
+      if (!sentMessage) {
+        return next();
+      }
     }
     return next(action);
   };

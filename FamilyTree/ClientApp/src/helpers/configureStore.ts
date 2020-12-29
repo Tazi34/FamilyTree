@@ -1,14 +1,14 @@
-import { initialAppState, reducersToPersis } from "./index";
-import { logoutUser } from "./../components/loginPage/authenticationReducer";
-import { signalRMiddleware } from "./../components/chat/reducer/signalRMiddleware";
 import { connectRouter, routerMiddleware } from "connected-react-router";
 import { History } from "history";
 import { applyMiddleware, combineReducers, compose, createStore } from "redux";
+import logger from "redux-logger";
+import { persistStore } from "redux-persist";
 import thunk from "redux-thunk";
 import { ApplicationState, reducers } from ".";
-import logger from "redux-logger";
-import { persistReducer, persistStore } from "redux-persist";
-import storage from "redux-persist/es/storage";
+import { removeAuthorizationToken } from "../components/loginPage/tokenService";
+import { signalRMiddleware } from "./../components/chat/reducer/signalRMiddleware";
+import { logoutUser } from "./../components/loginPage/authenticationReducer";
+import { initialAppState, reducersToPersis } from "./index";
 
 export default function configureStore(
   history: History,
@@ -43,7 +43,7 @@ export default function configureStore(
 
   const rootReducer = (state: any, action: any) => {
     if (action.type == logoutUser.toString()) {
-      console.log(state.router);
+      removeAuthorizationToken();
       return {
         ...initialAppState,
         router: state.router,

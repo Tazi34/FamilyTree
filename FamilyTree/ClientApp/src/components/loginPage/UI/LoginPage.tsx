@@ -11,7 +11,12 @@ import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect } from "react-router";
 import { LoginUserRequestData } from "../API/loginUser";
-import { getUser, isLoggedIn, loginUser } from "../authenticationReducer";
+import {
+  authenticateGmailToken,
+  getUser,
+  isLoggedIn,
+  loginUser,
+} from "../authenticationReducer";
 import SocialMediaLoginPanel from "./SocialMediaLoginPanel";
 import LoginForm from "./LoginForm";
 
@@ -61,6 +66,15 @@ const LoginPage = (props: any) => {
       }
     });
   };
+  const handleGmailAuthentication = (userData: any) => {
+    dispatch(authenticateGmailToken(userData.tokenId)).then((data: any) => {
+      if (data.error) {
+        props.onError("Could not verify your identity. ");
+      } else {
+        props.onSuccess("Logged in.");
+      }
+    });
+  };
 
   const previousPage = location.state;
   const redirectLink = previousPage ? previousPage.from : "/";
@@ -93,7 +107,9 @@ const LoginPage = (props: any) => {
               >
                 <LoginForm onLoginUser={handleLoginUser}></LoginForm>
                 <Typography align="center">Or</Typography>
-                <SocialMediaLoginPanel></SocialMediaLoginPanel>
+                <SocialMediaLoginPanel
+                  onGmailLogin={handleGmailAuthentication}
+                />
               </Box>
             </Box>
           </Grid>

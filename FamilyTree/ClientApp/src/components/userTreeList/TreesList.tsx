@@ -12,6 +12,7 @@ interface TreeListProps {
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     height: "100%",
+    width: "100%",
     overflow: "auto",
   },
 }));

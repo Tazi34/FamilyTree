@@ -37,16 +37,16 @@ export const addPlusIcon = (nodes, handler) => {
 };
 
 export const renderNodeCards = (node) => {
-  node
-    .append("rect")
-    .attr("class", "card-rect")
-    .each(function (d) {
-      var u = d3.select(this);
-      const attributes = d.isFamily ? emptyNodeAttributs : rectangleAttributes;
-      for (const key in attributes) {
-        u = u.attr(key, attributes[key]);
-      }
-    });
+  // node
+  //   .append("div")
+  //   .attr("class", "card-rect")
+  //   .each(function (d) {
+  //     var u = d3.select(this);
+  //     const attributes = d.isFamily ? emptyNodeAttributs : rectangleAttributes;
+  //     for (const key in attributes) {
+  //       u = u.style(key, attributes[key]);
+  //     }
+  //   });
 
   node
     .append("image")

@@ -15,6 +15,7 @@ const mapToAPI = (personNode: PersonNode): TreeNodeAPI => {
     surname: personNode.personDetails.surname,
     pictureUrl: personNode.personDetails.pictureUrl,
     treeId: personNode.treeId,
+    sex: personNode.personDetails.sex,
   };
 };
 
@@ -29,6 +30,8 @@ const mapToLocal = (apiNode: TreeNodeAPI): PersonNode => {
       birthday,
       description,
       pictureUrl: pictureUrl,
+      //TODO zmienic jak bedzie backend
+      sex: "Male",
     },
     0,
     0,
@@ -43,13 +46,14 @@ const mapToLocal = (apiNode: TreeNodeAPI): PersonNode => {
 };
 
 const getPersonInformation = (node: TreeNodeAPI): PersonInformation => {
-  const { birthday, name, surname, pictureUrl, description } = node;
+  const { birthday, name, surname, pictureUrl, description, sex } = node;
   return {
     birthday,
     name,
     surname,
     pictureUrl,
     description,
+    sex,
   };
 };
 

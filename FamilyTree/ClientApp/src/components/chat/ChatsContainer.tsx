@@ -2,6 +2,7 @@ import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { getUser } from "../loginPage/authenticationReducer";
 import Chat from "./Chat";
 import { closeChat, currentChatsSelector, sendMessage } from "./chatReducer";
 const useStyles = makeStyles((theme: Theme) => ({
@@ -26,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const ChatsContainer = (props: any) => {
   const classes = useStyles();
   const currentChats = useSelector(currentChatsSelector);
+  const user = useSelector(getUser);
 
   const dispatch = useDispatch();
 
@@ -37,6 +39,9 @@ const ChatsContainer = (props: any) => {
     dispatch(sendMessage(userId, text));
   };
 
+  if (!user) {
+    return null;
+  }
   return (
     <div className={classes.chatContainer}>
       <div className={classes.otherContainer}>

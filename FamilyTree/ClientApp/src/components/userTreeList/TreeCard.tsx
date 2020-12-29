@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: 70,
     padding: 5,
     marginTop: 5,
-
+    width: "100%",
     "&:focus": {
       outline: "none",
     },

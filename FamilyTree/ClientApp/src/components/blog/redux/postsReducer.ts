@@ -1,8 +1,10 @@
-import { GetPostResponse } from "./../API/getPosts";
+import { BlogProfile } from "./../../../model/BlogProfile";
+import { GetBlogResponse } from "../API/getBlog";
 import {
   createAsyncThunk,
   createEntityAdapter,
   createReducer,
+  createSelector,
   EntityState,
 } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
@@ -15,6 +17,7 @@ import { Post } from "../../../model/Post";
 import { CreatePostRequestData, CreatePostResponse } from "../API/createPost";
 import { postsAPI } from "../API/postsAPI";
 import { createStatusActions, Status } from "./genericStatusReducer";
+import { EditPostRequestData, EditPostResponse } from "../API/editPost";
 const BLOG_API_URL = "posts/data";
 
 const postsAdapter = createEntityAdapter<Post>({
@@ -28,16 +31,23 @@ export const createPost = createAsyncThunk<
 >(`${BLOG_API_URL}/postAdded`, async (data) => {
   return await postsAPI.requestCreatePost(data);
 });
+
+export const editPost = createAsyncThunk<
+  AxiosResponse<EditPostResponse>,
+  EditPostRequestData
+>(`${BLOG_API_URL}/postEdited`, async (data) => {
+  return await postsAPI.requestEditPost(data);
+});
 export const deletePost = createAsyncThunk<any, number>(
   `${BLOG_API_URL}/postDeleted`,
   async (postId: number): Promise<AxiosResponse> => {
-    return postsAPI.deletePost(postId);
+    return postsAPI.requestDeletePost({ postId });
   }
 );
-export const getPostsByBlogId = createAsyncThunk(
+export const getBlog = createAsyncThunk(
   `${BLOG_API_URL}/fetchByBlogId`,
-  async (blogId: number): Promise<any> => {
-    return postsAPI.requestGetPosts({ userId: blogId });
+  async (blogId: number) => {
+    return postsAPI.requestGetBlog({ userId: blogId });
   }
 );
 
@@ -55,12 +65,20 @@ export const initialStatus: Status = {
 
 export type PostsState = EntityState<Post> & {
   status: StatusState;
+  profile: BlogProfile | null;
 };
 
 export const postsInitialState = postsAdapter.getInitialState({
   status: initialStatus,
+  profile: null,
 }) as PostsState;
 
+export const postByIdSelector = (id: number) => {
+  return createSelector(
+    (state: ApplicationState) => state,
+    (state) => postsSelectors.selectById(state, id)
+  );
+};
 //REDUCER
 
 export const postsReducer = createReducer(postsInitialState, (builder) => {
@@ -75,11 +93,16 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
 
   addThunkWithStatusHandlers(
     builder,
-    getPostsByBlogId,
+    getBlog,
     (state: PostsState, action: any) => {
-      const data: GetPostResponse = action.payload.data;
+      const data: GetBlogResponse = action.payload.data;
 
+      state.profile = data.user;
       postsAdapter.addMany(state, data.posts.reverse());
+    },
+    (state: PostsState, action: any) => {
+      state.profile = null;
+      postsAdapter.removeAll(state);
     }
   );
   addThunkWithStatusHandlers(

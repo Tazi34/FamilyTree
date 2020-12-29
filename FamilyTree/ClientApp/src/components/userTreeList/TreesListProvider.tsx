@@ -7,7 +7,7 @@ import { useThunkDispatch } from "../..";
 import { TREE_PAGE_URI } from "../../applicationRouting";
 import { TreeInformation } from "../../model/TreeInformation";
 import { withAlertMessage } from "../alerts/withAlert";
-import { getUser } from "../loginPage/authenticationReducer";
+import { getUser, User } from "../loginPage/authenticationReducer";
 import {
   createTree,
   getUserTrees,
@@ -17,7 +17,9 @@ import {
 import UserTreePanel from "./UserTreePanel";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
-
+type Props = {
+  user: User;
+};
 const UserTreeListProvider = (props: any) => {
   const classes = useStyles();
   const dispatch = useThunkDispatch();
@@ -42,7 +44,7 @@ const UserTreeListProvider = (props: any) => {
   };
 
   useEffect(() => {
-    dispatch(getUserTrees(currentUser!.id));
+    dispatch(getUserTrees(props.userId));
   }, []);
 
   if (userTreesState.status.loading) {
@@ -54,6 +56,7 @@ const UserTreeListProvider = (props: any) => {
       userTrees={userTrees}
       onTreeSelect={handleTreeSelect}
       onTreeCreate={handleTreeCreate}
+      isOwner={props.isOwner}
     ></UserTreePanel>
   );
 };

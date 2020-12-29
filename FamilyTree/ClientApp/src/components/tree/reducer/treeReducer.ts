@@ -1,11 +1,15 @@
+import { TreeInformation } from "./../../../model/TreeInformation";
+import { LinkLoaded } from "./../LinkComponent";
 import {
   createAction,
   createAsyncThunk,
   createDraftSafeSelector,
   createEntityAdapter,
   createReducer,
+  createSelector,
   EntityId,
   EntityState,
+  Update,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
 import { X_SEP, Y_SEP } from "../../../d3/RectMapper";
@@ -35,15 +39,13 @@ import { addFamily, connectAsChild } from "./updateNodes/connectAsChild";
 import {
   createLink,
   getIncomingLinks,
+  getNodeById,
   getOutboundLinks,
   randomFamilyId,
 } from "./utils/getOutboundLinks";
 import { connectToFamily } from "./updateNodes/connectToFamily";
 import { deleteLink } from "./updateLinks/deleteLink";
-import {
-  DeleteNodeRequestData,
-  DeleteNodeResponse,
-} from "../API/deleteNode/deleteNodeRequest";
+
 import { addParent, addParentReducerHandler } from "./updateNodes/addParent";
 import { removeNodeFromTree } from "./updateNodes/deleteNode";
 
@@ -59,6 +61,7 @@ export type TreeState = {
   isLoading: boolean;
   nextFamilyId: number;
   treeId: EntityId | null;
+  treeInformation: TreeInformation | null;
 };
 
 //ADAPTERS
@@ -76,6 +79,7 @@ export const treeInitialState: TreeState = {
   isLoading: false,
   nextFamilyId: 0,
   treeId: null,
+  treeInformation: null,
 };
 
 //SELECTORS
@@ -312,15 +316,21 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     })
     .addCase(addParent, addParentReducerHandler)
     .addCase(getTree.fulfilled, (state, action) => {
-      const nodes: PersonNode[] = action.payload.data.nodes.map((node) =>
+      const treeData = action.payload.data;
+      const nodes: PersonNode[] = treeData.nodes.map((node) =>
         treeNodeMapper.mapToLocal(node)
       );
+      const treeInformation: TreeInformation = {
+        isPrivate: treeData.isPrivate,
+        name: treeData.name,
+        treeId: treeData.treeId,
+      };
+      state.treeInformation = treeInformation;
 
       var nodesNormalized = mapCollectionToEntity(nodes);
 
       const trees = GetTreeStructures(nodesNormalized);
 
-      var roots: any = [];
       var links: string[][] = [];
       var families: FamilyNode[] = [];
 
@@ -353,7 +363,6 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
             "connecting_subtree_root_" +
             selectAllPersonNodesLocal(tree.people)[0].graph,
         };
-        console.log(newRoots);
 
         newRoots.forEach((root: any) => {
           links.push([treeRoot.id, root.id]);
@@ -361,7 +370,6 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
         links.push([connectingNode.id, treeRoot.id]);
         families = [...families, ...tree.families];
       });
-      console.log(links);
 
       var tree = d3
         .sugiyama()
@@ -419,7 +427,19 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
         : selectPersonNodeLocal(state.nodes, node.id);
 
       if (nodeToMove) {
-        nodeToMove.location = { x, y };
+        if (nodeToMove.isFamily) {
+          const update: Update<FamilyNode> = {
+            id: nodeToMove.id,
+            changes: { ...nodeToMove, x, y },
+          };
+          familyNodesAdapter.updateOne(state.families, update);
+        } else {
+          const update: Update<PersonNode> = {
+            id: nodeToMove.id,
+            changes: { ...nodeToMove, x, y },
+          };
+          personNodesAdapter.updateOne(state.nodes, update);
+        }
       }
     })
     .addCase(addChild, (state, action: any) => {
@@ -439,19 +459,28 @@ function setNodeLocation(
 ) {
   var person = selectPersonNodeLocal(nodesNormalized, d3Node.id);
   if (person) {
-    person.location = {
-      x: d3Node.x,
-      y: d3Node.y,
-    };
+    person.x = d3Node.x;
+    person.y = d3Node.y;
   } else {
     var family = families.find((family) => family.id == d3Node.id);
     if (family) {
-      family.location = {
-        x: d3Node.x,
-        y: d3Node.y,
-      };
+      family.x = d3Node.x;
+      family.y = d3Node.y;
     } else {
       d3Node.isVisible = false;
     }
   }
 }
+
+export const linkLoader = (state: TreeState, link: Link): LinkLoaded | null => {
+  const source = getNodeById(state, link.source);
+  const target = getNodeById(state, link.target);
+  if (!source || !target) {
+    return null;
+  }
+  return {
+    source,
+    target,
+    linkId: link.id,
+  };
+};
