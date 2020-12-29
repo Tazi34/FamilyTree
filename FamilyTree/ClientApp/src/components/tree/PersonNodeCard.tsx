@@ -155,9 +155,11 @@ const PersonNodeCard = ({
   onMoveNodeOnCanvas,
   onNodeSelect,
 }: Props) => {
+  const addButtonRef = React.useRef(null);
   const elementId = "n" + person.id;
   const classes = useStyles({ x: person.x, y: person.y });
   const handleParentAdd = () => {
+    console.log("EVENT");
     const newPerson: CreateNodeRequestData = {
       treeId: person.treeId,
       name: "New",
@@ -194,15 +196,20 @@ const PersonNodeCard = ({
           onNodeMove(person, e.x, e.y);
         }
       });
+    const addButton = d3.select("#" + "add-parent-button");
+    addButton.on("click", () => console.log("XDD"));
 
     const element = d3.select("#" + elementId);
     element.on("click", (e: any) => {
       console.log(e);
-      if (e.defaultPrevented) return;
-
-      onNodeSelect(person);
+      if (e.path.some((el: any) => el.id === "add-parent-button")) {
+        handleParentAdd();
+      } else {
+        onNodeSelect(person);
+      }
     });
     dragHandler(element);
+
     d3.selectAll(".not-draggable").on("mousedown", function (e: any) {
       e.stopPropagation();
     });
@@ -216,12 +223,13 @@ const PersonNodeCard = ({
   const displayDate = format(new Date(details.birthday), "d MMM yyyy");
   return (
     <Paper
-      component={"span"}
       id={elementId}
+      component={"span"}
       className={`${classes.personRoot}`}
     >
       <div className={classes.addButtonContainer}>
         <IconButton
+          id="add-parent-button"
           className={`${classes.addIcon} not-draggable`}
           onClick={handleParentAdd}
         >

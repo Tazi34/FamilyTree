@@ -27,3 +27,6 @@ body {
 .postFormTextEditorWrapper {
   width: 100%;
 }
+.MuiDropzoneArea-root {
+  color: #f4f4f4;
+}

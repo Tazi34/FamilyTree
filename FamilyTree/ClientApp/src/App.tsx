@@ -20,13 +20,13 @@ import {
   TREE_PAGE_URI,
   EDIT_POST_FORM_PAGE_URI,
   PROFILE_PAGE_URI,
+  PRIVACY_POLICY_PAGE_URI,
 } from "./applicationRouting";
 import { withAlertMessage } from "./components/alerts/withAlert";
 import BlogPage from "./components/blog/BlogPage";
 import HomePage from "./components/homePage/HomePage";
-import EmptyLayout from "./components/layout/EmptyLayout";
 import LayoutRoute from "./components/layout/LayoutRoute";
-import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
+import EmptyLayout from "./components/layout/EmptyLayout";
 import { Logout } from "./components/loginPage/API/Logout";
 import {
   AuthenticationState,
@@ -44,6 +44,7 @@ import Tree from "./components/tree/Tree";
 import UserProfileContainer from "./components/userProfile/UserProfileContainer";
 
 import { ApplicationState } from "./helpers";
+import PrivacyPolicyPage from "./components/privacy/PrivacyPolicyPage";
 
 export const theme = createMuiTheme({
   palette: {
@@ -82,14 +83,14 @@ const App = (props: any) => {
           <AuthorizedPrivateRoute
             path={`${TREE_PAGE_URI}/:treeId`}
             component={Tree}
-            layout={ThreeColumnLayout}
+            layout={EmptyLayout}
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
             exact
             path={`${BLOG_PAGE_URI}/:blogId`}
             component={BlogPage}
-            layout={ThreeColumnLayout}
+            layout={EmptyLayout}
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
@@ -98,21 +99,21 @@ const App = (props: any) => {
             onSuccess={alertSuccess}
             onError={alertError}
             component={UserProfileContainer}
-            layout={ThreeColumnLayout}
+            layout={EmptyLayout}
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
             exact
             path={CREATE_POST_FORM_PAGE_URI}
             component={CreatePostFormContainer}
-            layout={ThreeColumnLayout}
+            layout={EmptyLayout}
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
             exact
             path={`${EDIT_POST_FORM_PAGE_URI}/:postId`}
             component={EditPostFormContainer}
-            layout={ThreeColumnLayout}
+            layout={EmptyLayout}
             user={loggedUser}
           />
           <LayoutRoute
@@ -128,6 +129,11 @@ const App = (props: any) => {
             component={Registration}
             onSuccess={alertSuccess}
             onError={alertError}
+            layout={EmptyLayout}
+          />
+          <LayoutRoute
+            path={PRIVACY_POLICY_PAGE_URI}
+            component={PrivacyPolicyPage}
             layout={EmptyLayout}
           />
           <Route path={LOGOUT_PAGE_URI} component={Logout} />

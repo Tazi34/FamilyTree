@@ -9,6 +9,9 @@ import { loadCSS } from "fg-loadcss";
 import * as React from "react";
 import { useHistory } from "react-router";
 import { ApplicationName } from "../../ApplicationData";
+import { BLOG_PAGE_URI, LOGIN_PAGE_URI } from "../../applicationRouting";
+import LogoutButton from "../loginPage/LogoutButton";
+import MainSearchContainer from "../search/MainSearchContainer";
 import { RedirectButton } from "../UI/RedirectButton";
 import AuthenticatedNavbar from "./AuthenticatedNavbar";
 import GuestNavbar from "./GuestNavbar";
@@ -22,6 +25,9 @@ const useStyles = makeStyles((theme) =>
       [theme.breakpoints.up("sm")]: {
         display: "block",
       },
+    },
+    navbarButton: {
+      width: 80,
     },
     search: {
       borderWidth: 2,
@@ -66,11 +72,10 @@ const useStyles = makeStyles((theme) =>
     },
     toolbar: {
       borderRadius: 0,
+      display: "flex",
+      justifyContent: "center",
     },
-    logo: {
-      borderRadius: "20",
-      " &:focus": { outline: "none" },
-    },
+    logo: {},
   })
 );
 export default function PrimarySearchAppBar({ isLoggedIn, user }) {
@@ -96,24 +101,32 @@ export default function PrimarySearchAppBar({ isLoggedIn, user }) {
             {ApplicationName}
           </Typography>
         </RedirectButton>
+        <MainSearchContainer />
+        {/* <div className={classes.grow} /> */}
+        {isLoggedIn && (
+          <div className={classes.sectionDesktop}>
+            <RedirectButton
+              className={classes.navbarButton}
+              to={`${BLOG_PAGE_URI}/${user.id}`}
+            >
+              Home
+            </RedirectButton>
 
-        <Box border={1} borderColor="primary.main" className={classes.search}>
-          <div className={classes.searchIcon}>
-            <SearchIcon />
+            <LogoutButton className={classes.navbarButton}>Logout</LogoutButton>
           </div>
-          <InputBase
-            placeholder="Search…"
-            classes={{
-              root: classes.inputRoot,
-              input: classes.inputInput,
-            }}
-            inputProps={{ "aria-label": "search" }}
-          />
-        </Box>
-        <div className={classes.grow} />
-        <div className={classes.sectionDesktop}>
-          {isLoggedIn ? <AuthenticatedNavbar user={user} /> : <GuestNavbar />}
-        </div>
+        )}
+        {!isLoggedIn && (
+          <div className={classes.sectionDesktop}>
+            <RedirectButton
+              className={classes.navbarButton}
+              variant="contained"
+              color="primary"
+              to={LOGIN_PAGE_URI}
+            >
+              Log in
+            </RedirectButton>
+          </div>
+        )}
       </Toolbar>
     </AppBar>
   );

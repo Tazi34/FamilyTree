@@ -29,6 +29,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   profilePicture: {
     fontSize: 40,
   },
+  buttonContainer: {
+    padding: 0,
+    alignSelf: "start",
+  },
 }));
 type Props = {
   redirectToPostForm: () => void;
@@ -53,7 +57,7 @@ const BlogOwnerSection = ({ redirectToPostForm, onEditProfile }: Props) => {
         fullWidth
         onClick={redirectToPostForm}
       />
-      <IconButton onClick={onEditProfile}>
+      <IconButton className={classes.buttonContainer} onClick={onEditProfile}>
         <SettingsIcon />
       </IconButton>
     </Paper>

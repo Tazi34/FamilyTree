@@ -1,3 +1,4 @@
+import { TreeInformation } from "./../../../model/TreeInformation";
 import { LinkLoaded } from "./../LinkComponent";
 import {
   createAction,
@@ -60,6 +61,7 @@ export type TreeState = {
   isLoading: boolean;
   nextFamilyId: number;
   treeId: EntityId | null;
+  treeInformation: TreeInformation | null;
 };
 
 //ADAPTERS
@@ -77,6 +79,7 @@ export const treeInitialState: TreeState = {
   isLoading: false,
   nextFamilyId: 0,
   treeId: null,
+  treeInformation: null,
 };
 
 //SELECTORS
@@ -313,15 +316,21 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     })
     .addCase(addParent, addParentReducerHandler)
     .addCase(getTree.fulfilled, (state, action) => {
-      const nodes: PersonNode[] = action.payload.data.nodes.map((node) =>
+      const treeData = action.payload.data;
+      const nodes: PersonNode[] = treeData.nodes.map((node) =>
         treeNodeMapper.mapToLocal(node)
       );
+      const treeInformation: TreeInformation = {
+        isPrivate: treeData.isPrivate,
+        name: treeData.name,
+        treeId: treeData.treeId,
+      };
+      state.treeInformation = treeInformation;
 
       var nodesNormalized = mapCollectionToEntity(nodes);
 
       const trees = GetTreeStructures(nodesNormalized);
 
-      var roots: any = [];
       var links: string[][] = [];
       var families: FamilyNode[] = [];
 

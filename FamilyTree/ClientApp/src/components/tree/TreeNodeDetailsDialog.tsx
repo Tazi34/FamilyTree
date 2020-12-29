@@ -21,6 +21,7 @@ import PanoramaFishEyeIcon from "@material-ui/icons/PanoramaFishEye";
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import { Formik } from "formik";
 import { Sex } from "../../model/Sex";
+import PicturePickerDialog from "../UI/PicturePickerDialog";
 const imgSize = 128;
 const useStyles = makeStyles((theme: Theme) => ({
   personDialog: {
@@ -52,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   pictureContainer: {
     width: imgSize,
     height: imgSize,
-    cursor: "pointer",
+    //cursor: "pointer ",
     border: "solid #2f2f2f 1px",
     marginRight: 10,
     position: "relative",
@@ -114,10 +115,14 @@ const TreeNodeDetailsDialog = ({
   canEdit,
 }: TreeNodeDialogProps) => {
   const classes = useStyles();
+  const [pictureDialog, setPictureDialog] = React.useState(false);
   const [editMode, setEditMode] = React.useState(false);
   if (!node) {
     return null;
   }
+  const handlePictureDialog = () => {
+    setPictureDialog(!pictureDialog);
+  };
 
   const details = node.personDetails;
 
@@ -156,6 +161,7 @@ const TreeNodeDetailsDialog = ({
             Deserunt, quas doloremque.`;
   return (
     <Dialog open={open} onClose={onClose}>
+      <PicturePickerDialog open={pictureDialog} onClose={handlePictureDialog} />
       <Formik
         initialValues={details}
         onSubmit={(values: FormProps, { resetForm }) => {
@@ -179,7 +185,10 @@ const TreeNodeDetailsDialog = ({
               <div className={classes.personDialog}>
                 <div className={classes.contentSection}>
                   <div className={classes.pictureContainer}>
-                    <IconButton className={classes.editPictureIconContainer}>
+                    <IconButton
+                      className={classes.editPictureIconContainer}
+                      onClick={handlePictureDialog}
+                    >
                       <i
                         className={`fas fa-camera ${classes.editPictureIcon}`}
                       />
@@ -278,7 +287,9 @@ const TreeNodeDetailsDialog = ({
                       <Button color="primary" variant="contained" type="submit">
                         Submit
                       </Button>
-                      <Button>Cancel</Button>
+                      <Button onClick={() => setEditMode(!editMode)}>
+                        Cancel
+                      </Button>
                     </div>
                   ) : (
                     <div className={classes.formSubmitSection}>

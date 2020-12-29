@@ -1,5 +1,11 @@
+import {
+  initialSearchTreesState,
+  SearchTreesState,
+} from "./../components/search/redux/searchTreesReducer";
+
 import { ChatsState } from "../components/chat/chatReducer";
 import { AuthenticationState } from "../components/loginPage/authenticationReducer";
+import { searchReducer } from "../components/search/redux/serachReducer";
 import {
   connectionReducer,
   connectionsInitialState,
@@ -28,6 +34,10 @@ import {
   userTreesReducer,
   UserTreesState,
 } from "./../components/userTreeList/usersTreeReducer";
+import {
+  initialSearchUsersState,
+  SearchUsersState,
+} from "../components/search/redux/searchUsersReducer";
 
 // The top-level state object
 export interface ApplicationState {
@@ -37,6 +47,10 @@ export interface ApplicationState {
   authentication: AuthenticationState;
   chats: ChatsState;
   userTrees: UserTreesState;
+  search: {
+    trees: SearchTreesState;
+    users: SearchUsersState;
+  };
 }
 export const initialAppState: ApplicationState = {
   authentication: authenticationInitialState,
@@ -45,6 +59,10 @@ export const initialAppState: ApplicationState = {
   posts: postsInitialState,
   tree: treeInitialState,
   userTrees: initialUserTreesState,
+  search: {
+    trees: initialSearchTreesState,
+    users: initialSearchUsersState,
+  },
 };
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -59,6 +77,7 @@ export const reducers: any = {
   connection: connectionReducer,
   chats: chatReducer,
   userTrees: userTreesReducer,
+  search: searchReducer,
 };
 
 // This type can be used as a hint on action creators so that its 'dispatch' and 'getState' params are

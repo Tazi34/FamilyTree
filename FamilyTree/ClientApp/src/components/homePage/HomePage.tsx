@@ -1,6 +1,10 @@
 import { Box, Grid, makeStyles, Paper, Typography } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
+import { useSelector } from "react-redux";
+import { Redirect } from "react-router";
+import { BLOG_PAGE_URI } from "../../applicationRouting";
+import { getUser } from "../loginPage/authenticationReducer";
 import WelcomePanel from "./WelcomePanel";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -28,6 +32,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const HomePage = (props: any) => {
   const classes = useStyles();
+
+  const user = useSelector(getUser);
+  if (user) return <Redirect to={`${BLOG_PAGE_URI}/${user.id}`} />;
   return (
     <Box
       display="flex"
