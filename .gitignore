@@ -10,3 +10,7 @@ FamilyTree/ClientApp/db_copy.json
 FamilyTree/ClientApp/db.json
 FamilyTree/ClientApp/package-lock.json
 FamilyTree/appsettings.Development.json
+
+# Local Netlify folder
+.netlify
+FamilyTree/ClientApp/build
