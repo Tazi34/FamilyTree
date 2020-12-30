@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace FamilyTree.Models
 {
-    public class UsersListSearchResponse
+    public class SearchResponse
     {
+        public List<TreeSearchResponse> Trees { get; set; }
         public List<UserSearchResponse> Users { get; set; }
     }
 }

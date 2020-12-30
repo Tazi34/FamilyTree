@@ -19,29 +19,15 @@ namespace FamilyTree.Controllers
             this.searchService = searchService;
         }
         /// <summary>
-        /// Wyszukuje do 20 użytkowników o imieniu i nazwisku zbliżonych do argumentu
+        /// Wyszukuje do 20 drzew o nazwie zbliżonej do argumentu oraz 20 użytkowników
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("user/{expression}")]
-        public ActionResult<UsersListSearchResponse> FindUsers(string expression)
+        [Route("{expression}")]
+        public ActionResult<SearchResponse> Find(string expression)
         {
-            var response = searchService.FindUsers(expression);
-            if (response == null)
-                return BadRequest();
-            return Ok(response);
-        }
-        /// <summary>
-        /// Wyszukuje do 20 drzew o nazwie zbliżonej do argumentu
-        /// </summary>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("tree/{expression}")]
-        public ActionResult<TreesListSearchResponse> FindTrees(string expression)
-        {
-            var response = searchService.FindTrees(expression);
+            var response = searchService.Find(expression);
             if (response == null)
                 return BadRequest();
             return Ok(response);
