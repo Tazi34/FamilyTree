@@ -8,6 +8,7 @@ using Azure.Storage.Blobs;
 using FamilyTree.Entities;
 using FamilyTree.Models;
 using System.IO;
+using Azure.Storage.Blobs.Models;
 
 namespace FamilyTree.Services
 {
@@ -30,6 +31,8 @@ namespace FamilyTree.Services
             var user = context.Users.SingleOrDefault(u => u.UserId == userId);
             if (!ValidateInput(user, picture))
                 return null;
+            if (user.PictureUrl != null)
+                await DeletePicture(user);
             string fileName = GetUniqueFilename(userId, picture.FileName);
             BlobContainerClient container = blobService.GetBlobContainerClient("profile");
             BlobClient blob = container.GetBlobClient(fileName);
@@ -43,6 +46,14 @@ namespace FamilyTree.Services
             {
                 PictureUrl = blob.Uri.ToString()
             };
+        }
+
+        private async Task DeletePicture(User user)
+        {
+            var container = blobService.GetBlobContainerClient("profile");
+            var blob = container.GetBlobClient(user.PictureUrl.Substring(container.Uri.ToString().Length + 1));
+            await blob.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            user.PictureUrl = null;
         }
 
         private string GetUniqueFilename(int userId, string userProvidedFileName)
