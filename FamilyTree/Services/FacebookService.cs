@@ -7,6 +7,7 @@ using FamilyTree.Helpers;
 using Newtonsoft.Json;
 using FamilyTree.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace FamilyTree.Services
 {
@@ -20,9 +21,9 @@ namespace FamilyTree.Services
         private FacebookSettings facebookSettings;
         private string validateURL = "https://graph.facebook.com/debug_token?input_token={0}&access_token={1}|{2}";
         private string userInfoURL = "https://graph.facebook.com/me/?fields=first_name,last_name,birthday,email,picture&access_token={0}";
-        public FacebookService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public FacebookService(IHttpClientFactory httpClientFactory, IOptions<FacebookSettings> facebookSettings)
         {
-            this.facebookSettings = configuration.GetSection("FacebookSettings").Get<FacebookSettings>();
+            this.facebookSettings = facebookSettings.Value;
             clientFactory = httpClientFactory;
         }
 

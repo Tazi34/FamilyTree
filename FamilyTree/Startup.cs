@@ -28,6 +28,8 @@ namespace FamilyTree
             services.AddControllersWithViews();
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
+            services.Configure<AzureBlobSettings>(Configuration.GetSection("AzureBlobSettings"));
+            services.Configure<FacebookSettings>(Configuration.GetSection("FacebookSettings"));
             services.AddHttpClient();
             services.AddCustomServices();
             services.AddCustomSwaggerConfig();

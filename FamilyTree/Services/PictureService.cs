@@ -9,6 +9,7 @@ using FamilyTree.Entities;
 using FamilyTree.Models;
 using System.IO;
 using Azure.Storage.Blobs.Models;
+using Microsoft.Extensions.Options;
 
 namespace FamilyTree.Services
 {
@@ -20,11 +21,10 @@ namespace FamilyTree.Services
     {
         private DataContext context;
         private BlobServiceClient blobService;
-        public PictureService(DataContext dataContext)
+        public PictureService(DataContext dataContext, IOptions<AzureBlobSettings> azureBlobSettings)
         {
-            string connectionString = "DefaultEndpointsProtocol=https;AccountName=familytreeimagesaccount;AccountKey=TKCEC7Gcqkh1U6ZWc0lSXhAS7W0PtEGdG+Kj6XhLDphaMtkcLnRf3dPEU0UxeDfYHlHCK/hx3uOoAzp85FRNQA==;EndpointSuffix=core.windows.net";
             context = dataContext;
-            blobService = new BlobServiceClient(connectionString);
+            blobService = new BlobServiceClient(azureBlobSettings.Value.ConnectionString);
         }
         public async Task<SetPictureResponse> SetProfilePicture(int userId, IFormFile picture)
         {
