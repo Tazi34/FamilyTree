@@ -16,10 +16,12 @@ namespace FamilyTree.Controllers
     [ApiController]
     public class EditUsersController : ControllerBase
     {
-        private UserService userService;
-        public EditUsersController(DataContext context, IUserService userService)
+        private IUserService userService;
+        private IPictureService pictureService;
+        public EditUsersController(DataContext context, IUserService userService, IPictureService pictureService)
         {
-            this.userService = (UserService)userService;
+            this.userService = userService;
+            this.pictureService = pictureService;
         }
         /// <summary>
         /// Modyfikacja informacji o użytkowniku
@@ -58,31 +60,18 @@ namespace FamilyTree.Controllers
             return result;
         }
         /// <summary>
-        /// TODO
+        /// Endpoint do zmiany zdjęcia profilowego
         /// </summary>
         [HttpPost]
         [Route("picture")]
-        public void SetUserPicture()
+        [Authorize]
+        public async Task<ActionResult<SetPictureResponse>> SetUserPicture(IFormFile picture)
         {
-
-        }
-        /// <summary>
-        /// TODO
-        /// </summary>
-        [HttpPut]
-        [Route("picture")]
-        public void ChangeUserPicture()
-        {
-
-        }
-        /// <summary>
-        /// TODO
-        /// </summary>
-        [HttpGet]
-        [Route("picture/{UserId}")]
-        public void ChangeUserPicture(int UserId)
-        {
-
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = await pictureService.SetProfilePicture(userId, picture);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
         }
     }
 }

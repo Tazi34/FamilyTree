@@ -17,9 +17,11 @@ namespace FamilyTree.Controllers
     public class TreeController : ControllerBase
     {
         private ITreeService treeService;
-        public TreeController(ITreeService treeService)
+        private IPictureService pictureService;
+        public TreeController(ITreeService treeService, IPictureService pictureService)
         {
             this.treeService = treeService;
+            this.pictureService = pictureService;
         }
         /// <summary>
         /// Zwraca drzewo o danym Id
@@ -159,6 +161,24 @@ namespace FamilyTree.Controllers
             if (!result)
                 return BadRequest();
             return Ok();
+        }
+        /// <summary>
+        /// Ustawia zdjęcie dla node
+        /// </summary>
+        /// <param name="picture"></param>
+        /// <param name="nodeId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize]
+        [Route("picture")]
+        public async Task<ActionResult<SetPictureResponse>> SetNodePicture(IFormFile picture, [FromForm] string nodeId)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            int nodeIdParsed = int.Parse(nodeId);
+            var response = await pictureService.SetNodePicture(userId, nodeIdParsed, picture);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
         }
     }
 }
