@@ -103,7 +103,7 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Route("picture")]
         [Authorize]
-        public async Task<ActionResult<SetPictureResponse>> SetUserPicture(IFormFile picture)
+        public async Task<ActionResult<SetPictureResponse>> SetBlogPicture(IFormFile picture)
         {
             var response = await pictureService.SetBlogPicture(picture);
             if (response == null)
