@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   filler: {
     width: "100%",
-    height: 64,
+    marginTop: 64,
   },
 }));
 
