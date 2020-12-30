@@ -2,6 +2,7 @@ import * as signalR from "@microsoft/signalr";
 import { AnyAction } from "redux";
 import { boolean } from "yup/lib/locale";
 import { ApplicationState } from "../../../helpers";
+import { logger } from "../../../helpers/logger";
 import { loginUser } from "../../loginPage/authenticationReducer";
 import { tokenLocalStorageKey } from "../../loginPage/tokenService";
 import { sendMessage } from "../chatReducer";
@@ -30,23 +31,20 @@ export const signalRMiddleware = (storeAPI: any) => {
 
   let connectionHub = connectionBuilder(token as string).build();
 
-  connectionHub
-    .start()
-    .then(() => console.info("connnection started"))
-    .catch((error) => console.error(error));
+  connectionHub.start().catch((error) => logger.error(error));
 
   connectionHub.on("ReceiveMessage", function (userId, message) {
     const state: ApplicationState = storeAPI.getState();
     const currentUserId = state.authentication.user!.id;
-    console.log(currentUserId);
-    console.log("Received message " + message + " from " + userId);
+
+    logger.log("Received message " + message + " from " + userId);
 
     storeAPI.dispatch(receiveMessage(userId, message, currentUserId));
   });
 
   connectionHub.onreconnected(() => handleConnectionReconnected(storeAPI));
 
-  connectionHub.onclose(() => console.log("Closing connection"));
+  //connectionHub.onclose(() => logger.log("Closing connection"));
 
   return (next: any) => (action: AnyAction) => {
     if (!action) {
@@ -63,10 +61,10 @@ export const signalRMiddleware = (storeAPI: any) => {
       var sentMessage = true;
       connectionHub
         .invoke("SendMessage", userId.toString(), message)
-        .then(() => console.info("Send message: " + message))
+        .then(() => logger.log("Send message: " + message))
         .catch(function (err: any) {
           sentMessage = false;
-          console.error("Didnt send message");
+          logger.error("Didnt send message");
         });
       if (!sentMessage) {
         return next();
@@ -77,7 +75,7 @@ export const signalRMiddleware = (storeAPI: any) => {
 };
 const handleConnectionReconnected = ({ dispatch, getState }: any) => {
   const state: ApplicationState = getState();
-  console.log("reconnecting");
+  logger.log("reconnecting");
   const chats = chatsSelectorsLocal.selectAll(state.chats.chats);
   const alreadyLoadedChats = chats.filter((chat) => chat.loadedMessages);
   alreadyLoadedChats.forEach((chat) => {

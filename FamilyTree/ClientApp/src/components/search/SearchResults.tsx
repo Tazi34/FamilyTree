@@ -2,12 +2,11 @@ import { makeStyles, Paper, Popover } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { SearchResultsDTO } from "./redux/serachReducer";
+import SearchResultCard from "./SearchResultCard";
+import SearchResultTreeCard from "./SearchResultTreeCard";
+import SearchResultUserCard from "./SearchResultUserCard";
 
-const useStyles = makeStyles((theme: Theme) => ({
-  entryContainer: {
-    width: "100%",
-  },
-}));
+const useStyles = makeStyles((theme: Theme) => ({}));
 type Props = {
   onClose: () => void;
   results: SearchResultsDTO;
@@ -17,12 +16,14 @@ const SearchResults = ({ onClose, results }: Props) => {
   return (
     <Paper>
       {results.trees.map((tree) => (
-        <div className={classes.entryContainer}>{tree.name}</div>
+        <SearchResultCard>
+          <SearchResultTreeCard tree={tree} />
+        </SearchResultCard>
       ))}
       {results.users.map((user) => (
-        <div className={classes.entryContainer}>
-          {user.name} {user.surname}
-        </div>
+        <SearchResultCard>
+          <SearchResultUserCard user={user} />
+        </SearchResultCard>
       ))}
     </Paper>
   );

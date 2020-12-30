@@ -4,6 +4,7 @@ import * as React from "react";
 import GoogleLogin from "react-google-login";
 import userProfileAPI from "../../userProfile/API/userProfileAPI";
 import FacebookLogin from "react-facebook-login";
+import { logger } from "../../../helpers/logger";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: { width: "100%", minHeight: 120, padding: "10px 20px" },
@@ -17,7 +18,7 @@ type Props = {
 const SocialMediaLoginPanel = ({ onGmailLogin }: Props) => {
   const classes = useStyles();
   const responseFacebook = (response: any) => {
-    console.log(response);
+    logger.log(response);
   };
   return (
     <Box
@@ -40,7 +41,7 @@ const SocialMediaLoginPanel = ({ onGmailLogin }: Props) => {
           buttonText="Login"
           onSuccess={onGmailLogin}
           onFailure={(err: any) => {
-            console.log(err);
+            logger.log(err);
           }}
           cookiePolicy={"single_host_origin"}
         />

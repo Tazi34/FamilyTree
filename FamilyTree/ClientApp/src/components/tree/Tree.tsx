@@ -146,8 +146,6 @@ class Tree extends React.Component<any, TreeContainerState> {
     if (this.props.isLoading)
       return <div className={classes.treeBackground}></div>;
 
-    console.log(this.svgRef);
-    console.log(`${maxX} ${minX} ${maxY} ${minY}`);
     const initialX = -minX + 300;
     const initialY = -minY + 300;
 

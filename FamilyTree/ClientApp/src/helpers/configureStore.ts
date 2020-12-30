@@ -14,12 +14,12 @@ export default function configureStore(
   history: History,
   initialState?: ApplicationState
 ) {
-  const middleware = [
-    thunk,
-    routerMiddleware(history),
-    logger,
-    signalRMiddleware,
-  ];
+  const middleware = [thunk, routerMiddleware(history), signalRMiddleware];
+
+  if (process.env.NODE_ENV === "development") {
+    middleware.push(logger);
+    console.log(process.env);
+  }
 
   for (const key in reducersToPersis) {
     if (Object.prototype.hasOwnProperty.call(reducersToPersis, key)) {

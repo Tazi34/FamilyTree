@@ -42,8 +42,6 @@ const UserProfileContainer = (props: any) => {
         dispatch(authenticateToken(userToken));
       })
       .catch((err: any) => {
-        console.log(err);
-
         props.onError("Error editing your profile. Try again later");
       });
   };

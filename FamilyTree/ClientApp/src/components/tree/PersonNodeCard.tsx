@@ -159,12 +159,11 @@ const PersonNodeCard = ({
   const elementId = "n" + person.id;
   const classes = useStyles({ x: person.x, y: person.y });
   const handleParentAdd = () => {
-    console.log("EVENT");
     const newPerson: CreateNodeRequestData = {
       treeId: person.treeId,
       name: "New",
       surname: "Node",
-      birthday: "2020-12-17T07:5:08.998Z",
+      birthday: "2020-12-16T20:29:42.677Z",
       description: "Cool description",
       pictureUrl: "",
       userId: 0,
@@ -197,11 +196,9 @@ const PersonNodeCard = ({
         }
       });
     const addButton = d3.select("#" + "add-parent-button");
-    addButton.on("click", () => console.log("XDD"));
 
     const element = d3.select("#" + elementId);
     element.on("click", (e: any) => {
-      console.log(e);
       if (e.path.some((el: any) => el.id === "add-parent-button")) {
         handleParentAdd();
       } else {

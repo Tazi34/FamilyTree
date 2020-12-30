@@ -8,6 +8,7 @@ import {
 import { Theme } from "@material-ui/core/styles";
 import { DropzoneArea } from "material-ui-dropzone";
 import * as React from "react";
+import { logger } from "../../helpers/logger";
 
 const useStyles = makeStyles((theme: Theme) => ({
   pictureDialogContainer: {
@@ -43,7 +44,7 @@ const PicturePickerDialog = ({ open, onClose }: Props) => {
           filesLimit={1}
           showPreviewsInDropzone={false}
           //TODO jak bedzie backend
-          onChange={(files) => console.log("Files:", files)}
+          onChange={(files) => logger.log("Files:" + files)}
         />
         <div className={classes.actionsContainer}>
           <Button color="primary" variant="contained" onClick={onClose}>

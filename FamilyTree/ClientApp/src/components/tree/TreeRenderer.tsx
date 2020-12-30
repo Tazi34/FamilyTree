@@ -69,6 +69,7 @@ import LinkComponent, { LinkLoaded } from "./LinkComponent";
 import FamilyNodeCard from "./FamilyNodeCard";
 import { Dialog } from "@material-ui/core";
 import TreeNodeDetailsDialog from "./TreeNodeDetailsDialog";
+import { logger } from "../../helpers/logger";
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
 const d3 = Object.assign({}, d3_base, d3_dag);
@@ -221,7 +222,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
           setCanConnectTo({});
           dispatch(connectToFamilyAsync(startPoint!.id, familyNode.id));
         } else {
-          console.log("Cant connect to " + familyNode.id);
         }
       } else {
         changeVisibility(familyNode);
@@ -267,7 +267,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
             );
           });
           setCanConnectTo(canConnectToDict);
-          console.log(canConnectToDict);
         } else {
           if (canConnectTo[point.id]) {
             dispatch(connectAsChildAsync(startPoint!.id, point.id));
@@ -275,13 +274,13 @@ const TreeRenderer = (props: TreeRendererProps) => {
             setStartPoint(null);
             d3.select("connectionPath").attr("d", "");
           } else {
-            console.log("Can connect to " + point.id);
+            logger.log("Can connect to " + point.id);
           }
         }
       },
       (e: any, selectedNode: PersonNode) => {
         if (connectingMode) {
-          console.log(e);
+          logger.log(e);
           const d3Node = selectNode(selectedNode.id);
           if (!canConnectTo[selectedNode.id]) {
             d3Node.attr("opacity", "0.4");
@@ -298,7 +297,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
       treeId: props.nodes[0].treeId,
       name: "New",
       surname: "Node",
-      birthday: "2020-12-17T07:15:08.998Z",
+      birthday: "2020-12-16T20:29:42.677Z",
       description: "Cool description",
       pictureUrl: "",
       userId: 0,
@@ -339,7 +338,7 @@ const TreeRenderer = (props: TreeRendererProps) => {
   const loadedLinks = props.links
     .map((link) => linkLoader(treeState, link))
     .filter((a) => a) as LinkLoaded[];
-  console.log(loadedLinks);
+  logger.log(loadedLinks);
 
   const handleParentAdd = (id: number, data: CreateNodeRequestData) => {
     dispatch(addParentAsync(id, data));

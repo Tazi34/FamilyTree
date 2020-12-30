@@ -20,7 +20,6 @@ const EditPostFormContainer = (props: any) => {
     axios
       .get<Post>(`${BLOG_API_URL}/post/${id}`)
       .then((response) => {
-        console.log(post);
         setPost(response.data);
       })
       .catch((err) => history.push(`${HOME_PAGE_URI}`));

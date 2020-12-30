@@ -43,7 +43,6 @@ const PostForm = ({ post, onSubmit }: Props) => {
         const contentState = convertFromRaw(raw as any);
         return EditorState.createWithContent(contentState);
       } catch (err) {
-        console.log(err);
         return EditorState.createEmpty();
       }
     } else {

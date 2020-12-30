@@ -31,7 +31,6 @@ const MainSearchContainer = (props: any) => {
   const dispatch = useThunkDispatch();
   const [searchResultsList, setSearchResultsList] = React.useState(false);
   const searchResults = useSelector(searchResultSelector);
-  console.log(searchResults);
   const anchor = React.useRef<any>(null);
 
   const handleSearch = (query: string) => {
