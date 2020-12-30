@@ -4,7 +4,7 @@ body,
 .App {
   height: 100%;
 }
-body {
+/* body {
   background: linear-gradient(
       to bottom,
       #aed581,
@@ -17,7 +17,7 @@ body {
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
-}
+} */
 .postFormTextEditor {
   height: 800px;
   padding: 5px;

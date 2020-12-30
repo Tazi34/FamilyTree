@@ -38,10 +38,16 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100%",
   },
   main: {
-    width: "90vh",
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
+    [theme.breakpoints.up("md")]: {
+      maxWidth: "70%",
+      minWidth: 1000,
+    },
+    [theme.breakpoints.down("sm")]: {
+      width: "90%",
+    },
   },
   backPictureSection: {
     width: "100%",

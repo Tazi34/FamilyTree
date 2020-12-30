@@ -4,7 +4,7 @@ import {
   CssBaseline,
   MuiThemeProvider,
 } from "@material-ui/core";
-import { lightGreen, lime } from "@material-ui/core/colors";
+import { lightGreen, lime, red } from "@material-ui/core/colors";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -49,7 +49,14 @@ import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
 
 export const theme = createMuiTheme({
   palette: {
-    primary: lightGreen,
+    primary: {
+      main: lightGreen[600],
+      light: lightGreen[200],
+      dark: lightGreen[800],
+    },
+    background: {
+      default: lightGreen[200],
+    },
     secondary: lime,
   },
   overrides: {

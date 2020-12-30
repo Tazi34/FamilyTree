@@ -75,6 +75,10 @@ const useStyles = makeStyles((theme) =>
       display: "flex",
       justifyContent: "center",
     },
+    barContainer: {
+      position: "sticky",
+      top: 0,
+    },
     logo: {},
   })
 );
@@ -93,7 +97,7 @@ export default function PrimarySearchAppBar({ isLoggedIn, user }) {
   }, []);
 
   return (
-    <AppBar position="fixed">
+    <AppBar position="sticky" className={classes.barContainer}>
       <Toolbar component={Paper} className={classes.toolbar}>
         <RedirectButton className={classes.logo} color="primary" to={"/"}>
           <Icon className="fas fa-tree"></Icon>

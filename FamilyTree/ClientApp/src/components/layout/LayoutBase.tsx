@@ -60,7 +60,7 @@ export default (props: { children?: React.ReactNode }) => {
     >
       <Navbar isLoggedIn={isLoggedIn} user={authenticationState.user}></Navbar>
 
-      <div className={classes.filler}></div>
+      {/* <div className={classes.filler}></div> */}
       {props.children}
     </Box>
   );
