@@ -1,7 +1,8 @@
 import { makeStyles, Paper, Popover } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
-import { SearchResultsDTO } from "./redux/serachReducer";
+import { SearchResultsDTO } from "./redux/searchReducer";
+
 import SearchResultCard from "./SearchResultCard";
 import SearchResultTreeCard from "./SearchResultTreeCard";
 import SearchResultUserCard from "./SearchResultUserCard";

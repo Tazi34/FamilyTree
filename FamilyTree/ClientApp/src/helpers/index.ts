@@ -1,11 +1,10 @@
-import {
-  initialSearchTreesState,
-  SearchTreesState,
-} from "./../components/search/redux/searchTreesReducer";
-
+import { initialSearchState } from "./../components/search/redux/searchReducer";
 import { ChatsState } from "../components/chat/chatReducer";
 import { AuthenticationState } from "../components/loginPage/authenticationReducer";
-import { searchReducer } from "../components/search/redux/serachReducer";
+import {
+  searchReducer,
+  SearchState,
+} from "../components/search/redux/searchReducer";
 import {
   connectionReducer,
   connectionsInitialState,
@@ -34,10 +33,6 @@ import {
   userTreesReducer,
   UserTreesState,
 } from "./../components/userTreeList/usersTreeReducer";
-import {
-  initialSearchUsersState,
-  SearchUsersState,
-} from "../components/search/redux/searchUsersReducer";
 
 // The top-level state object
 export interface ApplicationState {
@@ -47,10 +42,7 @@ export interface ApplicationState {
   authentication: AuthenticationState;
   chats: ChatsState;
   userTrees: UserTreesState;
-  search: {
-    trees: SearchTreesState;
-    users: SearchUsersState;
-  };
+  search: SearchState;
 }
 export const initialAppState: ApplicationState = {
   authentication: authenticationInitialState,
@@ -59,10 +51,7 @@ export const initialAppState: ApplicationState = {
   posts: postsInitialState,
   tree: treeInitialState,
   userTrees: initialUserTreesState,
-  search: {
-    trees: initialSearchTreesState,
-    users: initialSearchUsersState,
-  },
+  search: initialSearchState,
 };
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using

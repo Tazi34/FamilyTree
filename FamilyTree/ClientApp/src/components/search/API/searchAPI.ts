@@ -1,6 +1,4 @@
-import { requestSearchQueryTrees } from "./searchQueryTrees";
-import { requestSearchQueryUsers } from "./searchQueryUsers";
+import { requestSearchQuery } from "./searchQuery";
 export default {
-  requestSearchQueryTrees,
-  requestSearchQueryUsers,
+  requestSearchQuery,
 };

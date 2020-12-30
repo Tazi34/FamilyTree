@@ -6,10 +6,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   root: {
     maxWidth: 1000,
     margin: "0 auto",
-    paddingTop: 50,
-    height: "100%",
-    paddingLeft: 50,
-    paddingRight: 50,
+
+    padding: 50,
+    minHeight: "100%",
   },
 }));
 

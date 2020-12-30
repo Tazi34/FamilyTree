@@ -1,7 +1,7 @@
 import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
-import { SearchUserDTO } from "./API/searchQueryUsers";
+import { SearchUserDTO } from "./API/searchQuery";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 type Props = {

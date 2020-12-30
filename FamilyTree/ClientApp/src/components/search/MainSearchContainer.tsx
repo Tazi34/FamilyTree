@@ -10,9 +10,8 @@ import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { useThunkDispatch } from "../..";
-import { searchTrees } from "./redux/searchTreesReducer";
-import { searchUsers } from "./redux/searchUsersReducer";
-import { searchResultSelector } from "./redux/serachReducer";
+
+import { search, searchResultSelector } from "./redux/searchReducer";
 import Search from "./Search";
 import SearchResults from "./SearchResults";
 
@@ -34,12 +33,7 @@ const MainSearchContainer = (props: any) => {
   const anchor = React.useRef<any>(null);
 
   const handleSearch = (query: string) => {
-    dispatch(searchUsers({ query })).then((response: any) => {
-      if (response.error) {
-        //TODO co jak error ?
-      }
-    });
-    dispatch(searchTrees({ query }))
+    dispatch(search({ query }))
       .then((response: any) => {
         if (response.error) {
           //TODO co jak error ?
