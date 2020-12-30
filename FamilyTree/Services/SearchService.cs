@@ -11,8 +11,7 @@ namespace FamilyTree.Services
 {
     public interface ISearchService
     {
-        public TreesListSearchResponse FindTrees(string expression);
-        public UsersListSearchResponse FindUsers(string expression);
+        public SearchResponse Find(string expression);
     }
     public class SearchService : ISearchService
     {
@@ -21,8 +20,16 @@ namespace FamilyTree.Services
         {
             context = dataContext;
         }
+        public SearchResponse Find(string expression)
+        {
+            return new SearchResponse
+            {
+                Trees = FindTrees(expression),
+                Users = FindUsers(expression)
+            };
+        }
 
-        public TreesListSearchResponse FindTrees(string expression)
+        public List<TreeSearchResponse> FindTrees(string expression)
         {
             string exp = expression.Trim().ToUpper();
             var surnameExpList = expression.Split().ToList();
@@ -34,7 +41,7 @@ namespace FamilyTree.Services
                 surnamesResults = context.Trees.Include(t => t.Nodes).Where(t => t.Nodes.Any(n => n.Surname.ToUpper().Equals(surnameExpList[0]))).Take(20).ToList();
             return CreateTreesList(exactResults, contains1Results, contains2Results, surnamesResults);
         }
-        private TreesListSearchResponse CreateTreesList(List<Tree> exact, List<Tree> contains1, List<Tree> contains2, List<Tree> surnames)
+        private List<TreeSearchResponse> CreateTreesList(List<Tree> exact, List<Tree> contains1, List<Tree> contains2, List<Tree> surnames)
         {
             var resultList = new List<Tree>();
             resultList.AddRange(exact);
@@ -51,17 +58,14 @@ namespace FamilyTree.Services
                 resultList = resultList.Take(20 - surnames.Count).ToList();
                 resultList.AddRange(surnames);
             }
-            return CreateTreeResponse(resultList.Distinct().ToList());
+            return CreateTreeResponseList(resultList.Distinct().ToList());
         }
-        private TreesListSearchResponse CreateTreeResponse(List<Tree> treeList)
+        private List<TreeSearchResponse> CreateTreeResponseList(List<Tree> treeList)
         {
-            var response = new TreesListSearchResponse
-            {
-                Trees = new List<TreeSearchResponse>()
-            };
+            var response = new List<TreeSearchResponse>();
             foreach(Tree t in treeList)
             {
-                response.Trees.Add(new TreeSearchResponse
+                response.Add(new TreeSearchResponse
                 {
                     IsPrivate = t.IsPrivate,
                     Name = t.Name,
@@ -71,7 +75,7 @@ namespace FamilyTree.Services
             return response;
         }
 
-        public UsersListSearchResponse FindUsers(string expression)
+        public List<UserSearchResponse> FindUsers(string expression)
         {
             var splittedExpression = new List<string>(expression.ToUpper().Split());
             splittedExpression.RemoveAll(s => s.Equals(""));
@@ -98,7 +102,7 @@ namespace FamilyTree.Services
                 exactResults = startsWithResults = prevSurnamesResults = new List<User>();
             return CreateUsersList(exactResults, startsWithResults, prevSurnamesResults);
         }
-        private UsersListSearchResponse CreateUsersList(List<User> exact, List<User> startsWith, List<User> prevSurnames)
+        private List<UserSearchResponse> CreateUsersList(List<User> exact, List<User> startsWith, List<User> prevSurnames)
         {
             List<User> resultList = new List<User>();
             resultList.AddRange(exact);
@@ -116,15 +120,12 @@ namespace FamilyTree.Services
             }
             return CreateUserResponse(resultList);
         }
-        private UsersListSearchResponse CreateUserResponse(List<User> userList)
+        private List<UserSearchResponse> CreateUserResponse(List<User> userList)
         {
-            var userListSearchResponse = new UsersListSearchResponse
-            {
-                Users = new List<UserSearchResponse>()
-            };
+            var userListSearchResponse = new List<UserSearchResponse>();
             foreach(User user in userList)
             {
-                userListSearchResponse.Users.Add(new UserSearchResponse
+                userListSearchResponse.Add(new UserSearchResponse
                 {
                     Name = user.Name,
                     Surname = user.Surname,
