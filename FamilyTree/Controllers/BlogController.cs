@@ -16,9 +16,11 @@ namespace FamilyTree.Controllers
     public class BlogController : ControllerBase
     {
         private IBlogService blogService;
-        public BlogController(IBlogService blogService)
+        private IPictureService pictureService;
+        public BlogController(IBlogService blogService, IPictureService pictureService)
         {
             this.blogService = blogService;
+            this.pictureService = pictureService;
         }
         /// <summary>
         /// Zwraca listę wszystkich id postów użytkownika wraz z datami utworzenia
@@ -92,6 +94,21 @@ namespace FamilyTree.Controllers
             if (!result)
                 return BadRequest();
             return Ok();
+        }
+        /// <summary>
+        /// Dodaje zdjęcie do chmury, zwraca URL
+        /// </summary>
+        /// <param name="picture"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("picture")]
+        [Authorize]
+        public async Task<ActionResult<SetPictureResponse>> SetUserPicture(IFormFile picture)
+        {
+            var response = await pictureService.SetBlogPicture(picture);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
         }
     }
 }

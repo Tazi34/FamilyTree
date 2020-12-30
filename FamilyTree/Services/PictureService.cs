@@ -16,6 +16,7 @@ namespace FamilyTree.Services
     public interface IPictureService
     {
         public Task<SetPictureResponse> SetProfilePicture(int userId, IFormFile picture);
+        public Task<SetPictureResponse> SetBlogPicture(IFormFile picture);
     }
     public class PictureService : IPictureService
     {
@@ -26,6 +27,23 @@ namespace FamilyTree.Services
             context = dataContext;
             blobService = new BlobServiceClient(azureBlobSettings.Value.ConnectionString);
         }
+
+        public async Task<SetPictureResponse> SetBlogPicture(IFormFile picture)
+        {
+            if (!ValidateInput(picture))
+                return null;
+            string fileName = GetUniqueFilename(picture.FileName);
+            BlobContainerClient container = blobService.GetBlobContainerClient("blog");
+            BlobClient blob = container.GetBlobClient(fileName);
+            Stream uploadFileStream = picture.OpenReadStream();
+            await blob.UploadAsync(uploadFileStream, true);
+            uploadFileStream.Close();
+            return new SetPictureResponse
+            {
+                PictureUrl = blob.Uri.ToString()
+            };
+        }
+
         public async Task<SetPictureResponse> SetProfilePicture(int userId, IFormFile picture)
         {
             var user = context.Users.SingleOrDefault(u => u.UserId == userId);
@@ -60,10 +78,20 @@ namespace FamilyTree.Services
         {
             return userId.ToString() + ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds().ToString() + userProvidedFileName;
         }
+        private string GetUniqueFilename(string userProvidedFileName)
+        {
+            return ((DateTimeOffset)DateTime.Now).ToUnixTimeSeconds().ToString() + userProvidedFileName;
+        }
 
         private bool ValidateInput(User user, IFormFile picture)
         {
             if (user == null || picture == null || !picture.ContentType.StartsWith("image"))
+                return false;
+            return true;
+        }
+        private bool ValidateInput(IFormFile picture)
+        {
+            if (picture == null || !picture.ContentType.StartsWith("image"))
                 return false;
             return true;
         }

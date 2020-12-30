@@ -60,7 +60,7 @@ namespace FamilyTree.Controllers
             return result;
         }
         /// <summary>
-        /// TODO
+        /// Endpoint do zmiany zdjęcia profilowego
         /// </summary>
         [HttpPost]
         [Route("picture")]
@@ -72,15 +72,6 @@ namespace FamilyTree.Controllers
             if (response == null)
                 return BadRequest();
             return Ok(response);
-        }
-        /// <summary>
-        /// TODO
-        /// </summary>
-        [HttpGet]
-        [Route("picture/{UserId}")]
-        public void ChangeUserPicture(int UserId)
-        {
-
         }
     }
 }
