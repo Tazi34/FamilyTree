@@ -143,7 +143,7 @@ namespace FamilyTreeTests.UserServiceTests
                 mockContext.Setup(m => m.Users).Returns(mockSetUser.Object);
 
                 tokenService = new TokenService(appSettings);
-                service = new UserService(mockContext.Object, tokenService);
+                service = new UserService(mockContext.Object, tokenService, new PasswordService());
 
                 key = Encoding.ASCII.GetBytes(appSettings.Secret);
                 handler = new JwtSecurityTokenHandler();
