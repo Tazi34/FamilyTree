@@ -29,9 +29,9 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [Route("{userId:int}")]
         [HttpGet]
-        public ActionResult<BlogListResponse> GetBlogList(int userId)
+        public async Task<ActionResult<BlogListResponse>> GetBlogList(int userId)
         {
-            var resultList = blogService.GetPostsList(userId);
+            var resultList = await blogService.GetPostsListAsync(userId);
             return Ok(resultList);
         }
         /// <summary>
@@ -41,9 +41,9 @@ namespace FamilyTree.Controllers
         /// <returns>Z</returns>
         [Route("post/{postId:int}")]
         [HttpGet]
-        public ActionResult<PostResponse> GetPost(int postId)
+        public async Task<ActionResult<PostResponse>> GetPost(int postId)
         {
-            var post = blogService.GetPost(postId);
+            var post = await blogService.GetPostAsync(postId);
             if (post == null)
                 return BadRequest();
             return Ok(post);
@@ -56,10 +56,10 @@ namespace FamilyTree.Controllers
         [Route("")]
         [Authorize]
         [HttpPost]
-        public ActionResult<PostResponse> CreatePost(CreatePostRequest model)
+        public async Task<ActionResult<PostResponse>> CreatePost(CreatePostRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var newPost = blogService.CreatePost(userId, model);
+            var newPost = await blogService.CreatePostAsync(userId, model);
             if (newPost == null)
                 return BadRequest();
             return Ok(newPost);
@@ -72,10 +72,10 @@ namespace FamilyTree.Controllers
         [Route("")]
         [Authorize]
         [HttpPut]
-        public ActionResult<PostResponse> ModifyPost(ModifyPostRequest model)
+        public async Task<ActionResult<PostResponse>> ModifyPost(ModifyPostRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var modifiedPost = blogService.ModifyPost(userId, model);
+            var modifiedPost = await blogService.ModifyPostAsync(userId, model);
             if (modifiedPost == null)
                 return BadRequest();
             return Ok(modifiedPost);
@@ -87,10 +87,10 @@ namespace FamilyTree.Controllers
         [Route("{postId:int}")]
         [Authorize]
         [HttpDelete]
-        public ActionResult DeletePost(int postId)
+        public async Task<ActionResult> DeletePost(int postId)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var result = blogService.DeletePost(userId, postId);
+            var result = await blogService.DeletePostAsync(userId, postId);
             if (!result)
                 return BadRequest();
             return Ok();
@@ -105,7 +105,7 @@ namespace FamilyTree.Controllers
         [Authorize]
         public async Task<ActionResult<SetPictureResponse>> SetBlogPicture(IFormFile picture)
         {
-            var response = await pictureService.SetBlogPicture(picture);
+            var response = await pictureService.SetBlogPictureAsync(picture);
             if (response == null)
                 return BadRequest();
             return Ok(response);

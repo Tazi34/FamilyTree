@@ -5,16 +5,17 @@ using System.Threading.Tasks;
 using FamilyTree.Models;
 using FamilyTree.Helpers;
 using FamilyTree.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTree.Services
 {
     public interface IBlogService
     {
-        public BlogListResponse GetPostsList(int userId);
-        public PostResponse GetPost(int postId);
-        public PostResponse CreatePost(int userId, CreatePostRequest model);
-        public PostResponse ModifyPost(int userId, ModifyPostRequest model);
-        public bool DeletePost(int userId, int postId);
+        public Task<BlogListResponse> GetPostsListAsync(int userId);
+        public Task<PostResponse> GetPostAsync(int postId);
+        public Task<PostResponse> CreatePostAsync(int userId, CreatePostRequest model);
+        public Task<PostResponse> ModifyPostAsync(int userId, ModifyPostRequest model);
+        public Task<bool> DeletePostAsync(int userId, int postId);
     }
     public class BlogService : IBlogService
     {
@@ -24,9 +25,9 @@ namespace FamilyTree.Services
             context = dataContext;
         }
 
-        public PostResponse CreatePost(int userId, CreatePostRequest model)
+        public async Task<PostResponse> CreatePostAsync(int userId, CreatePostRequest model)
         {
-            var user = context.Users.SingleOrDefault(user => user.UserId == userId);
+            var user = await context.Users.FirstOrDefaultAsync(user => user.UserId == userId);
             if (user == null)
                 return null;
             var newPost = new Post
@@ -38,36 +39,34 @@ namespace FamilyTree.Services
                 UserId = userId
             };
             context.Posts.Add(newPost);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return CreateResponse(newPost);
         }
 
-        public bool DeletePost(int userId, int postId)
+        public async Task<bool> DeletePostAsync(int userId, int postId)
         {
-            var post = context.Posts.SingleOrDefault(post => post.PostId == postId);
+            var post = await context.Posts.FirstOrDefaultAsync(post => post.PostId == postId);
             if (post == null || post.UserId != userId)
                 return false;
             context.Posts.Remove(post);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return true;
         }
 
-        public PostResponse GetPost(int postId)
+        public async Task<PostResponse> GetPostAsync(int postId)
         {
-            var post = context.Posts.SingleOrDefault(post => post.PostId == postId);
+            var post = await context.Posts.FirstOrDefaultAsync(post => post.PostId == postId);
             if (post == null)
                 return null;
             return CreateResponse(post);
         }
 
-        public BlogListResponse GetPostsList(int userId)
+        public async Task<BlogListResponse> GetPostsListAsync(int userId)
         {
-            var postsList = context.Posts.Where(post => post.UserId == userId);
-            var user = context.Users.SingleOrDefault(user => user.UserId == userId);
+            var postsList = await context.Posts.Where(post => post.UserId == userId).ToListAsync();
+            var user = await context.Users.FirstOrDefaultAsync(user => user.UserId == userId);
             if (user == null)
-            {
                 return null;
-            }
             var response = new BlogListResponse
             {
                 User = new BlogUserProfileResponse
@@ -93,9 +92,9 @@ namespace FamilyTree.Services
             return response;
         }
 
-        public PostResponse ModifyPost(int userId, ModifyPostRequest model)
+        public async Task<PostResponse> ModifyPostAsync(int userId, ModifyPostRequest model)
         {
-            var post = context.Posts.SingleOrDefault(post => post.PostId == model.PostId);
+            var post = await context.Posts.FirstOrDefaultAsync(post => post.PostId == model.PostId);
             if (post == null || post.UserId != userId)
                 return null;
             if (!string.IsNullOrWhiteSpace(model.Text))
@@ -106,8 +105,8 @@ namespace FamilyTree.Services
             {
                 post.Title = model.Title;
             }
-            context.SaveChanges();
-            return GetPost(post.PostId);
+            await context.SaveChangesAsync();
+            return await GetPostAsync(post.PostId);
         }
         private PostResponse CreateResponse(Post post)
         {

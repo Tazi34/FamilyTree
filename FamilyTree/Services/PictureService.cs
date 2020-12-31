@@ -17,7 +17,7 @@ namespace FamilyTree.Services
     public interface IPictureService
     {
         public Task<SetPictureResponse> SetProfilePicture(int userId, IFormFile picture);
-        public Task<SetPictureResponse> SetBlogPicture(IFormFile picture);
+        public Task<SetPictureResponse> SetBlogPictureAsync(IFormFile picture);
         public Task<SetPictureResponse> SetNodePicture(int userId, int nodeId, IFormFile picture);
     }
     public class PictureService : IPictureService
@@ -30,7 +30,7 @@ namespace FamilyTree.Services
             blobService = new BlobServiceClient(azureBlobSettings.Value.ConnectionString);
         }
 
-        public async Task<SetPictureResponse> SetBlogPicture(IFormFile picture)
+        public async Task<SetPictureResponse> SetBlogPictureAsync(IFormFile picture)
         {
             if (!ValidateInput(picture))
                 return null;
