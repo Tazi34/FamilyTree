@@ -35,9 +35,9 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{email}/{password}")]
-        public ActionResult<AuthenticateResponse> GetJWT (string email, string password)
+        public async Task<ActionResult<AuthenticateResponse>> GetJWT (string email, string password)
         {
-            var request = userService.Authenticate(email, password);
+            var request = await userService.AuthenticateAsync(email, password);
             if (request == null)
                 return Unauthorized();
             return Ok(request);
@@ -50,10 +50,10 @@ namespace FamilyTree.Controllers
         [Authorize]
         [HttpGet]
         [Route("")]
-        public ActionResult<AuthenticateResponse> CheckJWT()
+        public async Task<ActionResult<AuthenticateResponse>> CheckJWT()
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var request = userService.CheckUserId(userId);
+            var request = await userService.CheckUserIdAsync(userId);
             if (request == null)
                 return Unauthorized();
             return Ok(request);
@@ -65,9 +65,9 @@ namespace FamilyTree.Controllers
         /// <returns>Zwraca informacje o użytkowniku i token</returns>
         [HttpPost]
         [Route("")]
-        public ActionResult<AuthenticateResponse> Post(CreateUserRequest model)
+        public async Task<ActionResult<AuthenticateResponse>> Post(CreateUserRequest model)
         {
-            var newUser = userService.CreateUser(model);
+            var newUser = await userService.CreateUserAsync(model);
             if (newUser == null)
                 return BadRequest("Not unique email");
             return newUser;
@@ -83,7 +83,7 @@ namespace FamilyTree.Controllers
             FacebookUserInfoResult userInfo = await facebookService.GetUserInfo(access_token);
             if (userInfo == null)
                 return BadRequest();
-            var response = userService.AuthenticateFacebook(userInfo);
+            var response = await userService.AuthenticateFacebookAsync(userInfo);
             if (response == null)
                 return BadRequest();
             return Ok(response);
@@ -99,7 +99,7 @@ namespace FamilyTree.Controllers
             string email = await googleService.ValidateIdToken(model.IdToken);
             if (email == null)
                 return BadRequest();
-            var response = userService.AuthenticateGoogle(email);
+            var response = await userService.AuthenticateGoogleAsync(email);
             if (response == null)
                 return BadRequest();
             return Ok(response);
