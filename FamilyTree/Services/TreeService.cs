@@ -11,15 +11,15 @@ namespace FamilyTree.Services
 {
     public interface ITreeService
     {
-        public TreeResponse GetTree(int id, int userId);
-        public NodeResponse GetNode(int id, int userId);
-        public TreeUserResponse GetUserTrees(int id, int claimId);
-        public TreeResponse CreateTree(int userId, CreateTreeRequest model);
-        public TreeResponse ModifyTree(int userId, ModifyTreeRequest model);
-        public NodeResponse CreateNode(int userId, CreateNodeRequest model);
-        public TreeResponse ModifyNode(int userId, ModifyNodeRequest model);
-        public bool DeleteNode(int userId, int NodeId);
-        public bool DeleteTree(int userId, int TreeId);
+        public Task<TreeResponse> GetTreeAsync(int id, int userId);
+        public Task<NodeResponse> GetNodeAsync(int id, int userId);
+        public Task<TreeUserResponse> GetUserTreesAsync(int id, int claimId);
+        public Task<TreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model);
+        public Task<TreeResponse> ModifyTreeAsync(int userId, ModifyTreeRequest model);
+        public Task<NodeResponse> CreateNodeAsync(int userId, CreateNodeRequest model);
+        public Task<TreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model);
+        public Task<bool> DeleteNodeAsync(int userId, int NodeId);
+        public Task<bool> DeleteTreeAsync(int userId, int TreeId);
     }
     public class TreeService : ITreeService
     {
@@ -33,10 +33,10 @@ namespace FamilyTree.Services
             this.treeValidationService = treeValidationService;
         }
 
-        public NodeResponse CreateNode(int userId, CreateNodeRequest model)
+        public async Task<NodeResponse> CreateNodeAsync(int userId, CreateNodeRequest model)
         {
-            var tree = GetTreeFromContext(model.TreeId);
-            var user = GetUserFromContext(userId);
+            var tree = await GetTreeFromContextAsync(model.TreeId);
+            var user = await GetUserFromContextAsync(userId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return null;
@@ -108,13 +108,13 @@ namespace FamilyTree.Services
                 Sex = model.Sex
             };
             tree.Nodes.Add(node);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return new NodeResponse(node);
         }
 
-        public TreeResponse CreateTree(int userId, CreateTreeRequest model)
+        public async Task<TreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model)
         {
-            var user = GetUserFromContext(userId);
+            var user = await GetUserFromContextAsync(userId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.Everybody, authLevel))
                 return null;
@@ -139,48 +139,48 @@ namespace FamilyTree.Services
                 Nodes = new List<Node>() { node }
             };
             context.Trees.Add(tree);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return new TreeResponse(tree);
         }
 
-        public bool DeleteNode(int userId, int nodeId)
+        public async Task<bool> DeleteNodeAsync(int userId, int nodeId)
         {
-            var node = GetNodeFromContext(nodeId);
-            var user = GetUserFromContext(userId);
-            var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
+            var node = await GetNodeFromContextAsync(nodeId);
+            var user = await GetUserFromContextAsync(userId);
+            var tree = await GetTreeFromContextAsync(node == null ? -1 : node.TreeId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return false;
             if (!treeValidationService.ValidateDeletedNode(node, tree))
                 return false;
-            return DeleteNode(node);
+            return await DeleteNodeAsync(node);
         }
 
-        public NodeResponse GetNode(int nodeId, int userId)
+        public async Task<NodeResponse> GetNodeAsync(int nodeId, int userId)
         {
-            var node = GetNodeFromContext(nodeId);
-            var user = GetUserFromContext(userId);
-            var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
+            var node = await GetNodeFromContextAsync(nodeId);
+            var user = await GetUserFromContextAsync(userId);
+            var tree = await GetTreeFromContextAsync(node == null ? -1 : node.TreeId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
             return new NodeResponse(node);
         }
 
-        public TreeResponse GetTree(int treeId, int userId)
+        public async Task<TreeResponse> GetTreeAsync(int treeId, int userId)
         {
-            var user = GetUserFromContext(userId);
-            var tree = GetTreeFromContext(treeId);
+            var tree = await GetTreeFromContextAsync(treeId);
+            var user = await GetUserFromContextAsync(userId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
             return new TreeResponse(tree);
         }
 
-        public TreeUserResponse GetUserTrees(int userId, int askingUserId)
+        public async Task<TreeUserResponse> GetUserTreesAsync(int userId, int askingUserId)
         {
-            var askingUser = GetUserFromContext(askingUserId);
-            var treeList = GetUserTreesFromContext(userId);
+            var askingUser = await GetUserFromContextAsync(askingUserId);
+            var treeList = await GetUserTreesFromContextAsync(userId);
             var authorizedTrees = new List<FlatTree>();
             foreach(Tree tree in treeList)
             {
@@ -191,11 +191,11 @@ namespace FamilyTree.Services
             return new TreeUserResponse(authorizedTrees);
         }
 
-        public TreeResponse ModifyNode(int userId, ModifyNodeRequest model)
+        public async Task<TreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model)
         {
-            var node = GetNodeFromContext(model.NodeId);
-            var user = GetUserFromContext(userId);
-            var tree = GetTreeFromContext(node == null ? -1 : node.TreeId);
+            var node = await GetNodeFromContextAsync(model.NodeId);
+            var user = await GetUserFromContextAsync(userId);
+            var tree = await GetTreeFromContextAsync(node == null ? -1 : node.TreeId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InNode, authLevel))
                 return null;
@@ -264,37 +264,37 @@ namespace FamilyTree.Services
             node.UserId = model.UserId;
             if (!string.IsNullOrWhiteSpace(model.Sex))
                 node.Sex = model.Sex;
-            context.SaveChanges();
-            return GetTree(model.TreeId, userId);
+            await context.SaveChangesAsync();
+            return await GetTreeAsync(model.TreeId, userId);
         }
 
-        public TreeResponse ModifyTree(int userId, ModifyTreeRequest model)
+        public async Task<TreeResponse> ModifyTreeAsync(int userId, ModifyTreeRequest model)
         {
-            var user = GetUserFromContext(userId);
-            var tree = GetTreeFromContext(model.TreeId);
+            var user = await GetUserFromContextAsync(userId);
+            var tree = await GetTreeFromContextAsync(model.TreeId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return null;
             tree.Name = model.Name;
             tree.IsPrivate = model.IsPrivate;
             context.Trees.Update(tree);
-            context.SaveChanges();
-            return GetTree(model.TreeId, userId);
+            await context.SaveChangesAsync();
+            return await GetTreeAsync(model.TreeId, userId);
         }
-        public bool DeleteTree(int userId, int treeId)
+        public async Task<bool> DeleteTreeAsync(int userId, int treeId)
         {
-            var user = GetUserFromContext(userId);
-            var tree = GetTreeFromContext(treeId);
+            var user = await GetUserFromContextAsync(userId);
+            var tree = await GetTreeFromContextAsync(treeId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return false;
             while(tree.Nodes.Count > 0)
-                DeleteNode(tree.Nodes.First());
+                await DeleteNodeAsync(tree.Nodes.First());
             context.Trees.Remove(tree);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return true;
         }
-        private bool DeleteNode(Node node)
+        private async Task<bool> DeleteNodeAsync(Node node)
         {
             if (node.Parents.Count > 0)
             {
@@ -309,41 +309,41 @@ namespace FamilyTree.Services
                     context.NodeNodeMarriage.Remove(nodeNode);
             }
             context.Nodes.Remove(node);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return true;
         }
-        private Tree GetTreeFromContext (int treeId)
+        private async Task<Tree> GetTreeFromContextAsync (int treeId)
         {
-            return context.Trees
+            return await context.Trees
                 .Include(x => x.Nodes).ThenInclude(x => x.Children)
                 .Include(x => x.Nodes).ThenInclude(x => x.Parents)
                 .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
                 .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
-                .SingleOrDefault(tree => tree.TreeId == treeId);
+                .FirstOrDefaultAsync(tree => tree.TreeId == treeId);
         }
-        private Node GetNodeFromContext (int nodeId)
+        private async Task<Node> GetNodeFromContextAsync (int nodeId)
         {
-            return context.Nodes
+            return await context.Nodes
                 .Include(n => n.Children)
                 .Include(n => n.Parents)
                 .Include(n => n.Partners1)
                 .Include(n => n.Partners2)
-                .SingleOrDefault(n => n.NodeId == nodeId);
+                .FirstOrDefaultAsync(n => n.NodeId == nodeId);
         }
-        private User GetUserFromContext (int userId)
+        private async Task<User> GetUserFromContextAsync (int userId)
         {
-            if (userId == 0)//user with no token
+            if (userId == 0) //user with no token
                 return new User { UserId = 0 };
-            return context.Users.SingleOrDefault(u => u.UserId == userId);
+            return await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
         }
-        private List<Tree> GetUserTreesFromContext (int userId)
+        private async Task<List<Tree>> GetUserTreesFromContextAsync (int userId)
         {
-            return context.Trees
+            return await context.Trees
                 .Include(x => x.Nodes).ThenInclude(x => x.Children)
                 .Include(x => x.Nodes).ThenInclude(x => x.Parents)
                 .Include(x => x.Nodes).ThenInclude(x => x.Partners1)
                 .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
-                .Where(tree => tree.Nodes.Any(node => node.UserId == userId)).ToList();
+                .Where(tree => tree.Nodes.Any(node => node.UserId == userId)).ToListAsync();
         }
     }
 }
