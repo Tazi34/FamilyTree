@@ -11,7 +11,7 @@ namespace FamilyTree.Services
 {
     public interface ISearchService
     {
-        public SearchResponse Find(string expression);
+        public Task<SearchResponse> FindAsync(string expression);
     }
     public class SearchService : ISearchService
     {
@@ -20,25 +20,25 @@ namespace FamilyTree.Services
         {
             context = dataContext;
         }
-        public SearchResponse Find(string expression)
+        public async Task<SearchResponse> FindAsync(string expression)
         {
             return new SearchResponse
             {
-                Trees = FindTrees(expression),
-                Users = FindUsers(expression)
+                Trees = await FindTreesAsync(expression),
+                Users = await FindUsersAsync(expression)
             };
         }
 
-        public List<TreeSearchResponse> FindTrees(string expression)
+        public async Task<List<TreeSearchResponse>> FindTreesAsync(string expression)
         {
             string exp = expression.Trim().ToUpper();
             var surnameExpList = expression.Split().ToList();
             List<Tree> exactResults = null, contains1Results = null, contains2Results, surnamesResults = new List<Tree>(); ;
-            exactResults = context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Equals(exp)).Take(20).ToList();
-            contains1Results = context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Contains(exp)).Take(20).ToList();
-            contains2Results = context.Trees.Where(t => !t.IsPrivate && exp.Contains(t.Name.ToUpper())).Take(20).ToList();
+            exactResults = await context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Equals(exp)).Take(20).ToListAsync();
+            contains1Results = await context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Contains(exp)).Take(20).ToListAsync();
+            contains2Results = await context.Trees.Where(t => !t.IsPrivate && exp.Contains(t.Name.ToUpper())).Take(20).ToListAsync();
             if (surnameExpList.Any())
-                surnamesResults = context.Trees.Include(t => t.Nodes).Where(t => t.Nodes.Any(n => n.Surname.ToUpper().Equals(surnameExpList[0]))).Take(20).ToList();
+                surnamesResults = await context.Trees.Include(t => t.Nodes).Where(t => t.Nodes.Any(n => n.Surname.ToUpper().Equals(surnameExpList[0]))).Take(20).ToListAsync();
             return CreateTreesList(exactResults, contains1Results, contains2Results, surnamesResults);
         }
         private List<TreeSearchResponse> CreateTreesList(List<Tree> exact, List<Tree> contains1, List<Tree> contains2, List<Tree> surnames)
@@ -75,28 +75,28 @@ namespace FamilyTree.Services
             return response;
         }
 
-        public List<UserSearchResponse> FindUsers(string expression)
+        public async Task<List<UserSearchResponse>> FindUsersAsync(string expression)
         {
             var splittedExpression = new List<string>(expression.ToUpper().Split());
             splittedExpression.RemoveAll(s => s.Equals(""));
             List<User> exactResults = null, startsWithResults = null, prevSurnamesResults = null;
             if(splittedExpression.Count >= 2)
             {
-                exactResults = context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => u.Name.ToUpper().Equals(splittedExpression[0]) && (u.Surname.ToUpper().Equals(splittedExpression[1]))).Take(20).ToList();
-                startsWithResults = context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => u.Name.ToUpper().StartsWith(splittedExpression[0]) && (u.Surname.ToUpper().StartsWith(splittedExpression[1]))).Take(20).ToList();
-                prevSurnamesResults = context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => u.Name.ToUpper().Equals(splittedExpression[0]) && u.PrevSurnames.Any(p => p.Surname.ToUpper().Equals(splittedExpression[1]))).Take(20).ToList();
+                exactResults = await context.Users.Include(u => u.PrevSurnames)
+                    .Where(u => u.Name.ToUpper().Equals(splittedExpression[0]) && (u.Surname.ToUpper().Equals(splittedExpression[1]))).Take(20).ToListAsync();
+                startsWithResults = await context.Users.Include(u => u.PrevSurnames)
+                    .Where(u => u.Name.ToUpper().StartsWith(splittedExpression[0]) && (u.Surname.ToUpper().StartsWith(splittedExpression[1]))).Take(20).ToListAsync();
+                prevSurnamesResults = await context.Users.Include(u => u.PrevSurnames)
+                    .Where(u => u.Name.ToUpper().Equals(splittedExpression[0]) && u.PrevSurnames.Any(p => p.Surname.ToUpper().Equals(splittedExpression[1]))).Take(20).ToListAsync();
             }
             else if(splittedExpression.Count == 1)
             {
-                exactResults = context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => (u.Surname.ToUpper().Equals(splittedExpression[0]))).Take(20).ToList();
-                startsWithResults = context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => (u.Surname.ToUpper().StartsWith(splittedExpression[0]))).Take(20).ToList();
-                prevSurnamesResults = context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => u.PrevSurnames.Any(p => p.Surname.ToUpper().Equals(splittedExpression[0]))).Take(20).ToList();
+                exactResults = await context.Users.Include(u => u.PrevSurnames)
+                    .Where(u => (u.Surname.ToUpper().Equals(splittedExpression[0]))).Take(20).ToListAsync();
+                startsWithResults = await context.Users.Include(u => u.PrevSurnames)
+                    .Where(u => (u.Surname.ToUpper().StartsWith(splittedExpression[0]))).Take(20).ToListAsync();
+                prevSurnamesResults = await context.Users.Include(u => u.PrevSurnames)
+                    .Where(u => u.PrevSurnames.Any(p => p.Surname.ToUpper().Equals(splittedExpression[0]))).Take(20).ToListAsync();
             }
             else if (splittedExpression.Count == 0)
                 exactResults = startsWithResults = prevSurnamesResults = new List<User>();
