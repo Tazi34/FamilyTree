@@ -280,7 +280,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
       },
       (e: any, selectedNode: PersonNode) => {
         if (connectingMode) {
-          logger.log(e);
           const d3Node = selectNode(selectedNode.id);
           if (!canConnectTo[selectedNode.id]) {
             d3Node.attr("opacity", "0.4");
@@ -338,7 +337,6 @@ const TreeRenderer = (props: TreeRendererProps) => {
   const loadedLinks = props.links
     .map((link) => linkLoader(treeState, link))
     .filter((a) => a) as LinkLoaded[];
-  logger.log(loadedLinks);
 
   const handleParentAdd = (id: number, data: CreateNodeRequestData) => {
     dispatch(addParentAsync(id, data));

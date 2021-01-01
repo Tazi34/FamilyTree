@@ -47,9 +47,12 @@ const styles = (theme: Theme) => ({
   } as any,
   treeBackground: {
     width: "100%",
-    margin: "0 auto",
     height: "100%",
     background: "radial-gradient(#e0e0e0,grey)",
+  },
+  root: {
+    width: "100%",
+    height: "100%",
   },
 });
 
@@ -149,54 +152,56 @@ class Tree extends React.Component<any, TreeContainerState> {
     const initialX = -minX + 300;
     const initialY = -minY + 300;
 
+    console.log("RENDER");
     return (
-      <div className={classes.treeBackground}>
-        <div className={classes.relative}>
-          <div className={classes.treeInformationPanel}>
-            <TreeInformationPanel
-              treeInformation={treeInformation}
-              onTreeNameChange={this.handleTreeNameChange}
-              onTreeVisibilityChange={this.handleTreeVisibilityChange}
-            />
-            <Button onClick={this.handleAddNode}>Add Node</Button>
+      <Paper className={classes.root}>
+        <div className={classes.treeBackground}>
+          <div className={classes.relative}>
+            <div className={classes.treeInformationPanel}>
+              <TreeInformationPanel
+                treeInformation={treeInformation}
+                onTreeNameChange={this.handleTreeNameChange}
+                onTreeVisibilityChange={this.handleTreeVisibilityChange}
+              />
+              <Button onClick={this.handleAddNode}>Add Node</Button>
+            </div>
           </div>
-        </div>
 
-        <div
-          id="tree-canvas"
-          ref={this.svgRef}
-          style={{ overflow: "hidden", width: "100%", height: "100%" }}
-        >
-          <ZoomContainer
-            getSvg={this.getSvg}
-            initialZoom={{ x: initialX, y: initialY, k: 1 }}
+          <div
+            id="tree-canvas"
+            ref={this.svgRef}
+            style={{ overflow: "hidden", width: "100%", height: "100%" }}
           >
-            <TreeRenderer
-              nodes={this.props.nodes}
-              links={this.props.links}
-              families={this.props.families}
-              onAddMenuOpen={this.handleNodeAdd}
-              onAddNodeMenuClose={this.handleCloseMenu}
-              rectHeight={RECT_HEIGHT}
-              rectWidth={RECT_WIDTH}
-            />
-          </ZoomContainer>
-        </div>
-        <ClickAwayListener
-          onClickAway={this.handleCloseMenu}
-          mouseEvent="onClick"
-          touchEvent="onTouchStart"
-        >
-          <Paper
-            id="contextMenu"
-            style={{
-              position: "absolute",
-              left: this.state.addMenuX + "px",
-              top: this.state.addMenuY + "px",
-              display: this.state.isAddMenuOpen ? "" : "none",
-            }}
+            <ZoomContainer
+              getSvg={this.getSvg}
+              initialZoom={{ x: initialX, y: initialY, k: 1 }}
+            >
+              <TreeRenderer
+                nodes={this.props.nodes}
+                links={this.props.links}
+                families={this.props.families}
+                onAddMenuOpen={this.handleNodeAdd}
+                onAddNodeMenuClose={this.handleCloseMenu}
+                rectHeight={RECT_HEIGHT}
+                rectWidth={RECT_WIDTH}
+              />
+            </ZoomContainer>
+          </div>
+          <ClickAwayListener
+            onClickAway={this.handleCloseMenu}
+            mouseEvent="onClick"
+            touchEvent="onTouchStart"
           >
-            {/* <MenuList>
+            <Paper
+              id="contextMenu"
+              style={{
+                position: "absolute",
+                left: this.state.addMenuX + "px",
+                top: this.state.addMenuY + "px",
+                display: this.state.isAddMenuOpen ? "" : "none",
+              }}
+            >
+              {/* <MenuList>
               <MenuItem>Add parent</MenuItem>
               <MenuItem>Connect parent</MenuItem>
               <MenuItem>Add child</MenuItem>
@@ -204,9 +209,10 @@ class Tree extends React.Component<any, TreeContainerState> {
                 Connect child
               </MenuItem>
             </MenuList> */}
-          </Paper>
-        </ClickAwayListener>
-      </div>
+            </Paper>
+          </ClickAwayListener>
+        </div>
+      </Paper>
     );
   }
 }
