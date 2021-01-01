@@ -14,8 +14,8 @@ namespace FamilyTree.Services
         AuthenticateResponse AuthenticateFacebook(FacebookUserInfoResult userInfo);
         User GetUserById(int userId);
         AuthenticateResponse CreateUser(CreateUserRequest model);
-        AuthenticateResponse Modify(ModifyUserRequest model);
-        AuthenticateResponse ChangePassword(ChangePasswordRequest model);
+        Task<AuthenticateResponse> ModifyAsync(ModifyUserRequest model);
+        Task<AuthenticateResponse> ChangePasswordAsync(ChangePasswordRequest model);
         AuthenticateResponse CheckUserId(int userId);
         AuthenticateResponse AuthenticateGoogle(string email);
     }
@@ -83,15 +83,14 @@ namespace FamilyTree.Services
             return CreateResponse(user);
         }
 
-        public AuthenticateResponse ChangePassword(ChangePasswordRequest model)
+        public async Task<AuthenticateResponse> ChangePasswordAsync(ChangePasswordRequest model)
         {
-            var user = context.Users.Include(u => u.PrevSurnames).SingleOrDefault(u => u.UserId == model.UserId);
+            var user = await context.Users.Include(u => u.PrevSurnames).FirstOrDefaultAsync(u => u.UserId == model.UserId);
             if (user == null || !passwordService.Compare(user.PasswordHash, model.OldPassword, user.Salt))
                 return null;
-
             (user.PasswordHash, user.Salt) = passwordService.CreateHash(model.Password);
             context.Users.Update(user);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return CreateResponse(user);
         }
 
@@ -142,9 +141,9 @@ namespace FamilyTree.Services
             return context.Users.Include(u => u.PrevSurnames).SingleOrDefault(x => x.UserId == userId);
         }
 
-        public AuthenticateResponse Modify(ModifyUserRequest model)
+        public async Task<AuthenticateResponse> ModifyAsync(ModifyUserRequest model)
         {
-            var user = context.Users.Include(x => x.PrevSurnames).SingleOrDefault(u => u.UserId == model.UserId);
+            var user = await context.Users.Include(x => x.PrevSurnames).FirstOrDefaultAsync(u => u.UserId == model.UserId);
             if (user == null)
                 return null;
             if (!string.IsNullOrWhiteSpace(model.Email) && model.Email != user.Email)
@@ -159,7 +158,7 @@ namespace FamilyTree.Services
             if (!string.IsNullOrWhiteSpace(model.Surname))
                 user.Surname = model.Surname;
             if (!string.IsNullOrWhiteSpace(model.Sex))
-                user.Surname = model.Sex;
+                user.Sex = model.Sex;
             if (model.Birthday != null)
                 user.Birthday = model.Birthday;
             if (model.PreviousSurnames != null)
@@ -185,7 +184,7 @@ namespace FamilyTree.Services
                 }
             }
             context.Users.Update(user);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return CreateResponse(user);
         }
         private AuthenticateResponse CreateResponse(User user)

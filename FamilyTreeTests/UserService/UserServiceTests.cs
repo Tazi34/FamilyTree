@@ -180,7 +180,7 @@ namespace FamilyTreeTests.UserServiceTests
                 Assert.IsNull(response);
             }
             [TestCaseSource("Users")]
-            public void ChangePasswordSuccess(User user)
+            public async void ChangePasswordSuccess(User user)
             {
                 var request = new ChangePasswordRequest
                 {
@@ -189,7 +189,7 @@ namespace FamilyTreeTests.UserServiceTests
                     OldPassword = user.PasswordHash,
                     Password = "superNewPasswd"
                 };
-                var response = service.ChangePassword(request);
+                var response = await service.ChangePasswordAsync(request);
 
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Once);
                 mockContext.Verify(x => x.SaveChanges(), Times.Once);
@@ -198,7 +198,7 @@ namespace FamilyTreeTests.UserServiceTests
                 CheckToken(response.Token, user.UserId);
             }
             [Test]
-            public void ChangePasswordFail()
+            public async void ChangePasswordFail()
             {
                 var request = new ChangePasswordRequest
                 {
@@ -207,7 +207,7 @@ namespace FamilyTreeTests.UserServiceTests
                     OldPassword = "DummyPasswd",
                     Password = "superNewPasswd"
                 };
-                var response = service.ChangePassword(request);
+                var response = await service.ChangePasswordAsync(request);
 
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Never);
                 mockContext.Verify(x => x.SaveChanges(), Times.Never);
@@ -282,7 +282,7 @@ namespace FamilyTreeTests.UserServiceTests
                 Assert.IsNull(response);
             }
             [TestCaseSource("Users")]
-            public void ModifySuccess(User user)
+            public async void ModifySuccess(User user)
             {
                 var request = new ModifyUserRequest
                 {
@@ -296,7 +296,7 @@ namespace FamilyTreeTests.UserServiceTests
                     },
                     UserId = user.UserId
                 };
-                var response = service.Modify(request);
+                var response = await service.ModifyAsync(request);
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Once);
                 mockContext.Verify(x => x.SaveChanges(), Times.Once);
                 Assert.IsNotNull(response);
@@ -305,7 +305,7 @@ namespace FamilyTreeTests.UserServiceTests
                 Assert.AreEqual(response.Name, "NewName");
             }
             [Test]
-            public void ModifyFail ()
+            public async void ModifyFail ()
             {
                 var request = new ModifyUserRequest
                 {
@@ -314,7 +314,7 @@ namespace FamilyTreeTests.UserServiceTests
                     },
                     UserId = 666
                 };
-                var response = service.Modify(request);
+                var response = await service.ModifyAsync(request);
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Never);
                 mockContext.Verify(x => x.SaveChanges(), Times.Never);
                 Assert.IsNull(response);

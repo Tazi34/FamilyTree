@@ -9,6 +9,7 @@ using FamilyTree.Models;
 using FamilyTree.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTree.Controllers
 {
@@ -31,12 +32,12 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("")]
-        public ActionResult<AuthenticateResponse> ModifyUser(ModifyUserRequest model)
+        public async Task<ActionResult<AuthenticateResponse>> ModifyUser(ModifyUserRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             if (userId != model.UserId)
                 return Unauthorized();
-            var result = userService.Modify(model);
+            var result = await userService.ModifyAsync(model);
             if (result == null)
                 return BadRequest();
             return result;
@@ -49,12 +50,12 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("passwordChange")]
-        public ActionResult<AuthenticateResponse> ChangePassword(ChangePasswordRequest model)
+        public async Task<ActionResult<AuthenticateResponse>> ChangePassword(ChangePasswordRequest model)
         {
-            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var userId = int.Parse(HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             if (userId != model.UserId)
                 return Unauthorized();
-            var result = userService.ChangePassword(model);
+            var result = await userService.ChangePasswordAsync(model);
             if (result == null)
                 return BadRequest();
             return result;
