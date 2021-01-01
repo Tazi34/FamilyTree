@@ -28,10 +28,10 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [Route("messages/{chatUser:int}")]
         [HttpGet]
-        public ActionResult<MessagesListResponse> GetMessagesList(int chatUser)
+        public async Task<ActionResult<MessagesListResponse>> GetMessagesList(int chatUser)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var resultList = chatService.GetMessages(userId, chatUser);
+            var resultList = await chatService.GetMessagesAsync(userId, chatUser);
             if (resultList == null)
                 return BadRequest();
             return Ok(resultList);
@@ -42,10 +42,10 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [Route("")]
         [HttpGet]
-        public ActionResult<MessagesListResponse> GetLastUsersList()
+        public async Task<ActionResult<MessagesListResponse>> GetLastUsersList()
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var resultList = chatService.GetLastUsersList(userId);
+            var resultList = await chatService.GetLastUsersListAsync(userId);
             if (resultList == null)
                 return BadRequest();
             return Ok(resultList);
@@ -57,9 +57,9 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [Route("{chatUser:int}")]
         [HttpGet]
-        public ActionResult<UserInfoResponse> GetChatUserInfo(int chatUser)
+        public async Task<ActionResult<UserInfoResponse>> GetChatUserInfo(int chatUser)
         {
-            var resultList = chatService.GetChatUserInfo(chatUser);
+            var resultList = await chatService.GetChatUserInfoAsync(chatUser);
             if (resultList == null)
                 return BadRequest();
             return Ok(resultList);

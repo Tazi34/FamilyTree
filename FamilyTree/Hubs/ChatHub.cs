@@ -36,7 +36,7 @@ namespace FamilyTree.Hubs
                 mess.Sent = true;
             else
                 mess.Sent = false;
-            chatService.AddMessage(mess, fromId, toId);
+            await chatService.AddMessageAsync(mess, fromId, toId);
             if (connectionIdList.Count != 0)
                 await Clients.Clients(connectionIdList).SendAsync("ReceiveMessage", fromId, message, mess.CreationTime.ToString());
         }
@@ -45,7 +45,7 @@ namespace FamilyTree.Hubs
             await base.OnConnectedAsync();
             var userId = int.Parse(Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value);
             connectionsService.RegisterConnection(userId, Context.ConnectionId);
-            List<Message> notSentMessages = chatService.MarkAsSent(userId);
+            List<Message> notSentMessages = await chatService.MarkAsSentAsync(userId);
             foreach(Message m in notSentMessages)
                 await Clients.Caller.SendAsync("ReceiveMessage", m.FromId, m.Text, m.CreationTime.ToString());
         }

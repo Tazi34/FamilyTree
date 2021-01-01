@@ -11,11 +11,11 @@ namespace FamilyTree.Services
 {
     public interface IChatService
     {
-        public void AddMessage(Message mess, int user1Id, int user2Id);
-        public List<Message> MarkAsSent(int userId);
-        public MessagesListResponse GetMessages(int user1, int user2);
-        public UsersListResponse GetLastUsersList(int userId);
-        public UserInfoResponse GetChatUserInfo(int userId); 
+        public Task AddMessageAsync(Message mess, int user1Id, int user2Id);
+        public Task<List<Message>> MarkAsSentAsync(int userId);
+        public Task<MessagesListResponse> GetMessagesAsync(int user1, int user2);
+        public Task<UsersListResponse> GetLastUsersListAsync(int userId);
+        public Task<UserInfoResponse> GetChatUserInfoAsync(int userId); 
     }
     public class ChatService : IChatService
     {
@@ -25,42 +25,41 @@ namespace FamilyTree.Services
             context = dataContext;
         }
 
-        public void AddMessage(Message mess, int user1Id, int user2Id)
+        public async Task AddMessageAsync(Message mess, int user1Id, int user2Id)
         {
-            mess.ChatId = GetChatId(user1Id, user2Id);
+            mess.ChatId = await GetChatIdAsync(user1Id, user2Id);
             if(mess.ChatId == -1)
             {
-                mess.ChatId = AddNewChat(user1Id, user2Id);
+                mess.ChatId = await AddNewChatAsync(user1Id, user2Id);
             }
-            Chat chat = context.Chats.SingleOrDefault(c => c.ChatId == mess.ChatId);
+            Chat chat = await context.Chats.FirstOrDefaultAsync(c => c.ChatId == mess.ChatId);
             chat.LastMessageTime = mess.CreationTime;
             context.Chats.Update(chat);
             context.Messages.Add(mess);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
 
-        public List<Message> MarkAsSent(int userId)
+        public async Task<List<Message>> MarkAsSentAsync(int userId)
         {
-            var messageList = context.Messages.Where(m => m.ToId == userId && m.Sent == false).ToList();
+            var messageList = await context.Messages.Where(m => m.ToId == userId && m.Sent == false).ToListAsync();
             foreach (Message m in messageList)
             {
                 m.Sent = true;
                 context.Messages.Update(m);
             }
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return messageList;
         }
-        private int GetChatId (int user1Id, int user2Id)
+        private async Task<int> GetChatIdAsync (int user1Id, int user2Id)
         {
             int lesserUserId = user1Id < user2Id ? user1Id : user2Id;
             int greaterUserId = user1Id < user2Id ? user2Id : user1Id;
-            var chat = context.Chats.SingleOrDefault(c => c.User1Id == lesserUserId && c.User2Id == greaterUserId);
-            var chats = context.Chats.ToArray();
+            var chat = await context.Chats.FirstOrDefaultAsync(c => c.User1Id == lesserUserId && c.User2Id == greaterUserId);
             if (chat == null)
                 return -1;
             return chat.ChatId;
         }
-        private int AddNewChat(int user1Id, int user2Id)
+        private async Task<int> AddNewChatAsync(int user1Id, int user2Id)
         {
             int lesserUserId = user1Id < user2Id ? user1Id : user2Id;
             int greaterUserId = user1Id < user2Id ? user2Id : user1Id;
@@ -70,19 +69,19 @@ namespace FamilyTree.Services
                 User2Id = greaterUserId
             };
             context.Chats.Add(chat);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
             return chat.ChatId;
         }
 
-        public MessagesListResponse GetMessages(int user1, int user2)
+        public async Task<MessagesListResponse> GetMessagesAsync(int user1, int user2)
         {
-            int chatId = GetChatId(user1, user2);
+            int chatId = await GetChatIdAsync(user1, user2);
             if (chatId == -1)
             {
-                chatId = AddNewChat(user1, user2);
+                chatId = await AddNewChatAsync(user1, user2);
             }
 
-            var messagesList = context.Messages.Where(m => m.ChatId == chatId).OrderByDescending(m => m.CreationTime).Take(100).ToList();
+            var messagesList = await context.Messages.Where(m => m.ChatId == chatId).OrderByDescending(m => m.CreationTime).Take(100).ToListAsync();
             var resultList = new MessagesListResponse
             {
                 MessageList = new List<MessageResponse>(),
@@ -101,14 +100,15 @@ namespace FamilyTree.Services
             return resultList;
         }
 
-        public UsersListResponse GetLastUsersList(int userId)
+        public async Task<UsersListResponse> GetLastUsersListAsync(int userId)
         {
-            var chatList = context.Chats
+            var chatList = await context.Chats
                 .Include(c => c.User1)
                 .Include(c => c.User2)
                 .Where(c => c.User1Id == userId || c.User2Id == userId)
                 .OrderByDescending(c => c.LastMessageTime)
-                .Take(10);
+                .Take(10)
+                .ToListAsync();
             if (chatList == null)
                 return null;
             var resultList = new UsersListResponse
@@ -144,9 +144,9 @@ namespace FamilyTree.Services
             return resultList;
         }
 
-        public UserInfoResponse GetChatUserInfo(int userId)
+        public async Task<UserInfoResponse> GetChatUserInfoAsync(int userId)
         {
-            var user = context.Users.SingleOrDefault(u => u.UserId == userId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
                 return null;
             return new UserInfoResponse
