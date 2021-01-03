@@ -100,6 +100,15 @@ namespace FamilyTree.Services
                     sibling.FatherId = parent.NodeId;
                     updateSibling = true;
                 }
+                else
+                {
+                    newNodeRequest.FatherId = sibling.Parents[0].ParentId;
+                    if(sibling.Parents.Count > 1)
+                    {
+                        newNodeRequest.MotherId = sibling.Parents[1].ParentId;
+                    }
+                }
+
                 CreateNode(tree, newNodeRequest);
                 if (updateSibling)
                 {
