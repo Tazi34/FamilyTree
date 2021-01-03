@@ -10,5 +10,7 @@ export type LoginUserResponseSuccessData = {
   email: string;
   token: string;
   role: string;
+  pictureUrl: string;
+  birthday: string;
   previousSurnames: string[];
 };

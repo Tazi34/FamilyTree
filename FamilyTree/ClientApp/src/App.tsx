@@ -41,22 +41,26 @@ import EditPostFormContainer from "./components/postForm/EditPostFormContainer";
 import PostForm from "./components/postForm/PostForm";
 import Registration from "./components/registration/Registration";
 import Tree from "./components/tree/Tree";
-import UserProfileContainer from "./components/userProfile/UserProfileContainer";
+import UserProfileDialog from "./components/userProfile/UserProfileContainer";
 
 import { ApplicationState } from "./helpers";
 import PrivacyPolicyPage from "./components/privacy/PrivacyPolicyPage";
 import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
+import { useThunkDispatch } from ".";
+import { getInvitations } from "./components/invitation/reducer/invitationsReducer";
 
 export const theme = createMuiTheme({
   palette: {
-    primary: {
-      main: lightGreen[600],
-      light: lightGreen[200],
-      dark: lightGreen[800],
-    },
-    background: {
-      default: lightGreen[200],
-    },
+    // primary: {
+    //   main: lightGreen[600],
+    //   light: lightGreen[200],
+    //   dark: lightGreen[800],
+    // },
+    // background: {
+    //   default: lightGreen[200],
+    // },
+
+    primary: lightGreen,
     secondary: lime,
   },
   overrides: {
@@ -75,6 +79,17 @@ const App = (props: any) => {
     (state) => state.authentication.status.loading
   );
   const loggedUser = useSelector(getUser);
+  const history = useHistory();
+  const dispatch = useThunkDispatch();
+  dispatch(getInvitations());
+
+  React.useEffect(() => {
+    history.listen(() => {
+      if (loggedUser) {
+        dispatch(getInvitations());
+      }
+    });
+  }, [history]);
 
   if (isVerifyingUser) {
     return null;
@@ -106,7 +121,7 @@ const App = (props: any) => {
             path={`${PROFILE_PAGE_URI}`}
             onSuccess={alertSuccess}
             onError={alertError}
-            component={UserProfileContainer}
+            component={UserProfileDialog}
             layout={EmptyLayout}
             user={loggedUser}
           />

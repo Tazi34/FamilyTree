@@ -1,8 +1,16 @@
-import { IconButton, makeStyles, TextField } from "@material-ui/core";
+import {
+  Button,
+  Dialog,
+  IconButton,
+  makeStyles,
+  TextField,
+} from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import React, { useState } from "react";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
+import Search from "../search/Search";
+import SearchUsersContainer from "../search/SearchUsers";
 const useStyles = makeStyles((theme: Theme) => ({
   panel: {
     background: "White",
@@ -30,6 +38,7 @@ const TreeInformationPanel = ({
   treeInformation,
   onTreeVisibilityChange,
   onTreeNameChange,
+  onInviteUser,
 }: any) => {
   const classes = useStyles();
   const [treeName, setTreeName] = React.useState(
@@ -42,6 +51,10 @@ const TreeInformationPanel = ({
     onTreeVisibilityChange(treeInformation);
   };
 
+  const handleInviteUser = (id: number) => {
+    onInviteUser(id);
+  };
+
   return (
     <div className={classes.panel}>
       <IconButton onClick={handleTreeVisibilityChange}>
@@ -51,6 +64,7 @@ const TreeInformationPanel = ({
           <VisibilityIcon className={classes.icon} />
         )}
       </IconButton>
+
       <input
         value={treeName}
         onChange={(event) => {
@@ -63,7 +77,8 @@ const TreeInformationPanel = ({
         }}
         className={classes.treeName}
         defaultValue={treeInformation.name}
-      ></input>
+      />
+      <SearchUsersContainer onSelectUser={handleInviteUser} />
     </div>
   );
 };

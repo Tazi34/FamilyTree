@@ -40,8 +40,10 @@ export type User = {
   role: string;
   name: string;
   surname: string;
+  birthday: string;
   token: string;
   previousSurnames: string[];
+  pictureUrl: string;
 };
 export const userActionsPrefix = "users";
 //ACTIONS
@@ -107,6 +109,8 @@ export const authenticationReducer = createReducer(
           surname: userData.surname,
           role: userData.role,
           token: userData.token,
+          birthday: userData.birthday,
+          pictureUrl: "",
           previousSurnames: userData.previousSurnames,
         };
         addAuthorizationToken(userData.token);
@@ -176,12 +180,14 @@ const setUserLoggedIn = (
 
   state.isLoggedIn = true;
   state.user = {
+    birthday: userData.birthday,
     email: userData.email,
     id: userData.userId,
     name: userData.name,
     surname: userData.surname,
     role: userData.role,
     token: userData.token,
+    pictureUrl: userData.pictureUrl,
     previousSurnames: userData.previousSurnames,
   };
 };

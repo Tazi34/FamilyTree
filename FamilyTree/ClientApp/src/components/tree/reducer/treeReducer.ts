@@ -51,6 +51,7 @@ import { addParent, addParentReducerHandler } from "./updateNodes/addParent";
 import { deleteNode, removeNodeFromTree } from "./updateNodes/deleteNode";
 import { moveNodeThunk, moveNode } from "./updateNodes/moveNode";
 import { TreeAPI } from "../API/utils/TreeModel";
+import { uploadTreeNodePictureRequest } from "./updateNodes/setNodePicture";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -280,6 +281,21 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
         }
       });
       personNodesAdapter.removeOne(state.nodes, action.payload);
+    })
+    .addCase(uploadTreeNodePictureRequest.fulfilled, (state, action) => {
+      const nodeId = action.meta.arg.nodeId;
+      const node = selectPersonNodeLocal(state.nodes, nodeId) as PersonNode;
+
+      const update: Update<PersonNode> = {
+        id: nodeId,
+        changes: {
+          personDetails: {
+            ...node.personDetails,
+            pictureUrl: action.payload.data.pictureUrl,
+          },
+        },
+      };
+      personNodesAdapter.updateOne(state.nodes, update);
     })
     .addCase(setPersonNodes, (state, action) => {
       personNodesAdapter.setAll(state.nodes, action.payload);

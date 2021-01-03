@@ -1,41 +1,36 @@
-import {
-  ClickAwayListener,
-  Dialog,
-  makeStyles,
-  Menu,
-  MenuItem,
-  Popover,
-} from "@material-ui/core";
+import { ClickAwayListener, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { Redirect, useHistory } from "react-router";
 import { useThunkDispatch } from "../..";
-import { BLOG_PAGE_URI, TREE_PAGE_URI } from "../../applicationRouting";
-import { SearchResultsDTO } from "./redux/searchReducer";
-
-import { search, searchResultSelector } from "./redux/searchReducer";
+import {
+  search,
+  SearchResultsDTO,
+  searchResultSelector,
+} from "./redux/searchReducer";
 import Search from "./Search";
-import SearchResults from "./SearchResults";
+import SearchUsersResults from "./SearchUsersResults";
 
 const useStyles = makeStyles((theme: Theme) => ({
   searchContainer: {
     position: "relative",
   },
   searchResults: {
+    zIndex: 1000000,
     width: "100%",
     position: "absolute",
   },
 }));
 const WAIT_INTERVAL = 1000;
-
-const MainSearchContainer = (props: any) => {
+type Props = {
+  onSelectUser: (id: number) => any;
+};
+const SearchUsersContainer = (props: Props) => {
   const classes = useStyles();
   const dispatch = useThunkDispatch();
   const [searchResultsList, setSearchResultsList] = React.useState(false);
   const searchResults: SearchResultsDTO = useSelector(searchResultSelector);
   const anchor = React.useRef<any>(null);
-  const history = useHistory();
   const [query, setQuery] = React.useState("");
   const timerRef = React.useRef<any>(undefined);
 
@@ -69,28 +64,22 @@ const MainSearchContainer = (props: any) => {
     setQuery("");
   };
 
-  const handleUserSelect = (id: number) => {
-    history.push(`${BLOG_PAGE_URI}/${id}`);
-    handleClose();
-  };
-
-  const handleTreeSelect = (id: number) => {
-    history.push(`${TREE_PAGE_URI}/${id}`);
-    handleClose();
-  };
   return (
     <div className={classes.searchContainer}>
       <div ref={anchor}>
         <Search onChange={handleSearchChange} query={query}></Search>
       </div>
 
-      <ClickAwayListener onClickAway={() => setSearchResultsList(false)}>
+      <ClickAwayListener
+        onClickAway={() => {
+          setSearchResultsList(false);
+        }}
+      >
         <div className={classes.searchResults}>
           {searchResultsList && (
-            <SearchResults
-              results={searchResults}
-              onTreeSelect={handleTreeSelect}
-              onUserSelect={handleUserSelect}
+            <SearchUsersResults
+              results={searchResults.users}
+              onUserSelect={props.onSelectUser}
             />
           )}
         </div>
@@ -99,4 +88,4 @@ const MainSearchContainer = (props: any) => {
   );
 };
 
-export default MainSearchContainer;
+export default SearchUsersContainer;

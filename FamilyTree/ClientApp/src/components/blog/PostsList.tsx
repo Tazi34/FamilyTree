@@ -8,7 +8,7 @@ import PostCardContainer from "./PostCardContainer";
 const useStyles = makeStyles((theme: Theme) => ({
   root: {},
   postCard: {
-    margin: "5px auto",
+    marginBottom: 80,
   },
 }));
 type PostsListProps = {
@@ -22,7 +22,7 @@ const PostsList = ({ posts, onPostDelete }: PostsListProps) => {
   return (
     <List component={"div"} className={classes.root}>
       {posts.map((p: Post) => (
-        <div className={classes.postCard}>
+        <div key={p.postId} className={classes.postCard}>
           <PostCardContainer onPostDelete={onPostDelete} post={p} />
         </div>
       ))}

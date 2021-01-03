@@ -1,3 +1,8 @@
+import {
+  invitationInitialState,
+  InvitationsState,
+} from "./../components/invitation/reducer/invitationsReducer";
+import { Invitation } from "./../model/Invitation";
 import { initialSearchState } from "./../components/search/redux/searchReducer";
 import { ChatsState } from "../components/chat/chatReducer";
 import { AuthenticationState } from "../components/loginPage/authenticationReducer";
@@ -33,6 +38,7 @@ import {
   userTreesReducer,
   UserTreesState,
 } from "./../components/userTreeList/usersTreeReducer";
+import { invitationsReducer } from "../components/invitation/reducer/invitationsReducer";
 
 // The top-level state object
 export interface ApplicationState {
@@ -43,6 +49,7 @@ export interface ApplicationState {
   chats: ChatsState;
   userTrees: UserTreesState;
   search: SearchState;
+  invitations: InvitationsState;
 }
 export const initialAppState: ApplicationState = {
   authentication: authenticationInitialState,
@@ -52,6 +59,7 @@ export const initialAppState: ApplicationState = {
   tree: treeInitialState,
   userTrees: initialUserTreesState,
   search: initialSearchState,
+  invitations: invitationInitialState,
 };
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using
@@ -61,6 +69,7 @@ export const initialAppState: ApplicationState = {
 export const reducersToPersis: any = { authentication: authenticationReducer };
 
 export const reducers: any = {
+  invitations: invitationsReducer,
   posts: postsReducer,
   tree: treeReducer,
   connection: connectionReducer,

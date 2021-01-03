@@ -1,15 +1,14 @@
 import {
-  Box,
+  Avatar,
   IconButton,
   makeStyles,
   Paper,
   TextField,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import * as React from "react";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import SettingsIcon from "@material-ui/icons/Settings";
-import { Post } from "../../model/Post";
+import * as React from "react";
+import { User } from "../loginPage/authenticationReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -25,9 +24,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
+    marginRight: 10,
+    marginLeft: 10,
   },
   profilePicture: {
-    fontSize: 40,
+    height: 50,
+    width: 50,
   },
   buttonContainer: {
     padding: 0,
@@ -37,16 +39,19 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Props = {
   redirectToPostForm: () => void;
   onEditProfile: () => void;
+  user: User;
 };
-const BlogOwnerSection = ({ redirectToPostForm, onEditProfile }: Props) => {
+const BlogOwnerSection = ({
+  redirectToPostForm,
+  onEditProfile,
+  user,
+}: Props) => {
   const classes = useStyles();
 
   return (
-    <Paper className={classes.root}>
+    <div className={classes.root}>
       <div className={classes.profilePictureContainer}>
-        <AccountCircleIcon
-          className={classes.profilePicture}
-        ></AccountCircleIcon>
+        <Avatar src={user.pictureUrl} className={classes.profilePicture} />
       </div>
       <TextField
         className={classes.column}
@@ -60,7 +65,7 @@ const BlogOwnerSection = ({ redirectToPostForm, onEditProfile }: Props) => {
       <IconButton className={classes.buttonContainer} onClick={onEditProfile}>
         <SettingsIcon />
       </IconButton>
-    </Paper>
+    </div>
   );
 };
 
