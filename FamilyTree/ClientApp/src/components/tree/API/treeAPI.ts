@@ -1,3 +1,4 @@
+import { uploadTreeNodePicture } from "./uploadPicture/uploadTreeNodePicture";
 import { addSiblingTreeNode } from "./addSibling/addSiblingRequest";
 import { moveTreeNode } from "./moveNode/moveNodeRequest";
 import { updateTreeNode } from "./updateNode/updateNodeRequest";
@@ -9,4 +10,5 @@ export const treeAPI = {
   deleteTreeNode,
   moveTreeNode,
   addSiblingTreeNode,
+  uploadTreeNodePicture,
 };

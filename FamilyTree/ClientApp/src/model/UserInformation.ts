@@ -9,5 +9,6 @@ export type FullUserInformation = {
   previousSurnames: string[];
   token: string;
   role: string;
+  birthday: string;
   sex: Sex;
 };

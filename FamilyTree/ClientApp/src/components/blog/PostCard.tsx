@@ -33,6 +33,11 @@ const useStyles = makeStyles({
   pos: {
     marginBottom: 12,
   },
+  cardRoot: {
+    height: "100%",
+    width: "100%",
+    border: "1px solid red",
+  },
 });
 type PostCardProps = {
   post: Post;
@@ -72,7 +77,7 @@ const PostCard = ({ post, onPostDelete, navigateToEdit }: PostCardProps) => {
   const displayDate = formatDistance(date, new Date());
 
   return (
-    <Card>
+    <Card className={classes.cardRoot}>
       <Menu
         anchorEl={anchorEl}
         keepMounted

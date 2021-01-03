@@ -1,31 +1,25 @@
 import { Button, Paper, Theme, withStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { compose } from "recompose";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
 import { ApplicationState } from "../../helpers";
 import { TreeInformation } from "../../model/TreeInformation";
+import { SendInvitationRequestData } from "../invitation/API/sendInvitation/sendInvitationRequest";
+import { sendInvitation } from "../invitation/reducer/invitationsReducer";
 import {
   changeTreeName,
   changeTreeVisibility,
 } from "../userTreeList/usersTreeReducer";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
-import { PersonNode } from "./model/PersonNode";
-import { addPartner } from "./reducer/updateNodes/addPartner";
+import { addNode, getTree } from "./reducer/treeReducer";
 import { addChild } from "./reducer/updateNodes/addChild";
-import { addSiblingRequest } from "./reducer/updateNodes/addSibling";
-
-import {
-  addNode,
-  getTree,
-  selectAllFamilies,
-  selectAllLinks,
-  selectAllPersonNodes,
-} from "./reducer/treeReducer";
 import { addParentAsync2 } from "./reducer/updateNodes/addParent";
+import { addPartner } from "./reducer/updateNodes/addPartner";
+import { addSiblingRequest } from "./reducer/updateNodes/addSibling";
 import TreeInformationPanel from "./TreeInformationPanel";
 import TreeRenderer from "./TreeRenderer";
-import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
 type TreeContainerState = {
   isAddMenuOpen: boolean;
@@ -37,9 +31,8 @@ type TreeContainerState = {
 };
 const styles = (theme: Theme) => ({
   treeInformationPanel: {
-    top: 0,
-
-    position: `absolute`,
+    width: "100%",
+    background: "#fafafa",
   } as any,
   relative: {
     position: "relative",
@@ -48,10 +41,16 @@ const styles = (theme: Theme) => ({
     width: "100%",
     height: "100%",
     background: "radial-gradient(#e0e0e0,grey)",
-  },
+    display: "flex",
+    flexDirection: "column",
+  } as any,
   root: {
     width: "100%",
     height: "100%",
+  },
+  treeCanvas: {
+    flexGrow: 1,
+    width: "100%",
   },
 });
 
@@ -155,6 +154,16 @@ class Tree extends React.Component<any, TreeContainerState> {
     this.props.addChild(data, firstParentId, secondParentId);
   };
 
+  handleInviteUserToTree = (userId: number) => {
+    const treeId = parseFloat(this.props.computedMatch.params.treeId);
+    const data: SendInvitationRequestData = {
+      hostUserId: this.props.user.id,
+      askedUserId: userId,
+      treeId,
+    };
+    this.props.sendInvitation(data);
+  };
+
   handleSiblingAdd = (id: number, data: CreateNodeRequestData) => {
     this.props.addSibling(id, data);
   };
@@ -178,15 +187,16 @@ class Tree extends React.Component<any, TreeContainerState> {
                 treeInformation={treeInformation}
                 onTreeNameChange={this.handleTreeNameChange}
                 onTreeVisibilityChange={this.handleTreeVisibilityChange}
+                onInviteUser={this.handleInviteUserToTree}
               />
-              <Button onClick={this.handleAddNode}>Add Node</Button>
+              {/* <Button onClick={this.handleAddNode}>Add Node</Button> */}
             </div>
           </div>
 
           <div
             id="tree-canvas"
             ref={this.svgRef}
-            style={{ overflow: "hidden", width: "100%", height: "100%" }}
+            className={classes.treeCanvas}
           >
             <TransformWrapper
               options={{
@@ -237,10 +247,11 @@ const mapDispatch = {
   addPartner,
   addChild,
   addSibling: addSiblingRequest,
+  sendInvitation,
 };
 const mapState = (state: ApplicationState) => ({
   isLoading: state.tree.isLoading,
-
+  user: state.authentication.user,
   treeInformation: state.tree.treeInformation,
 });
 

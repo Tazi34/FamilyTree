@@ -47,7 +47,13 @@ const SearchResultCard = ({
 }: Props) => {
   const classes = useStyles();
   return (
-    <ButtonBase className={classes.card} onClick={() => onSelect(entityId)}>
+    <ButtonBase
+      className={classes.card}
+      onClick={() => {
+        alert("XD");
+        onSelect(entityId);
+      }}
+    >
       <div className={classes.imageContainer}>
         {pictureUrl ? (
           <img src={pictureUrl} />

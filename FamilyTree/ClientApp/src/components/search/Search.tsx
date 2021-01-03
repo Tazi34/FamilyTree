@@ -46,27 +46,15 @@ type Props = {
   // onChange: (query: string) => void;
   query: string;
   onChange: (a: any) => void;
+  placeholder?: string;
 };
 
 const ENTER_KEY = 13;
 const WAIT_INTERVAL = 1000;
 
-const Search = ({ query, onChange }: Props) => {
+const Search = ({ query, onChange, placeholder }: Props) => {
   const classes = useStyles();
   const timerRef = React.useRef<any>(undefined);
-
-  // const handleChange = (
-  //   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  // ) => {
-  //   if (timerRef.current) {
-  //     clearTimeout(timerRef.current);
-  //   }
-  //   const newValue = e.target.value;
-  //   if (Boolean(newValue)) {
-  //     timerRef.current = setTimeout(() => onSearch(newValue), WAIT_INTERVAL);
-  //   }
-  //   setQuery(newValue);
-  // };
 
   return (
     <Box border={1} borderColor="primary.main" className={classes.search}>
@@ -75,7 +63,7 @@ const Search = ({ query, onChange }: Props) => {
       </div>
       <InputBase
         value={query}
-        placeholder="Search…"
+        placeholder={placeholder ?? "Search..."}
         onChange={onChange}
         classes={{
           root: classes.inputRoot,

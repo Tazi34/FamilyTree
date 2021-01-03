@@ -1,5 +1,6 @@
 import {
   CircularProgress,
+  Dialog,
   Grid,
   makeStyles,
   Paper,
@@ -23,7 +24,8 @@ import { BlogProfile } from "../../model/BlogProfile";
 import { Post } from "../../model/Post";
 import { withAlertMessage } from "../alerts/withAlert";
 import { tryOpenChat } from "../chat/chatReducer";
-import { getUser } from "../loginPage/authenticationReducer";
+import { getUser, User } from "../loginPage/authenticationReducer";
+import UserProfileDialog from "../userProfile/UserProfileContainer";
 import TreesListProvider from "../userTreeList/TreesListProvider";
 import BlogOwnerSection from "./BlogOwnerSection";
 import BlogProfileSection from "./BlogProfileSection";
@@ -34,6 +36,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   main: {
     width: "100%",
     height: "100%",
+    background: "#ebf1f4",
   },
   backPictureSection: {
     width: "100%",
@@ -44,10 +47,16 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   profileSection: {},
   selectionBar: {},
-  contentSection: {},
+  contentSection: {
+    padding: 20,
+  },
   treesContainer: {
     padding: 10,
   },
+  cardsBackground: {
+    background: theme.palette.background.paper,
+  },
+  topPart: {},
 }));
 interface ParamTypes {
   blogId: string | undefined;
@@ -58,7 +67,9 @@ const BlogPage = (props: any) => {
   const blogId = props.computedMatch.params.blogId;
   const history = useHistory();
 
+  const [editProfileDialog, setEditProfileDialog] = React.useState(false);
   const [selectedTab, setSelectedTab] = React.useState(0);
+
   const user = useSelector(getUser);
   const fetchStatus = useSelector<ApplicationState, StatusState>((state) => {
     return state.posts.status;
@@ -77,8 +88,11 @@ const BlogPage = (props: any) => {
   const redirectToPostForm = () => {
     history.push(CREATE_POST_FORM_PAGE_URI);
   };
-  const redirectToProfileEdit = () => {
-    history.push(PROFILE_PAGE_URI);
+  const openEditProfileDialog = () => {
+    setEditProfileDialog(true);
+  };
+  const closeEditProfileDialog = () => {
+    setEditProfileDialog(false);
   };
 
   const handlePostDelete = (id: number) => {
@@ -102,39 +116,42 @@ const BlogPage = (props: any) => {
 
   const isUserOwnerOfBlog = profile.userId === user?.id;
   return (
-    <Paper className={classes.main}>
+    <div className={classes.main}>
       <div className={classes.backPictureSection}>
         <img
           className={classes.backPicture}
           src="https://picsum.photos/1800/300"
         />
       </div>
-
-      {isUserOwnerOfBlog ? (
-        <BlogOwnerSection
-          onEditProfile={redirectToProfileEdit}
-          redirectToPostForm={redirectToPostForm}
-        ></BlogOwnerSection>
-      ) : (
-        <BlogProfileSection onContact={handleContact} profile={profile} />
-      )}
-      <div className={classes.selectionBar}>
-        <Tabs
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
-          aria-label="full width tabs example"
-          value={selectedTab}
-          onChange={(e: any, value: any) => {
-            setSelectedTab(value);
-          }}
-        >
-          <Tab value={0} label="Posts" />
-          <Tab value={1} label="Trees" />
-        </Tabs>
-      </div>
       <div className={classes.contentSection}>
-        <Paper>
+        <Paper className={classes.topPart}>
+          {isUserOwnerOfBlog ? (
+            <BlogOwnerSection
+              user={user as User}
+              onEditProfile={openEditProfileDialog}
+              redirectToPostForm={redirectToPostForm}
+            ></BlogOwnerSection>
+          ) : (
+            <BlogProfileSection onContact={handleContact} profile={profile} />
+          )}
+        </Paper>
+
+        <Paper className={classes.selectionBar}>
+          <Tabs
+            indicatorColor="primary"
+            textColor="primary"
+            variant="fullWidth"
+            aria-label="full width tabs example"
+            value={selectedTab}
+            onChange={(e: any, value: any) => {
+              setSelectedTab(value);
+            }}
+          >
+            <Tab value={0} label="Posts" />
+            <Tab value={1} label="Trees" />
+          </Tabs>
+        </Paper>
+        <div className={classes.cardsBackground}>
           <SwipeableViews
             index={selectedTab}
             onChangeIndex={(value: any) => {
@@ -147,18 +164,22 @@ const BlogPage = (props: any) => {
             {!Boolean(posts) ? (
               <CircularProgress />
             ) : (
-              <PostsList
-                posts={[...posts, ...posts, ...posts]}
-                onPostDelete={handlePostDelete}
-              />
+              <PostsList posts={posts} onPostDelete={handlePostDelete} />
             )}
             <div className={classes.treesContainer}>
               <TreesListProvider isOwner={isUserOwnerOfBlog} userId={blogId} />
             </div>
           </SwipeableViews>
-        </Paper>
+        </div>
       </div>
-    </Paper>
+
+      <UserProfileDialog
+        onSuccess={props.alertSuccess}
+        onError={props.alertError}
+        open={editProfileDialog}
+        onClose={closeEditProfileDialog}
+      />
+    </div>
   );
 };
 

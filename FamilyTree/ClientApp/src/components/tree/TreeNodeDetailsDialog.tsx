@@ -22,6 +22,9 @@ import { KeyboardDatePicker } from "@material-ui/pickers";
 import { Formik } from "formik";
 import { Sex } from "../../model/Sex";
 import PicturePickerDialog from "../UI/PicturePickerDialog";
+import { useDispatch } from "react-redux";
+import { useThunkDispatch } from "../..";
+import { uploadTreeNodePictureRequest } from "./reducer/updateNodes/setNodePicture";
 const imgSize = 128;
 const useStyles = makeStyles((theme: Theme) => ({
   personDialog: {
@@ -117,6 +120,10 @@ const TreeNodeDetailsDialog = ({
   const classes = useStyles();
   const [pictureDialog, setPictureDialog] = React.useState(false);
   const [editMode, setEditMode] = React.useState(false);
+  const [pictureUrl, setPictureUrl] = React.useState(
+    node?.personDetails.pictureUrl
+  );
+  const dispatch = useThunkDispatch();
   if (!node) {
     return null;
   }
@@ -124,12 +131,29 @@ const TreeNodeDetailsDialog = ({
     setPictureDialog(!pictureDialog);
   };
 
+  const handleSetPicture = (data: any) => {
+    if (data) {
+      dispatch(
+        uploadTreeNodePictureRequest({
+          nodeId: node.id as number,
+          picture: data,
+        })
+      ).then((response: any) => {
+        if (response.error) {
+          //TODO ERROR
+        } else {
+          setPictureUrl(response.payload.data.pictureUrl);
+          setPictureDialog(false);
+        }
+      });
+    }
+  };
   const details = node.personDetails;
 
   //TODO konwersja daty wczesniej
   const displayDate = format(new Date(details.birthday), "d MMM yyyy");
   const initialDate = format(new Date(details.birthday), "d.MM.yyyy");
-  const pictureUrl = `https://eu.ui-avatars.com/api/?size=${imgSize}&name=${details.name}+${details.surname}`;
+
   //TODO brak gender
 
   const isMale = false;
@@ -161,7 +185,11 @@ const TreeNodeDetailsDialog = ({
             Deserunt, quas doloremque.`;
   return (
     <Dialog open={open} onClose={onClose}>
-      <PicturePickerDialog open={pictureDialog} onClose={handlePictureDialog} />
+      <PicturePickerDialog
+        open={pictureDialog}
+        onClose={handlePictureDialog}
+        onPickPicture={handleSetPicture}
+      />
       <Formik
         initialValues={details}
         onSubmit={(values: FormProps, { resetForm }) => {

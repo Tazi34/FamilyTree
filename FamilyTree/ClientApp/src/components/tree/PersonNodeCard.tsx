@@ -15,6 +15,8 @@ import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import DeleteIcon from "@material-ui/icons/Delete";
+import { formatDate } from "../../helpers/formatters";
+
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 30;
@@ -210,14 +212,12 @@ const PersonNodeCard = ({
     onNodeSelect(person);
   };
   const details = Object.assign({}, person.personDetails);
-  details.pictureUrl = `https://eu.ui-avatars.com/api/?name=${details.name}+${details.surname}`;
-  const hasPicture = Boolean(details.pictureUrl);
-  let displayDate: string;
-  try {
-    displayDate = format(new Date(details.birthday), "d MMM yyyy");
-  } catch {
-    displayDate = "";
+  if (!Boolean(details.pictureUrl)) {
+    details.pictureUrl = `https://eu.ui-avatars.com/api/?name=${details.name}+${details.surname}`;
   }
+  const hasPicture = Boolean(details.pictureUrl);
+  let displayDate = formatDate(details.birthday);
+
   const preventMouseUp = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
