@@ -1,10 +1,8 @@
-import { Box, Icon, Paper } from "@material-ui/core";
+import { Icon, Paper } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
-import InputBase from "@material-ui/core/InputBase";
 import { createStyles, fade, makeStyles } from "@material-ui/core/styles";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import SearchIcon from "@material-ui/icons/Search";
 import { loadCSS } from "fg-loadcss";
 import * as React from "react";
 import { useHistory } from "react-router";
@@ -13,8 +11,6 @@ import { BLOG_PAGE_URI, LOGIN_PAGE_URI } from "../../applicationRouting";
 import LogoutButton from "../loginPage/LogoutButton";
 import MainSearchContainer from "../search/MainSearchContainer";
 import { RedirectButton } from "../UI/RedirectButton";
-import AuthenticatedNavbar from "./AuthenticatedNavbar";
-import GuestNavbar from "./GuestNavbar";
 const useStyles = makeStyles((theme) =>
   createStyles({
     grow: {
@@ -28,31 +24,6 @@ const useStyles = makeStyles((theme) =>
     },
     navbarButton: {
       width: 80,
-    },
-    search: {
-      borderWidth: 2,
-      position: "relative",
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: fade(theme.palette.common.white, 0.15),
-      "&:hover": {
-        backgroundColor: fade(theme.palette.common.white, 0.25),
-      },
-      marginRight: theme.spacing(2),
-      marginLeft: 0,
-      width: "100%",
-      [theme.breakpoints.up("sm")]: {
-        marginLeft: theme.spacing(3),
-        width: "auto",
-      },
-    },
-    searchIcon: {
-      padding: theme.spacing(0, 2),
-      height: "100%",
-      position: "absolute",
-      pointerEvents: "none",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
     },
     inputRoot: {
       color: "inherit",

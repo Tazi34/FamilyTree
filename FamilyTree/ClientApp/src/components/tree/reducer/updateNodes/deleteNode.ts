@@ -8,7 +8,11 @@ import {
 } from "../../API/deleteNode/deleteNodeRequest";
 import { treeAPI } from "../../API/treeAPI";
 import { PersonNode } from "../../model/PersonNode";
-import { treeActionsPrefix, personNodesActionsPrefix } from "../treeReducer";
+import {
+  treeActionsPrefix,
+  personNodesActionsPrefix,
+  setTree,
+} from "../treeReducer";
 
 export const removeNodeFromTree = createActionWithPayload<EntityId>(
   `${treeActionsPrefix}/${personNodesActionsPrefix}/nodeRemoved`
@@ -22,15 +26,16 @@ export const deleteNode = createAsyncThunk<
     return await treeAPI.deleteTreeNode(deleteNodeRequestData);
   }
 );
+
 export const requestDeleteNode = (nodeId: EntityId) => (
   dispatch: any,
   getState: any
 ) => {
   const state: ApplicationState = getState();
-  dispatch(removeNodeFromTree(nodeId));
-  // dispatch(deleteNode({ nodeId: nodeId as number })).then((response: any) => {
-  //   if (response.type === deleteNode.fulfilled.toString()) {
-  //     dispatch(removeNodeFromTree(nodeId));
-  //   }
-  // });
+  dispatch(deleteNode({ nodeId: nodeId as number })).then((response: any) => {
+    if (response.type === deleteNode.fulfilled.toString()) {
+      //dispatch(removeNodeFromTree(nodeId));
+      dispatch(setTree(response.payload.data));
+    }
+  });
 };

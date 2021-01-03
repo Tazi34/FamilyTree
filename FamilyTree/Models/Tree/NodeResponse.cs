@@ -18,6 +18,8 @@ namespace FamilyTree.Models
         public string PictureUrl { get; set; }
         public int FatherId { get; set; }
         public int MotherId { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
         public List<int> Children { get; set; }
         public List<int> Partners { get; set; }
         public NodeResponse(Node node)
@@ -33,6 +35,8 @@ namespace FamilyTree.Models
             var parentsTuple = MapParents(node);
             FatherId = parentsTuple.Item1;
             MotherId = parentsTuple.Item2;
+            X = node.X;
+            Y = node.Y;
             Children = new List<int>();
             foreach(var child in node.Children)
             {

@@ -11,20 +11,20 @@ namespace FamilyTree.Services
     {
         public bool ValidateNewNode(CreateNodeRequest model, Tree tree);
         public bool ValidateModifiedNode(ModifyNodeRequest model, Tree tree);
-        public bool ValidateDeletedNode(Node node, Tree tree);
+        public bool LastNotEmptyNode(Node node, Tree tree);
     }
     public class TreeValidationService : ITreeValidationService
     {
-        public bool ValidateDeletedNode(Node node, Tree tree)
+        public bool LastNotEmptyNode(Node node, Tree tree)
         {
             if (node.UserId == 0)
-                return true;
+                return false;
             foreach(var n in tree.Nodes)
             {
                 if (n.UserId != 0 && n.NodeId != node.NodeId)
-                    return true;
+                    return false;
             }
-            return false;
+            return true;
         }
 
         public bool ValidateModifiedNode(ModifyNodeRequest model, Tree tree)

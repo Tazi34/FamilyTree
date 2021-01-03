@@ -1,6 +1,6 @@
 import { Link } from "../../model/Link";
 import { FamilyNode } from "./../../model/FamilyNode";
-import { X_SEP, Y_SEP } from "./../../../../d3/RectMapper";
+import { RECT_HEIGHT, X_SEP, Y_SEP } from "./../../../../d3/RectMapper";
 import { createAction, EntityId } from "@reduxjs/toolkit";
 import { ApplicationState } from "../../../../helpers/index";
 import {
@@ -18,6 +18,7 @@ import {
   personNodesLocalSelectors,
   selectFamily,
   selectPersonNodeLocal,
+  setTree,
   treeActionsPrefix,
   TreeState,
 } from "../treeReducer";
@@ -56,13 +57,35 @@ export const addParentAsync = (
   }
 
   parent.children = [sourceId as number];
+
   dispatch(addNode(parent)).then((response: any) => {
     if (response.type === addNode.fulfilled.toString()) {
       dispatch(addParent(sourceId as number, response.payload.data.nodeId));
     }
   });
 };
+export const addParentAsync2 = (
+  sourceId: EntityId,
+  parent: CreateNodeRequestData
+) => (dispatch: any, getState: any) => {
+  const state: ApplicationState = getState();
+  const child = personNodesLocalSelectors.selectById(
+    state.tree.nodes,
+    sourceId
+  );
+  if (!child) {
+    throw "Missing child " + sourceId;
+  }
 
+  parent.children = [sourceId as number];
+  parent.x = child.x;
+  parent.y = child.y - 2 * RECT_HEIGHT;
+  dispatch(addNode(parent)).then((response: any) => {
+    if (response.type === addNode.fulfilled.toString()) {
+      dispatch(setTree(response.payload.data));
+    }
+  });
+};
 export const addParentReducerHandler = (
   state: WritableDraft<TreeState>,
   action: AddParentPayload

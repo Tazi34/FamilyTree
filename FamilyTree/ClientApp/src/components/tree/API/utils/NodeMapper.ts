@@ -16,6 +16,8 @@ const mapToAPI = (personNode: PersonNode): TreeNodeAPI => {
     pictureUrl: personNode.personDetails.pictureUrl,
     treeId: personNode.treeId,
     sex: personNode.personDetails.sex,
+    x: personNode.x,
+    y: personNode.y,
   };
 };
 
@@ -33,8 +35,8 @@ const mapToLocal = (apiNode: TreeNodeAPI): PersonNode => {
       //TODO zmienic jak bedzie backend
       sex: "Male",
     },
-    0,
-    0,
+    apiNode.x,
+    apiNode.y,
     apiNode.children,
     apiNode.fatherId,
     apiNode.motherId,

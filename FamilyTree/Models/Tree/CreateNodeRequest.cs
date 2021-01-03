@@ -32,5 +32,9 @@ namespace FamilyTree.Models
         public List<int> Children { get; set; }
         [Required]
         public List<int> Partners { get; set; }
+        [Required]
+        public int X { get; set; }
+        [Required]
+        public int Y { get; set; }
     }
 }
