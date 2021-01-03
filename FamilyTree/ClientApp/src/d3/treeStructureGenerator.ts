@@ -131,16 +131,6 @@ export const GetTreeStructure = (people: PersonNode[]): TreeStructure => {
       links.push([family.id.toString(), child.toString()])
     );
   });
-  const peopleCount = people.length;
-  if (peopleCount == 1) {
-    var person = people[0];
-    links = [[person.id.toString(), "fakeNode1"]];
-  } else if (peopleCount == 0) {
-    links = [["fakeNode1", "fakeNode2"]];
-  }
-
-  //const personNodes = people.map((p) => personToNode(p));
-  //const isAP = AP(personNodes);
 
   return {
     families,

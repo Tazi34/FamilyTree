@@ -87,6 +87,24 @@ namespace FamilyTree.Controllers
                 return BadRequest("Error occured");
             return Ok(tree);
         }
+
+        /// <summary>
+        /// Przenosi węzeł w podane miejsce
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize]
+        [Route("node/move")]
+        public async Task<ActionResult<MoveNodeResponse>> MoveNode(MoveNodeRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = await treeService.MoveNodeAsync(userId, model);
+            if (response == null)
+                return BadRequest("Error occured");
+            return Ok(response);
+        }
+
         /// <summary>
         /// Modyfikuje drzewo (nazwa drzewa, czy prywatne)
         /// </summary>
@@ -119,6 +137,23 @@ namespace FamilyTree.Controllers
                 return BadRequest("No authorization or other error");
             return Ok(tree);
         }
+
+        /// <summary>
+        /// Tworzy nowy wezel jako brat podanego wezla - jesli nie maja rodzica tworzy "fake" rodzica
+        /// </summary>
+        /// <param name="model">AddSiblingRequest</param>
+        /// <returns>Zwraca całe drzewo</returns>
+        [HttpPost]
+        [Authorize]
+        [Route("node/addSibling")]
+        public async Task<ActionResult<TreeResponse>> AddSibling(AddSiblingRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var tree = await treeService.AddSiblingAsync(userId, model);
+            if (tree == null)
+                return BadRequest("No authorization or other error");
+            return Ok(tree);
+        }
         /// <summary>
         /// Modyfikuje node
         /// </summary>
@@ -143,13 +178,13 @@ namespace FamilyTree.Controllers
         [HttpDelete]
         [Authorize]
         [Route("node/{node_id:int}")]
-        public async Task<ActionResult> DeleteNode(int node_id)
+        public async Task<ActionResult<TreeResponse>> DeleteNode(int node_id)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            bool result = await treeService.DeleteNodeAsync(userId, node_id);
-            if (!result)
+            var result = await treeService.DeleteNodeAsync(userId, node_id);
+            if (result == null)
                 return BadRequest();
-            return Ok();
+            return Ok(result);
         }
         [HttpDelete]
         [Authorize]

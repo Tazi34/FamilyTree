@@ -14,6 +14,8 @@ export type TreeNodeAPI = {
   children: number[];
   partners: number[];
   sex: Sex;
+  x: number;
+  y: number;
 };
 
 export type TreeAPI = {
