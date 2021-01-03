@@ -22,7 +22,8 @@ namespace FamilyTree.Models
         public int Y { get; set; }
         public List<int> Children { get; set; }
         public List<int> Partners { get; set; }
-        public NodeResponse(Node node)
+        public bool CanEdit { get; set; }
+        public NodeResponse(Node node, User user, bool userInTree)
         {
             NodeId = node.NodeId;
             UserId = node.UserId;
@@ -37,6 +38,7 @@ namespace FamilyTree.Models
             MotherId = parentsTuple.Item2;
             X = node.X;
             Y = node.Y;
+            CanEdit = user.Role.Equals(Role.Admin) || (node.UserId == 0 && userInTree) || (node.UserId == user.UserId && user.UserId != 0) ? true : false; 
             Children = new List<int>();
             foreach(var child in node.Children)
             {
