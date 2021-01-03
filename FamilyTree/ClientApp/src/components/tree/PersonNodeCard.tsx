@@ -1,33 +1,27 @@
 import {
-  ButtonBase,
-  CardActionArea,
   IconButton,
   makeStyles,
   Paper,
+  Tooltip,
   Typography,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
-import { default as DeleteIcon } from "@material-ui/icons/HighlightOff";
-import { D3DragEvent } from "d3";
 import { format } from "date-fns";
 import * as React from "react";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
-import { Point } from "./Point";
-const d3 = require("d3");
+import DeleteIcon from "@material-ui/icons/Delete";
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 30;
 const useStyles = makeStyles((theme: Theme) => ({
-  personRoot: (node: Point) => ({
+  personRoot: {
     position: "absolute",
-    transform: `translate(${node.x - RECT_WIDTH / 2}px,${
-      node.y - RECT_HEIGHT / 2
-    }px)`,
+    transform: `translate(${-RECT_WIDTH / 2}px,${-RECT_HEIGHT / 2}px)`,
     top: 0,
     left: 0,
     height: RECT_HEIGHT + "px",
@@ -36,9 +30,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderColor: theme.palette.primary.light,
     borderWidth: 1,
     border: "solid",
-
+    display: "flex",
+    flexDirection: "column",
     cursor: "pointer",
-  }),
+  },
   buttonBase: {
     padding: 8,
     background: theme.palette.primary.light,
@@ -113,7 +108,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   backgroundColorTheme: {
     height: RECT_HEIGHT * dividerScale,
-    background: theme.palette.primary.light,
   },
   contentContainer: {
     display: "flex",
@@ -134,17 +128,36 @@ const useStyles = makeStyles((theme: Theme) => ({
 
     overflow: "hidden",
   },
+  actions: {
+    alignSelf: "flex-end",
+    width: "100%",
+    display: "flex",
+  },
+  visible: {
+    visibility: "visible",
+  },
+  hidden: {
+    visibility: "hidden",
+  },
 }));
 
 type Props = {
-  person: PersonNode;
-  x: number;
-  y: number;
   onNodeDelete: (id: number) => void;
+  onSiblingAdd: (id: number, data: CreateNodeRequestData) => void;
+
   onParentAdd: (id: number, data: CreateNodeRequestData) => void;
+  onPartnerAdd: (id: number, data: CreateNodeRequestData) => void;
+  onChildAdd: (
+    data: CreateNodeRequestData,
+    firstParent: number,
+    secondParent?: number
+  ) => void;
+
   onNodeMove: (node: Node, x: number, y: number) => void;
   onMoveNodeOnCanvas: (e: DragEvent, node: Node) => void;
   onNodeSelect: (node: PersonNode) => void;
+
+  person: PersonNode;
 };
 
 const PersonNodeCard = ({
@@ -154,84 +167,83 @@ const PersonNodeCard = ({
   onNodeMove,
   onMoveNodeOnCanvas,
   onNodeSelect,
+  onPartnerAdd,
+  onChildAdd,
+  onSiblingAdd,
 }: Props) => {
-  const addButtonRef = React.useRef(null);
   const elementId = "n" + person.id;
   const classes = useStyles({ x: person.x, y: person.y });
-  const handleParentAdd = () => {
-    const newPerson: CreateNodeRequestData = {
-      treeId: person.treeId,
-      name: "New",
-      surname: "Node",
-      birthday: "2020-12-16T20:29:42.677Z",
-      description: "Cool description",
-      pictureUrl: "",
-      userId: 0,
-      fatherId: 0,
-      sex: "Male",
-      motherId: 0,
-      children: [],
-      partners: [],
-    };
+  const newPerson: CreateNodeRequestData = {
+    treeId: person.treeId,
+    name: "New",
+    surname: "Node",
+    birthday: "2020-12-16T20:29:42.677Z",
+    description: "Cool description",
+    pictureUrl: "",
+    userId: 0,
+    fatherId: 0,
+    sex: "Male",
+    motherId: 0,
+    children: [],
+    partners: [],
+    x: 0,
+    y: 0,
+  };
+  const handleParentAdd = (e: React.MouseEvent) => {
     onParentAdd(person.id as number, newPerson);
   };
-  React.useEffect(() => {
-    var dragHandler = d3
-      .drag()
-      .subject((e: any, d: any) => {
-        return {
-          x: person.x,
-          y: person.y,
-        };
-      })
-      .on("start", (e: any) => {})
-      .on("drag", (e: any, d: any) => {
-        onMoveNodeOnCanvas(e, person);
-      })
-      .on("end", (e: D3DragEvent<any, any, PersonNode>, node: PersonNode) => {
-        if (e.x === person.x && e.y === person.y) {
-          onNodeSelect(person);
-        } else {
-          onNodeMove(person, e.x, e.y);
-        }
-      });
-    const addButton = d3.select("#" + "add-parent-button");
-
-    const element = d3.select("#" + elementId);
-    element.on("click", (e: any) => {
-      if (e.path.some((el: any) => el.id === "add-parent-button")) {
-        handleParentAdd();
-      } else {
-        onNodeSelect(person);
-      }
-    });
-    dragHandler(element);
-
-    d3.selectAll(".not-draggable").on("mousedown", function (e: any) {
-      e.stopPropagation();
-    });
-  }, []);
+  const handlePartnerAdd = (e: React.MouseEvent) => {
+    onPartnerAdd(person.id as number, newPerson);
+  };
+  const handleSiblingAdd = (e: React.MouseEvent) => {
+    onSiblingAdd(person.id as number, newPerson);
+  };
   const handleNodeDelete = () => {
     onNodeDelete(person.id as number);
+  };
+  const handleChildAdd = () => {
+    onChildAdd(newPerson, person.id as number);
+  };
+  const handleNodeSelect = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    onNodeSelect(person);
   };
   const details = Object.assign({}, person.personDetails);
   details.pictureUrl = `https://eu.ui-avatars.com/api/?name=${details.name}+${details.surname}`;
   const hasPicture = Boolean(details.pictureUrl);
-  const displayDate = format(new Date(details.birthday), "d MMM yyyy");
+  let displayDate: string;
+  try {
+    displayDate = format(new Date(details.birthday), "d MMM yyyy");
+  } catch {
+    displayDate = "";
+  }
+  const preventMouseUp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+  const canAddParent = !(person.motherId && person.fatherId);
+  console.log("NODEE");
+
   return (
     <Paper
       id={elementId}
       component={"span"}
       className={`${classes.personRoot}`}
+      onMouseUp={handleNodeSelect}
     >
       <div className={classes.addButtonContainer}>
-        <IconButton
-          id="add-parent-button"
-          className={`${classes.addIcon} not-draggable`}
-          onClick={handleParentAdd}
-        >
-          <AddCircleIcon className={classes.addIconSvg} />
-        </IconButton>
+        {canAddParent && (
+          <Tooltip title="Add parent" placement="top">
+            <IconButton
+              id="add-icon"
+              className={`${classes.addIcon}`}
+              onClick={handleParentAdd}
+              onMouseUp={preventMouseUp}
+            >
+              <AddCircleIcon className={classes.addIconSvg} />
+            </IconButton>
+          </Tooltip>
+        )}
       </div>
       <div className={classes.overflowHidden}>
         <div className={classes.background}>
@@ -256,7 +268,7 @@ const PersonNodeCard = ({
             variant="subtitle1"
             className={classes.nameSection}
           >
-            {details.name} {details.surname}
+            {person.id} {details.name} {details.surname}
           </Typography>{" "}
           <Typography
             align="center"
@@ -266,42 +278,31 @@ const PersonNodeCard = ({
             {displayDate}
           </Typography>
         </div>
-        {/* <CardActionArea className={classes.buttonBase}>
-        <div className={classes.pictureContainer}>
-          {hasPicture ? (
-            <img
-              src={person.personDetails.pictureUrl}
-              className={classes.profilePicture}
-            />
-          ) : (
-            <AccountCircleIcon
-              className={classes.defaultProfileIcon}
-            ></AccountCircleIcon>
-          )}
-        </div>
-
-        <Typography>
-          {person.id} {details.name} {details.surname}
-        </Typography>
-        <div className={classes.filler} />
-        <div className={classes.actionsContainer}>
-          <IconButton
-            className={`${classes.deleteIcon} not-draggable`}
-            onClick={handleNodeDelete}
-          >
+      </div>
+      <div className={classes.filler} />
+      <div className={classes.actions}>
+        <Tooltip title="Delete node">
+          <IconButton onClick={handleNodeDelete} onMouseUp={preventMouseUp}>
             <DeleteIcon />
           </IconButton>
-          <IconButton
-            className={`${classes.deleteIcon} not-draggable`}
-            onClick={handleParentAdd}
-          >
-            <AddCircleIcon />
+        </Tooltip>
+
+        <IconButton onClick={handlePartnerAdd} onMouseUp={preventMouseUp}>
+          <AddCircleIcon className={classes.addIconSvg} />
+        </IconButton>
+        <Tooltip title="Add child">
+          <IconButton onClick={handleChildAdd} onMouseUp={preventMouseUp}>
+            <AddCircleIcon className={classes.addIconSvg} />
           </IconButton>
-        </div>
-      </CardActionArea> */}
+        </Tooltip>
+        <Tooltip title="Add Sibling">
+          <IconButton onClick={handleSiblingAdd} onMouseUp={preventMouseUp}>
+            <AddCircleIcon className={classes.addIconSvg} />
+          </IconButton>
+        </Tooltip>
       </div>
     </Paper>
   );
 };
 
-export default PersonNodeCard;
+export default React.memo(PersonNodeCard);

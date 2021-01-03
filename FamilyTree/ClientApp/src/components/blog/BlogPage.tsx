@@ -7,7 +7,6 @@ import {
   Tabs,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { TabPanel } from "@material-ui/lab";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Redirect, useHistory } from "react-router";
@@ -26,32 +25,18 @@ import { withAlertMessage } from "../alerts/withAlert";
 import { tryOpenChat } from "../chat/chatReducer";
 import { getUser } from "../loginPage/authenticationReducer";
 import TreesListProvider from "../userTreeList/TreesListProvider";
-import UserTreePanel from "../userTreeList/UserTreePanel";
 import BlogOwnerSection from "./BlogOwnerSection";
 import BlogProfileSection from "./BlogProfileSection";
 import PostsList from "./PostsList";
 import { deletePost, getBlog, postsSelectors } from "./redux/postsReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: {
+  main: {
     width: "100%",
     height: "100%",
   },
-  main: {
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    [theme.breakpoints.up("md")]: {
-      maxWidth: "70%",
-      minWidth: 1000,
-    },
-    [theme.breakpoints.down("sm")]: {
-      width: "90%",
-    },
-  },
   backPictureSection: {
     width: "100%",
-    height: 300,
   },
   backPicture: {
     width: "100%",
@@ -87,7 +72,7 @@ const BlogPage = (props: any) => {
 
   useEffect(() => {
     dispatch(getBlog(parseFloat(blogId)));
-  }, []);
+  }, [blogId]);
 
   const redirectToPostForm = () => {
     history.push(CREATE_POST_FORM_PAGE_URI);
@@ -112,44 +97,44 @@ const BlogPage = (props: any) => {
     return <Redirect to={HOME_PAGE_URI} />;
   }
   if (fetchStatus.loading || !profile) {
-    return <CircularProgress />;
+    return <Paper className={classes.main}></Paper>;
   }
 
   const isUserOwnerOfBlog = profile.userId === user?.id;
   return (
-    <Grid container className={classes.root}>
-      <Paper className={classes.main}>
-        <div className={classes.backPictureSection}>
-          <img
-            className={classes.backPicture}
-            src="https://picsum.photos/800/300"
-          />
-        </div>
+    <Paper className={classes.main}>
+      <div className={classes.backPictureSection}>
+        <img
+          className={classes.backPicture}
+          src="https://picsum.photos/1800/300"
+        />
+      </div>
 
-        {isUserOwnerOfBlog ? (
-          <BlogOwnerSection
-            onEditProfile={redirectToProfileEdit}
-            redirectToPostForm={redirectToPostForm}
-          ></BlogOwnerSection>
-        ) : (
-          <BlogProfileSection onContact={handleContact} profile={profile} />
-        )}
-        <div className={classes.selectionBar}>
-          <Tabs
-            indicatorColor="primary"
-            textColor="primary"
-            variant="fullWidth"
-            aria-label="full width tabs example"
-            value={selectedTab}
-            onChange={(e: any, value: any) => {
-              setSelectedTab(value);
-            }}
-          >
-            <Tab value={0} label="Posts" />
-            <Tab value={1} label="Trees" />
-          </Tabs>
-        </div>
-        <div className={classes.contentSection}>
+      {isUserOwnerOfBlog ? (
+        <BlogOwnerSection
+          onEditProfile={redirectToProfileEdit}
+          redirectToPostForm={redirectToPostForm}
+        ></BlogOwnerSection>
+      ) : (
+        <BlogProfileSection onContact={handleContact} profile={profile} />
+      )}
+      <div className={classes.selectionBar}>
+        <Tabs
+          indicatorColor="primary"
+          textColor="primary"
+          variant="fullWidth"
+          aria-label="full width tabs example"
+          value={selectedTab}
+          onChange={(e: any, value: any) => {
+            setSelectedTab(value);
+          }}
+        >
+          <Tab value={0} label="Posts" />
+          <Tab value={1} label="Trees" />
+        </Tabs>
+      </div>
+      <div className={classes.contentSection}>
+        <Paper>
           <SwipeableViews
             index={selectedTab}
             onChangeIndex={(value: any) => {
@@ -159,23 +144,21 @@ const BlogPage = (props: any) => {
               overflowY: "hidden",
             }}
           >
-            <div>
-              {!Boolean(posts) ? (
-                <CircularProgress />
-              ) : (
-                <PostsList
-                  posts={[...posts, ...posts, ...posts]}
-                  onPostDelete={handlePostDelete}
-                />
-              )}
-            </div>
+            {!Boolean(posts) ? (
+              <CircularProgress />
+            ) : (
+              <PostsList
+                posts={[...posts, ...posts, ...posts]}
+                onPostDelete={handlePostDelete}
+              />
+            )}
             <div className={classes.treesContainer}>
-              <TreesListProvider userId={blogId} />
+              <TreesListProvider isOwner={isUserOwnerOfBlog} userId={blogId} />
             </div>
           </SwipeableViews>
-        </div>
-      </Paper>
-    </Grid>
+        </Paper>
+      </div>
+    </Paper>
   );
 };
 

@@ -11,8 +11,6 @@ import { convertFromRaw, convertToRaw, EditorState } from "draft-js";
 import * as React from "react";
 import { Editor } from "react-draft-wysiwyg";
 import "../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { stateToHTML } from "draft-js-export-html";
-import { stateFromHTML } from "draft-js-import-html";
 import { Post } from "../../model/Post";
 import { Formik } from "formik";
 
@@ -22,7 +20,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100%",
     margin: "0 auto",
     padding: 30,
-    background: theme.palette.background.paper,
   },
   title: {
     marginBottom: 10,

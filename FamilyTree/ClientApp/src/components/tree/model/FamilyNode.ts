@@ -1,4 +1,6 @@
+import { PersonNode } from "./PersonNode";
 import { EntityId } from "@reduxjs/toolkit";
+import { Point } from "../Point";
 import { Node } from "./NodeClass";
 
 export class FamilyNode extends Node {
@@ -14,3 +16,24 @@ export class FamilyNode extends Node {
     super(id, treeId, x, y, true, children, fatherId, motherId);
   }
 }
+
+export const getFamilyLocation = (
+  firstParent: Point,
+  secondParent?: Point
+): Point => {
+  let x: number;
+  let y: number;
+  if (firstParent && secondParent) {
+    x =
+      Math.min(firstParent.x, secondParent.x) +
+      Math.abs(firstParent.x - secondParent.x) / 2;
+    y =
+      Math.min(firstParent.y, secondParent.y) +
+      Math.abs(firstParent.y - secondParent.y) / 2;
+  } else {
+    x = firstParent.x;
+    y = firstParent.y;
+  }
+
+  return { x, y };
+};

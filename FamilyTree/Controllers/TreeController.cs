@@ -85,6 +85,24 @@ namespace FamilyTree.Controllers
                 return BadRequest("Error occured");
             return Ok(tree);
         }
+
+        /// <summary>
+        /// Przenosi węzeł w podane miejsce
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Authorize]
+        [Route("node/move")]
+        public ActionResult<MoveNodeResponse> MoveNode(MoveNodeRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = treeService.MoveNode(userId, model);
+            if (response == null)
+                return BadRequest("Error occured");
+            return Ok(response);
+        }
+
         /// <summary>
         /// Modyfikuje drzewo (nazwa drzewa, czy prywatne)
         /// </summary>
@@ -109,10 +127,27 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("node")]
-        public ActionResult<NodeResponse> CreateNode(CreateNodeRequest model)
+        public ActionResult<TreeResponse> CreateNode(CreateNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var tree = treeService.CreateNode(userId, model);
+            if (tree == null)
+                return BadRequest("No authorization or other error");
+            return Ok(tree);
+        }
+
+        /// <summary>
+        /// Tworzy nowy wezel jako brat podanego wezla - jesli nie maja rodzica tworzy "fake" rodzica
+        /// </summary>
+        /// <param name="model">AddSiblingRequest</param>
+        /// <returns>Zwraca całe drzewo</returns>
+        [HttpPost]
+        [Authorize]
+        [Route("node/addSibling")]
+        public ActionResult<TreeResponse> AddSibling(AddSiblingRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var tree = treeService.AddSibling(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
@@ -141,13 +176,13 @@ namespace FamilyTree.Controllers
         [HttpDelete]
         [Authorize]
         [Route("node/{node_id:int}")]
-        public ActionResult DeleteNode(int node_id)
+        public ActionResult<TreeResponse> DeleteNode(int node_id)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            bool result = treeService.DeleteNode(userId, node_id);
-            if (!result)
+            var result = treeService.DeleteNode(userId, node_id);
+            if (result == null)
                 return BadRequest();
-            return Ok();
+            return Ok(result);
         }
         [HttpDelete]
         [Authorize]

@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import ChatsContainer from "../chat/ChatsContainer";
 import FriendsPanel from "../friendList/FriendsPanel";
 import { getUser } from "../loginPage/authenticationReducer";
+import ResponsiveMainColumn from "../ResponsiveMainColumn/ResponsiveMainColumn";
 import LayoutBase from "./LayoutBase";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -23,7 +24,9 @@ export default (props: { children?: React.ReactNode }) => {
   const user = useSelector(getUser);
   return (
     <LayoutBase>
-      <div className={classes.root}>{props.children}</div>
+      <div className={classes.root}>
+        <ResponsiveMainColumn>{props.children}</ResponsiveMainColumn>
+      </div>
       <div className={classes.bottomFixed}>
         {user && <FriendsPanel />}
         {user && <ChatsContainer />}

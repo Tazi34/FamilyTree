@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
     width: "100%",
     [theme.breakpoints.up("sm")]: {
-      width: "auto",
+      width: 300,
     },
   },
   searchIcon: {
@@ -43,28 +43,30 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 type Props = {
-  onSearch: (query: string) => void;
+  // onChange: (query: string) => void;
+  query: string;
+  onChange: (a: any) => void;
 };
 
 const ENTER_KEY = 13;
 const WAIT_INTERVAL = 1000;
 
-const Search = ({ onSearch }: Props) => {
-  const [query, setQuery] = React.useState("");
+const Search = ({ query, onChange }: Props) => {
   const classes = useStyles();
   const timerRef = React.useRef<any>(undefined);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    const newValue = e.target.value;
-
-    timerRef.current = setTimeout(() => onSearch(newValue), WAIT_INTERVAL);
-    setQuery(newValue);
-  };
+  // const handleChange = (
+  //   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  // ) => {
+  //   if (timerRef.current) {
+  //     clearTimeout(timerRef.current);
+  //   }
+  //   const newValue = e.target.value;
+  //   if (Boolean(newValue)) {
+  //     timerRef.current = setTimeout(() => onSearch(newValue), WAIT_INTERVAL);
+  //   }
+  //   setQuery(newValue);
+  // };
 
   return (
     <Box border={1} borderColor="primary.main" className={classes.search}>
@@ -74,7 +76,7 @@ const Search = ({ onSearch }: Props) => {
       <InputBase
         value={query}
         placeholder="Search…"
-        onChange={handleChange}
+        onChange={onChange}
         classes={{
           root: classes.inputRoot,
           input: classes.inputInput,

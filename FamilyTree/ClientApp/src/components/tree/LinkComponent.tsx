@@ -5,6 +5,7 @@ import * as React from "react";
 import { getLinkId } from "./helpers/idHelpers";
 import { createPath } from "./helpers/linkCreationHelpers";
 import { Node } from "./model/NodeClass";
+import { Point } from "./Point";
 
 const useStyles = makeStyles((theme: Theme) => ({
   pathContainer: (props: any) => ({
@@ -20,18 +21,30 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 export type LinkLoaded = { linkId: EntityId; source: Node; target: Node };
-type Props = { link: LinkLoaded };
-const LinkComponent = ({ link }: Props) => {
-  const { linkId, source, target } = link;
+type Props = {
+  source: Point;
+  target: Point;
+  linkId: string;
+  familyToChild: boolean;
+};
+const LinkComponent = ({ source, target, linkId, familyToChild }: Props) => {
   const classes = useStyles({ source, target });
   const path = createPath(source.x, source.y, target.x, target.y) as any;
+  console.log("RENDER Link");
   return (
     <path
-      id={getLinkId(source.id, target.id)}
+      id={linkId}
       d={path}
       className={classes.path}
+      markerMid={familyToChild ? "url(#arrowEnd)" : ""}
     />
   );
 };
 
-export default LinkComponent;
+const areEqual = (prev: Props, newProps: Props) => {
+  return (
+    prev.source.x === newProps.source.x && prev.source.y === newProps.source.y
+  );
+};
+
+export default React.memo(LinkComponent, areEqual);

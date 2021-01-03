@@ -18,6 +18,8 @@ export type CreateNodeRequestData = {
   sex: Sex;
   children: number[];
   partners: number[];
+  x: number;
+  y: number;
 };
 
 export type CreateNodeResponse = TreeNodeAPI;

@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useDispatch } from "react-redux";
@@ -7,7 +7,11 @@ import { CreatePostRequestData } from "../blog/API/createPost";
 import { createPost } from "../blog/redux/postsReducer";
 import PostForm from "./PostForm";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    width: "",
+  },
+}));
 
 const CreatePostFormContainer = (props: any) => {
   const classes = useStyles();
@@ -22,7 +26,11 @@ const CreatePostFormContainer = (props: any) => {
     dispatch(createPost(data));
   };
 
-  return <PostForm onSubmit={handleCreatePost} />;
+  return (
+    <Paper className={classes.root}>
+      <PostForm onSubmit={handleCreatePost} />
+    </Paper>
+  );
 };
 
 export default CreatePostFormContainer;
