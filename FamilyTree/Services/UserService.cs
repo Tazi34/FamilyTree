@@ -14,8 +14,8 @@ namespace FamilyTree.Services
         Task<AuthenticateResponse> AuthenticateFacebookAsync(FacebookUserInfoResult userInfo);
         User GetUserById(int userId);
         Task<AuthenticateResponse> CreateUserAsync(CreateUserRequest model);
-        Task<AuthenticateResponse> ModifyAsync(ModifyUserRequest model);
-        Task<AuthenticateResponse> ChangePasswordAsync(ChangePasswordRequest model);
+        Task<AuthenticateResponse> ModifyAsync(int userId, ModifyUserRequest model);
+        Task<AuthenticateResponse> ChangePasswordAsync(int userId, ChangePasswordRequest model);
         Task<AuthenticateResponse> CheckUserIdAsync(int userId);
         Task<AuthenticateResponse> AuthenticateGoogleAsync(string email);
     }
@@ -82,10 +82,12 @@ namespace FamilyTree.Services
             return CreateResponse(user);
         }
 
-        public async Task<AuthenticateResponse> ChangePasswordAsync(ChangePasswordRequest model)
+        public async Task<AuthenticateResponse> ChangePasswordAsync(int userId, ChangePasswordRequest model)
         {
             var user = await context.Users.Include(u => u.PrevSurnames).FirstOrDefaultAsync(u => u.UserId == model.UserId);
-            if (user == null || !passwordService.Compare(user.PasswordHash, model.OldPassword, user.Salt))
+            var orderingUser = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null || !passwordService.Compare(user.PasswordHash, model.OldPassword, user.Salt) || 
+                (userId != model.UserId && !orderingUser.Role.Equals(Role.Admin)))
                 return null;
             (user.PasswordHash, user.Salt) = passwordService.CreateHash(model.Password);
             context.Users.Update(user);
@@ -140,10 +142,11 @@ namespace FamilyTree.Services
             return context.Users.Include(u => u.PrevSurnames).SingleOrDefault(x => x.UserId == userId);
         }
 
-        public async Task<AuthenticateResponse> ModifyAsync(ModifyUserRequest model)
+        public async Task<AuthenticateResponse> ModifyAsync(int userId, ModifyUserRequest model)
         {
             var user = await context.Users.Include(x => x.PrevSurnames).FirstOrDefaultAsync(u => u.UserId == model.UserId);
-            if (user == null)
+            var orderingUser = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null || orderingUser == null || (user.UserId != orderingUser.UserId && !orderingUser.Role.Equals(Role.Admin)))
                 return null;
             if (!string.IsNullOrWhiteSpace(model.Email) && model.Email != user.Email)
             {

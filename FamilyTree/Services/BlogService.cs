@@ -46,7 +46,8 @@ namespace FamilyTree.Services
         public async Task<bool> DeletePostAsync(int userId, int postId)
         {
             var post = await context.Posts.FirstOrDefaultAsync(post => post.PostId == postId);
-            if (post == null || post.UserId != userId)
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (post == null || (post.UserId != userId && !user.Role.Equals(Role.Admin)))
                 return false;
             context.Posts.Remove(post);
             await context.SaveChangesAsync();
@@ -95,7 +96,8 @@ namespace FamilyTree.Services
         public async Task<PostResponse> ModifyPostAsync(int userId, ModifyPostRequest model)
         {
             var post = await context.Posts.FirstOrDefaultAsync(post => post.PostId == model.PostId);
-            if (post == null || post.UserId != userId)
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (post == null || (post.UserId != userId && !user.Role.Equals(Role.Admin)))
                 return null;
             if (!string.IsNullOrWhiteSpace(model.Text))
             {
