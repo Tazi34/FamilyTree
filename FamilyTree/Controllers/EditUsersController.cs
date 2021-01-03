@@ -9,6 +9,7 @@ using FamilyTree.Models;
 using FamilyTree.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTree.Controllers
 {
@@ -16,10 +17,12 @@ namespace FamilyTree.Controllers
     [ApiController]
     public class EditUsersController : ControllerBase
     {
-        private UserService userService;
-        public EditUsersController(DataContext context, IUserService userService)
+        private IUserService userService;
+        private IPictureService pictureService;
+        public EditUsersController(DataContext context, IUserService userService, IPictureService pictureService)
         {
-            this.userService = (UserService)userService;
+            this.userService = userService;
+            this.pictureService = pictureService;
         }
         /// <summary>
         /// Modyfikacja informacji o użytkowniku
@@ -29,12 +32,12 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("")]
-        public ActionResult<AuthenticateResponse> ModifyUser(ModifyUserRequest model)
+        public async Task<ActionResult<AuthenticateResponse>> ModifyUser(ModifyUserRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             if (userId != model.UserId)
                 return Unauthorized();
-            var result = userService.Modify(model);
+            var result = await userService.ModifyAsync(model);
             if (result == null)
                 return BadRequest();
             return result;
@@ -47,42 +50,29 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("passwordChange")]
-        public ActionResult<AuthenticateResponse> ChangePassword(ChangePasswordRequest model)
+        public async Task<ActionResult<AuthenticateResponse>> ChangePassword(ChangePasswordRequest model)
         {
-            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var userId = int.Parse(HttpContext.User.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             if (userId != model.UserId)
                 return Unauthorized();
-            var result = userService.ChangePassword(model);
+            var result = await userService.ChangePasswordAsync(model);
             if (result == null)
                 return BadRequest();
             return result;
         }
         /// <summary>
-        /// TODO
+        /// Endpoint do zmiany zdjęcia profilowego
         /// </summary>
         [HttpPost]
         [Route("picture")]
-        public void SetUserPicture()
+        [Authorize]
+        public async Task<ActionResult<SetPictureResponse>> SetUserPicture(IFormFile picture)
         {
-
-        }
-        /// <summary>
-        /// TODO
-        /// </summary>
-        [HttpPut]
-        [Route("picture")]
-        public void ChangeUserPicture()
-        {
-
-        }
-        /// <summary>
-        /// TODO
-        /// </summary>
-        [HttpGet]
-        [Route("picture/{UserId}")]
-        public void ChangeUserPicture(int UserId)
-        {
-
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = await pictureService.SetProfilePicture(userId, picture);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
         }
     }
 }

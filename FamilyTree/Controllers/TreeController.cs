@@ -17,9 +17,11 @@ namespace FamilyTree.Controllers
     public class TreeController : ControllerBase
     {
         private ITreeService treeService;
-        public TreeController(ITreeService treeService)
+        private IPictureService pictureService;
+        public TreeController(ITreeService treeService, IPictureService pictureService)
         {
             this.treeService = treeService;
+            this.pictureService = pictureService;
         }
         /// <summary>
         /// Zwraca drzewo o danym Id
@@ -28,11 +30,11 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{treeId:int}")]
-        public ActionResult<TreeResponse> GetTree(int treeId)
+        public async Task<ActionResult<TreeResponse>> GetTree(int treeId)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-            var tree = treeService.GetTree(treeId, userId);
+            var tree = await treeService.GetTreeAsync(treeId, userId);
             if (tree == null)
                 return BadRequest("no such tree, or tree is private");
             return Ok(tree);
@@ -44,11 +46,11 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("node/{nodeId:int}")]
-        public ActionResult<NodeResponse> GetNode(int nodeId)
+        public async Task<ActionResult<NodeResponse>> GetNode(int nodeId)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-            var node = treeService.GetNode(nodeId, userId);
+            var node = await treeService.GetNodeAsync(nodeId, userId);
             if (node == null)
                 return BadRequest("no such node, or tree is private");
             return Ok(node);
@@ -60,11 +62,11 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("user/{userId:int}")]
-        public ActionResult<TreeUserResponse> GetUserTrees(int userId)
+        public async Task<ActionResult<TreeUserResponse>> GetUserTrees(int userId)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userIdFromClaim = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-            var trees = treeService.GetUserTrees(userId, userIdFromClaim);
+            var trees = await treeService.GetUserTreesAsync(userId, userIdFromClaim);
             if (trees == null)
                 return BadRequest("no such user, or sth");
             return Ok(trees);
@@ -77,10 +79,10 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("")]
-        public ActionResult<TreeResponse> CreateTree(CreateTreeRequest model)
+        public async Task<ActionResult<TreeResponse>> CreateTree(CreateTreeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = treeService.CreateTree(userId, model);
+            var tree = await treeService.CreateTreeAsync(userId, model);
             if (tree == null)
                 return BadRequest("Error occured");
             return Ok(tree);
@@ -94,10 +96,10 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("node/move")]
-        public ActionResult<MoveNodeResponse> MoveNode(MoveNodeRequest model)
+        public async Task<ActionResult<MoveNodeResponse>> MoveNode(MoveNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var response = treeService.MoveNode(userId, model);
+            var response = await treeService.MoveNodeAsync(userId, model);
             if (response == null)
                 return BadRequest("Error occured");
             return Ok(response);
@@ -111,10 +113,10 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("")]
-        public ActionResult<TreeResponse> ModifyTree(ModifyTreeRequest model)
+        public async Task<ActionResult<TreeResponse>> ModifyTree(ModifyTreeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = treeService.ModifyTree(userId, model);
+            var tree = await treeService.ModifyTreeAsync(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
@@ -127,10 +129,10 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("node")]
-        public ActionResult<TreeResponse> CreateNode(CreateNodeRequest model)
+        public async Task<ActionResult<NodeResponse>> CreateNode(CreateNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = treeService.CreateNode(userId, model);
+            var tree = await treeService.CreateNodeAsync(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
@@ -144,10 +146,10 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("node/addSibling")]
-        public ActionResult<TreeResponse> AddSibling(AddSiblingRequest model)
+        public async Task<ActionResult<TreeResponse>> AddSibling(AddSiblingRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = treeService.AddSibling(userId, model);
+            var tree = await treeService.AddSiblingAsync(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
@@ -160,10 +162,10 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("node")]
-        public ActionResult<TreeResponse> ModifyNode(ModifyNodeRequest model)
+        public async Task<ActionResult<TreeResponse>> ModifyNode(ModifyNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = treeService.ModifyNode(userId, model);
+            var tree = await treeService.ModifyNodeAsync(userId, model);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
@@ -176,10 +178,10 @@ namespace FamilyTree.Controllers
         [HttpDelete]
         [Authorize]
         [Route("node/{node_id:int}")]
-        public ActionResult<TreeResponse> DeleteNode(int node_id)
+        public async Task<ActionResult<TreeResponse>> DeleteNode(int node_id)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var result = treeService.DeleteNode(userId, node_id);
+            var result = await treeService.DeleteNodeAsync(userId, node_id);
             if (result == null)
                 return BadRequest();
             return Ok(result);
@@ -187,13 +189,31 @@ namespace FamilyTree.Controllers
         [HttpDelete]
         [Authorize]
         [Route("{tree_id:int}")]
-        public ActionResult DeleteTree(int tree_id)
+        public async Task<ActionResult> DeleteTree(int tree_id)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            bool result = treeService.DeleteTree(userId, tree_id);
+            bool result = await treeService.DeleteTreeAsync(userId, tree_id);
             if (!result)
                 return BadRequest();
             return Ok();
+        }
+        /// <summary>
+        /// Ustawia zdjęcie dla node
+        /// </summary>
+        /// <param name="picture"></param>
+        /// <param name="nodeId"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize]
+        [Route("picture")]
+        public async Task<ActionResult<SetPictureResponse>> SetNodePicture(IFormFile picture, [FromForm] string nodeId)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            int nodeIdParsed = int.Parse(nodeId);
+            var response = await pictureService.SetNodePicture(userId, nodeIdParsed, picture);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
         }
     }
 }

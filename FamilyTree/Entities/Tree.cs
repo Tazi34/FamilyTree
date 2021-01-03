@@ -11,5 +11,6 @@ namespace FamilyTree.Entities
         public string Name { get; set; }
         public bool IsPrivate { get; set; }
         public List<Node> Nodes { get; set; }
+        public List<Invitation> Invitations { get; set; }
     }
 }

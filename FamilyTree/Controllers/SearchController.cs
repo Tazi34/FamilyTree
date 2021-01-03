@@ -25,9 +25,9 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{expression}")]
-        public ActionResult<SearchResponse> Find(string expression)
+        public async Task<ActionResult<SearchResponse>> Find(string expression)
         {
-            var response = searchService.Find(expression);
+            var response = await searchService.FindAsync(expression);
             if (response == null)
                 return BadRequest();
             return Ok(response);

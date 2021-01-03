@@ -49,24 +49,24 @@ namespace FamilyTreeTests.Blog
         [Test]
         public void GetPostSuccess()
         {
-            var post = service.GetPost(1);
+            var post = service.GetPostAsync(1);
             Assert.IsNotNull(post);
         }
         [Test]
         public void GetPostFail()
         {
-            var post = service.GetPost(0);
+            var post = service.GetPostAsync(0);
             Assert.IsNull(post);
         }
         [Test]
-        public void CreatePostSuccess()
+        public async void CreatePostSuccess()
         {
             var postRequest = new CreatePostRequest
             {
                 Text = "New posts text",
                 Title = "New post title"
             };
-            var post = service.CreatePost(1, postRequest);
+            var post = await service.CreatePostAsync(1, postRequest);
 
             mockSetPost.Verify(m => m.Add(It.IsAny<Post>()), Times.Once);
             mockContext.Verify(m => m.SaveChanges(), Times.Once);
@@ -84,20 +84,20 @@ namespace FamilyTreeTests.Blog
                 Text = "New posts text",
                 Title = "New post title"
             };
-            var post = service.CreatePost(0, postRequest);
+            var post = service.CreatePostAsync(0, postRequest);
             Assert.IsNull(post);
         }
         [Test]
-        public void GetListSuccess()
+        public async void GetListSuccess()
         {
-            var blog = service.GetPostsList(1);
+            var blog = await service.GetPostsListAsync(1);
             Assert.IsNotNull(blog);
             Assert.AreEqual(blog.Posts.Count, 1);
         }
         [Test]
-        public void GetListFail()
+        public async void GetListFail()
         {
-            var blog = service.GetPostsList(0);
+            var blog = await service.GetPostsListAsync(0);
             //Assert.IsNotNull(blog);dsfsfdsafasfasfdafs        
             Assert.AreEqual(blog.Posts.Count, 0);
         }
