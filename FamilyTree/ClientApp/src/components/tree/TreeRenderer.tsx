@@ -51,7 +51,6 @@ import {
   getOutboundLinks,
   randomFamilyId,
 } from "./reducer/utils/getOutboundLinks";
-import Testujemy from "./Testujemy";
 
 import TreeNodeDetailsDialog from "./TreeNodeDetailsDialog";
 import "./treeRenderer.css";
