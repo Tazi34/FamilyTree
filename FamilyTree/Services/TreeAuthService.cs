@@ -20,6 +20,8 @@ namespace FamilyTree.Services
         {
             if (user == null || tree == null)
                 return TreeAuthLevel.Error;
+            if (user.Role.Equals(Role.Admin))
+                return TreeAuthLevel.Admin;
             if (IsUserInTree(tree, user))
                 return TreeAuthLevel.InTree;
             if (!tree.IsPrivate)
@@ -31,6 +33,8 @@ namespace FamilyTree.Services
         {
             if (user == null || tree == null || node == null)
                 return TreeAuthLevel.Error;
+            if (user.Role.Equals(Role.Admin))
+                return TreeAuthLevel.Admin;
             if (node.UserId == user.UserId)
                 return TreeAuthLevel.InNode;
             if (IsUserInTree(tree, user))
@@ -44,6 +48,8 @@ namespace FamilyTree.Services
         {
             if (user == null)
                 return TreeAuthLevel.Error;
+            if (user.Role.Equals(Role.Admin))
+                return TreeAuthLevel.Admin;
             return TreeAuthLevel.Everybody;
         }
 

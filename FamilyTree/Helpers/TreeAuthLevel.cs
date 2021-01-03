@@ -11,6 +11,7 @@ namespace FamilyTree.Helpers
         Everybody = 2,
         PublicTree = 3,
         InTree = 4,
-        InNode = 5
+        InNode = 5,
+        Admin = 6
     }
 }
