@@ -70,5 +70,19 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return Ok(response);
         }
+        /// <summary>
+        /// Endpoint do usuwania zdjęcia profilowego
+        /// </summary>
+        [HttpDelete]
+        [Route("picture")]
+        [Authorize]
+        public async Task<ActionResult<SetPictureResponse>> DeleteUserPicture()
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = await pictureService.DeleteProfilePicture(userId);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
+        }
     }
 }

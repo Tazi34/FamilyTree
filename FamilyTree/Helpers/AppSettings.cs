@@ -7,6 +7,7 @@ namespace FamilyTree.Helpers
 {
     public class AppSettings
     {
+        public static string Position = "AppSettings";
         public string Secret { get; set; }
     }
 }

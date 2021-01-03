@@ -26,10 +26,10 @@ namespace FamilyTree
             services.AddCors();
             services.AddSignalR();
             services.AddControllersWithViews();
-            var appSettingsSection = Configuration.GetSection("AppSettings");
+            var appSettingsSection = Configuration.GetSection(AppSettings.Position);
             services.Configure<AppSettings>(appSettingsSection);
-            services.Configure<AzureBlobSettings>(Configuration.GetSection("AzureBlobSettings"));
-            services.Configure<FacebookSettings>(Configuration.GetSection("FacebookSettings"));
+            services.Configure<AzureBlobSettings>(Configuration.GetSection(AzureBlobSettings.Position));
+            services.Configure<FacebookSettings>(Configuration.GetSection(FacebookSettings.Position));
             services.AddHttpClient();
             services.AddCustomServices();
             services.AddCustomSwaggerConfig();

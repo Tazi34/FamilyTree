@@ -15,7 +15,6 @@ namespace FamilyTree
     {
         public static void Main(string[] args)
         {
-            //var host = CreateHostBuilder(args).Build().Run();
             var host = CreateHostBuilder(args).Build();
 
             using (var scope = host.Services.CreateScope())
@@ -32,7 +31,6 @@ namespace FamilyTree
                     logger.LogError(ex, "An error occurred seeding the DB.");
                 }
             }
-
             host.Run();
         }
 

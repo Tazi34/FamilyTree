@@ -6,6 +6,7 @@ using FamilyTree.Entities;
 using FamilyTree.Helpers;
 using Microsoft.EntityFrameworkCore;
 using FamilyTree.Models;
+using Microsoft.Extensions.Options;
 
 namespace FamilyTree.Services
 {
@@ -29,11 +30,19 @@ namespace FamilyTree.Services
         private DataContext context;
         private ITreeAuthService treeAuthService;
         private ITreeValidationService treeValidationService;
-        public TreeService(DataContext dataContext, ITreeAuthService treeAuthService, ITreeValidationService treeValidationService)
+        private string defaultNodePictureUrl;
+        private string defaultUserPictureUrl;
+        public TreeService(
+            DataContext dataContext, 
+            ITreeAuthService treeAuthService, 
+            ITreeValidationService treeValidationService,
+            IOptions<AzureBlobSettings> azureBlobSettings)
         {
             context = dataContext;
             this.treeAuthService = treeAuthService;
             this.treeValidationService = treeValidationService;
+            defaultNodePictureUrl = azureBlobSettings.Value.DefaultNodeUrl;
+            defaultUserPictureUrl = azureBlobSettings.Value.DefaultUserUrl;
         }
 
         public async Task<TreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model)
@@ -47,7 +56,7 @@ namespace FamilyTree.Services
             if (!treeValidationService.ValidateNewNode(model, tree))
                 return null;
 
-            CreateNode(tree, model);
+            await CreateNode(tree, model);
             return new TreeResponse(tree);
         }
 
@@ -86,16 +95,16 @@ namespace FamilyTree.Services
                         Birthday = DateTime.Now,
                         Name = sibling.Name + "'s",
                         Surname = "Parent",
-                        Children = new List<int>() { sibling.NodeId},
+                        Children = new List<int>() { sibling.NodeId },
                         Description = "",
                         Partners = new List<int>(),
                         Sex = "Male",
                         X = sibling.X + 100,
                         Y = sibling.Y - 450,
                         TreeId = sibling.TreeId,
-                        PictureUrl = "",
+                        UserId = 0
                     };
-                    var parent = CreateNode(tree, fakeParent);
+                    var parent = await CreateNode(tree, fakeParent);
                     newNodeRequest.FatherId = parent.NodeId;
                     sibling.FatherId = parent.NodeId;
                     updateSibling = true;
@@ -109,7 +118,7 @@ namespace FamilyTree.Services
                     }
                 }
 
-                CreateNode(tree, newNodeRequest);
+                await CreateNode(tree, newNodeRequest);
                 if (updateSibling)
                 {
                     context.Nodes.Update(sibling);
@@ -130,13 +139,20 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.Everybody, authLevel))
                 return null;
+
+            string pictureUrl = defaultNodePictureUrl;
+            if (user != null && user.UserId != 0)
+            {
+                if (user.PictureUrl != null && !user.PictureUrl.Equals("") && !user.PictureUrl.Equals(defaultUserPictureUrl))
+                    pictureUrl = user.PictureUrl;
+            }
             Node node = new Node
             {
                 Birthday = user.Birthday,
                 Name = user.Name,
                 Surname = user.Surname,
                 UserId = user.UserId,
-                PictureUrl = user.PictureUrl,
+                PictureUrl = pictureUrl,
                 Children = new List<NodeNode>(),
                 Parents = new List<NodeNode>(),
                 Partners1 = new List<NodeNodeMarriage>(),
@@ -232,8 +248,6 @@ namespace FamilyTree.Services
                 node.Name = model.Name;
             if (!string.IsNullOrWhiteSpace(model.Surname))
                 node.Surname = model.Surname;
-            if (!string.IsNullOrWhiteSpace(model.PictureUrl))
-                node.PictureUrl = model.PictureUrl;
             foreach (int child in model.Children)
             {
                 var currentChild = node.Children.SingleOrDefault(c => c.ChildId == child);
@@ -347,8 +361,15 @@ namespace FamilyTree.Services
             await context.SaveChangesAsync();
             return true;
         }
-        private Node CreateNode(Tree tree, CreateNodeRequest model)
+        private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model)
         {
+            string pictureUrl = defaultNodePictureUrl;
+            var user = await GetUserFromContextAsync(model.UserId);
+            if(user != null && user.UserId != 0)
+            {
+                if (user.PictureUrl != null && !user.PictureUrl.Equals("") && !user.PictureUrl.Equals(defaultUserPictureUrl))
+                    pictureUrl = user.PictureUrl;
+            }
             var children = new List<NodeNode>();
             foreach (int child in model.Children)
             {
@@ -404,7 +425,7 @@ namespace FamilyTree.Services
                 Name = model.Name,
                 Surname = model.Surname,
                 UserId = model.UserId,
-                PictureUrl = model.PictureUrl,
+                PictureUrl = pictureUrl,
                 Children = children,
                 Parents = parents,
                 Partners1 = partners1,

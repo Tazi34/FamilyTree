@@ -7,6 +7,7 @@ namespace FamilyTree.Helpers
 {
     public class FacebookSettings
     {
+        public static string Position = "FacebookSettings";
         public string Secret { get; set; }
         public string AppId { get; set; }
     }

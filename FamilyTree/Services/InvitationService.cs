@@ -39,7 +39,6 @@ namespace FamilyTree.Services
             {
                 Name = invitation.AskedUser.Name,
                 Surname = invitation.AskedUser.Surname,
-                PictureUrl = invitation.AskedUser.PictureUrl,
                 Sex = invitation.AskedUser.Sex,
                 Birthday = invitation.AskedUser.Birthday,
                 UserId = invitation.AskedUserId,

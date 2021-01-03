@@ -215,5 +215,21 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return Ok(response);
         }
+        /// <summary>
+        /// Usuwa zdjęcie dla node
+        /// </summary>
+        /// <param name="nodeId"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Authorize]
+        [Route("picture/{nodeId:int}")]
+        public async Task<ActionResult<SetPictureResponse>> DeleteNodePicture(int nodeId)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = await pictureService.DeleteNodePicture(userId, nodeId);
+            if (response == null)
+                return BadRequest();
+            return Ok(response);
+        }
     }
 }
