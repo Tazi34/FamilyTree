@@ -151,8 +151,8 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return false;
-            if (!treeValidationService.ValidateDeletedNode(node, tree))
-                return false;
+            if (treeValidationService.LastNotEmptyNode(node, tree))
+                return await DeleteTreeAsync(userId, tree.TreeId);
             return await DeleteNodeAsync(node);
         }
 
