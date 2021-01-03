@@ -1,6 +1,6 @@
 export const localURL = "http://localhost:44377";
 export const backendURL = "https://familytree.azurewebsites.net";
-export const baseURL = localURL; //backendURL;
+export const baseURL = backendURL;
 
 export const PROFILE_API_URL = `${baseURL}/editUsers`;
 export const TREE_API_URL = `${baseURL}/tree`;
