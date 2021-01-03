@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using FamilyTree.Services;
 using FamilyTree.Models;
+using System.Security.Claims;
 
 namespace FamilyTree.Controllers
 {
@@ -27,7 +28,9 @@ namespace FamilyTree.Controllers
         [Route("{expression}")]
         public async Task<ActionResult<SearchResponse>> Find(string expression)
         {
-            var response = await searchService.FindAsync(expression);
+            var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
+            int userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
+            var response = await searchService.FindAsync(userId, expression);
             if (response == null)
                 return BadRequest();
             return Ok(response);

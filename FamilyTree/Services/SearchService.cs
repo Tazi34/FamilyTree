@@ -11,7 +11,7 @@ namespace FamilyTree.Services
 {
     public interface ISearchService
     {
-        public Task<SearchResponse> FindAsync(string expression);
+        public Task<SearchResponse> FindAsync(int userId, string expression);
     }
     public class SearchService : ISearchService
     {
@@ -20,25 +20,27 @@ namespace FamilyTree.Services
         {
             context = dataContext;
         }
-        public async Task<SearchResponse> FindAsync(string expression)
+        public async Task<SearchResponse> FindAsync(int userId, string expression)
         {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            bool userIsAdmin = user != null && user.Role.Equals(Role.Admin) ? true : false;
             return new SearchResponse
             {
-                Trees = await FindTreesAsync(expression),
+                Trees = await FindTreesAsync(userIsAdmin, expression),
                 Users = await FindUsersAsync(expression)
             };
         }
 
-        public async Task<List<TreeSearchResponse>> FindTreesAsync(string expression)
+        public async Task<List<TreeSearchResponse>> FindTreesAsync(bool userIsAdmin, string expression)
         {
             string exp = expression.Trim().ToUpper();
             var surnameExpList = expression.Split().ToList();
             List<Tree> exactResults = null, contains1Results = null, contains2Results, surnamesResults = new List<Tree>(); ;
-            exactResults = await context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Equals(exp)).Take(20).ToListAsync();
-            contains1Results = await context.Trees.Where(t => !t.IsPrivate && t.Name.ToUpper().Contains(exp)).Take(20).ToListAsync();
-            contains2Results = await context.Trees.Where(t => !t.IsPrivate && exp.Contains(t.Name.ToUpper())).Take(20).ToListAsync();
+            exactResults = await context.Trees.Where(t => t.IsPrivate == userIsAdmin && t.Name.ToUpper().Equals(exp)).Take(20).ToListAsync();
+            contains1Results = await context.Trees.Where(t => t.IsPrivate == userIsAdmin && t.Name.ToUpper().Contains(exp)).Take(20).ToListAsync();
+            contains2Results = await context.Trees.Where(t => t.IsPrivate == userIsAdmin && exp.Contains(t.Name.ToUpper())).Take(20).ToListAsync();
             if (surnameExpList.Any())
-                surnamesResults = await context.Trees.Include(t => t.Nodes).Where(t => t.Nodes.Any(n => n.Surname.ToUpper().Equals(surnameExpList[0]))).Take(20).ToListAsync();
+                surnamesResults = await context.Trees.Include(t => t.Nodes).Where(t => t.IsPrivate == userIsAdmin && t.Nodes.Any(n => n.Surname.ToUpper().Equals(surnameExpList[0]))).Take(20).ToListAsync();
             return CreateTreesList(exactResults, contains1Results, contains2Results, surnamesResults);
         }
         private List<TreeSearchResponse> CreateTreesList(List<Tree> exact, List<Tree> contains1, List<Tree> contains2, List<Tree> surnames)
