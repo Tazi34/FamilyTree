@@ -1,12 +1,4 @@
-import {
-  Button,
-  ClickAwayListener,
-  MenuItem,
-  MenuList,
-  Paper,
-  Theme,
-  withStyles,
-} from "@material-ui/core";
+import { Button, Paper, Theme, withStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { compose } from "recompose";
@@ -16,10 +8,13 @@ import { TreeInformation } from "../../model/TreeInformation";
 import {
   changeTreeName,
   changeTreeVisibility,
-  usersTreesSelectors,
 } from "../userTreeList/usersTreeReducer";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import { PersonNode } from "./model/PersonNode";
+import { addPartner } from "./reducer/updateNodes/addPartner";
+import { addChild } from "./reducer/updateNodes/addChild";
+import { addSiblingRequest } from "./reducer/updateNodes/addSibling";
+
 import {
   addNode,
   getTree,
@@ -27,14 +22,18 @@ import {
   selectAllLinks,
   selectAllPersonNodes,
 } from "./reducer/treeReducer";
+import { addParentAsync2 } from "./reducer/updateNodes/addParent";
 import TreeInformationPanel from "./TreeInformationPanel";
 import TreeRenderer from "./TreeRenderer";
-import { ZoomContainer } from "./Zoom";
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 
 type TreeContainerState = {
   isAddMenuOpen: boolean;
   addMenuX: number;
   addMenuY: number;
+  scale: number;
+  canvasWidth: number;
+  canvasHeight: number;
 };
 const styles = (theme: Theme) => ({
   treeInformationPanel: {
@@ -63,9 +62,12 @@ class Tree extends React.Component<any, TreeContainerState> {
     super(props);
 
     this.state = {
+      scale: 1,
       addMenuX: 0,
       addMenuY: 0,
       isAddMenuOpen: false,
+      canvasWidth: 0,
+      canvasHeight: 0,
     };
     this.svgRef = React.createRef();
   }
@@ -78,7 +80,17 @@ class Tree extends React.Component<any, TreeContainerState> {
     const treeId = this.props.computedMatch.params.treeId;
     this.props.getTree(treeId);
 
+    this.resetDimensions();
+    const canvas = document.getElementById("tree-canvas") as HTMLElement;
+    canvas.addEventListener("resize", this.resetDimensions);
     document.addEventListener("mousedown", this.handleCloseMenu);
+  }
+  resetDimensions() {
+    var canvasContainer = this.svgRef.current;
+    this.setState({
+      canvasWidth: canvasContainer.clientWidth,
+      canvasHeight: canvasContainer.clientHeight,
+    });
   }
   componentDidUpdate(prevProps: any) {
     if (
@@ -94,18 +106,13 @@ class Tree extends React.Component<any, TreeContainerState> {
     document.removeEventListener("mousedown", this.handleCloseMenu);
   }
 
-  handleNodeAdd = (event: any) => {
-    event.preventDefault();
-    this.setState({
-      isAddMenuOpen: !this.state.isAddMenuOpen,
-      addMenuX: event.x,
-      addMenuY: event.y,
-    });
-  };
   handleCloseMenu = (e: any) => {
     if (this.state.isAddMenuOpen) {
       this.setState({ isAddMenuOpen: false });
     }
+  };
+  handlePartnerAdd = (id: number, data: CreateNodeRequestData) => {
+    this.props.addPartner(id, data);
   };
 
   handleTreeNameChange = (
@@ -128,7 +135,8 @@ class Tree extends React.Component<any, TreeContainerState> {
       description: "Very fascinating description :0",
       name: "Adam",
       sex: "Male",
-
+      x: 0,
+      y: 0,
       surname: "Kowalski",
       birthday: "2020-12-16T20:29:42.677Z",
       partners: [],
@@ -136,23 +144,31 @@ class Tree extends React.Component<any, TreeContainerState> {
     this.props.addEmptyNode(createNodeData);
   };
 
-  render() {
-    const { classes, treeInformation, nodes } = this.props;
+  handleParentAdd = (id: number, data: CreateNodeRequestData) => {
+    this.props.addParentAsync2(id, data);
+  };
+  handleChildAdd = (
+    data: CreateNodeRequestData,
+    firstParentId: number,
+    secondParentId?: number
+  ) => {
+    this.props.addChild(data, firstParentId, secondParentId);
+  };
 
-    const nodesXs = nodes.map((node: PersonNode) => node.x);
-    const nodesYs = nodes.map((node: PersonNode) => node.y);
-    const maxX = Math.max(...nodesXs);
-    const maxY = Math.max(...nodesYs);
-    const minX = Math.min(...nodesXs);
-    const minY = Math.min(...nodesYs);
+  handleSiblingAdd = (id: number, data: CreateNodeRequestData) => {
+    this.props.addSibling(id, data);
+  };
+  setScale = (e: any) => {
+    this.setState({ scale: e.scale });
+  };
+
+  render() {
+    const { classes, treeInformation } = this.props;
 
     if (this.props.isLoading)
       return <div className={classes.treeBackground}></div>;
 
-    const initialX = -minX + 300;
-    const initialY = -minY + 300;
-
-    console.log("RENDER");
+    console.log("RENDER TREE.tsx");
     return (
       <Paper className={classes.root}>
         <div className={classes.treeBackground}>
@@ -172,45 +188,40 @@ class Tree extends React.Component<any, TreeContainerState> {
             ref={this.svgRef}
             style={{ overflow: "hidden", width: "100%", height: "100%" }}
           >
-            <ZoomContainer
-              getSvg={this.getSvg}
-              initialZoom={{ x: initialX, y: initialY, k: 1 }}
-            >
-              <TreeRenderer
-                nodes={this.props.nodes}
-                links={this.props.links}
-                families={this.props.families}
-                onAddMenuOpen={this.handleNodeAdd}
-                onAddNodeMenuClose={this.handleCloseMenu}
-                rectHeight={RECT_HEIGHT}
-                rectWidth={RECT_WIDTH}
-              />
-            </ZoomContainer>
-          </div>
-          <ClickAwayListener
-            onClickAway={this.handleCloseMenu}
-            mouseEvent="onClick"
-            touchEvent="onTouchStart"
-          >
-            <Paper
-              id="contextMenu"
-              style={{
-                position: "absolute",
-                left: this.state.addMenuX + "px",
-                top: this.state.addMenuY + "px",
-                display: this.state.isAddMenuOpen ? "" : "none",
+            <TransformWrapper
+              options={{
+                limitToBounds: false,
+                centerContent: true,
+                minScale: 0.1,
               }}
+              onWheelStop={this.setScale}
+              defaultPositionX={this.state.canvasWidth / 2}
+              defaultPositionY={this.state.canvasHeight / 2}
             >
-              {/* <MenuList>
-              <MenuItem>Add parent</MenuItem>
-              <MenuItem>Connect parent</MenuItem>
-              <MenuItem>Add child</MenuItem>
-              <MenuItem onClick={this.handleConnectChild}>
-                Connect child
-              </MenuItem>
-            </MenuList> */}
-            </Paper>
-          </ClickAwayListener>
+              {({
+                zoomIn,
+                zoomOut,
+                resetTransform,
+                scale,
+                positionX,
+                positionY,
+                ...rest
+              }: any) => (
+                <TransformComponent>
+                  <TreeRenderer
+                    canvasRef={this.svgRef}
+                    scale={this.state.scale}
+                    onParentAdd={this.handleParentAdd}
+                    onPartnerAdd={this.handlePartnerAdd}
+                    onChildAdd={this.handleChildAdd}
+                    onSiblingAdd={this.handleSiblingAdd}
+                    rectHeight={RECT_HEIGHT}
+                    rectWidth={RECT_WIDTH}
+                  />
+                </TransformComponent>
+              )}
+            </TransformWrapper>
+          </div>
         </div>
       </Paper>
     );
@@ -222,12 +233,13 @@ const mapDispatch = {
   changeTreeName,
   changeTreeVisibility,
   addEmptyNode: addNode,
+  addParentAsync2,
+  addPartner,
+  addChild,
+  addSibling: addSiblingRequest,
 };
 const mapState = (state: ApplicationState) => ({
-  nodes: selectAllPersonNodes(state),
   isLoading: state.tree.isLoading,
-  families: selectAllFamilies(state),
-  links: selectAllLinks(state),
 
   treeInformation: state.tree.treeInformation,
 });

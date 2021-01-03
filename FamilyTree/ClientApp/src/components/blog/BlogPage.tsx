@@ -153,7 +153,7 @@ const BlogPage = (props: any) => {
               />
             )}
             <div className={classes.treesContainer}>
-              <TreesListProvider userId={blogId} />
+              <TreesListProvider isOwner={isUserOwnerOfBlog} userId={blogId} />
             </div>
           </SwipeableViews>
         </Paper>
