@@ -18,6 +18,7 @@ namespace FamilyTree.Helpers
         public virtual DbSet<NodeNodeMarriage> NodeNodeMarriage { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<Chat> Chats { get; set; }
+        public virtual DbSet<Invitation> Invitations { get; set; }
 
         public DataContext() { }
         public DataContext(DbContextOptions<DataContext> options)
@@ -53,11 +54,20 @@ namespace FamilyTree.Helpers
                 .HasOne(c => c.User1)
                 .WithMany(u => u.Chats2)
                 .HasForeignKey(c => c.User1Id);
-
             modelBuilder.Entity<Chat>()
                 .HasOne(c => c.User2)
                 .WithMany(u => u.Chats1)
                 .HasForeignKey(c => c.User2Id)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Invitation>()
+                .HasOne(i => i.AskedUser)
+                .WithMany(u => u.HostedInvitations)
+                .HasForeignKey(i => i.AskedUserId);
+            modelBuilder.Entity<Invitation>()
+                .HasOne(i => i.Host)
+                .WithMany(u => u.AskedInvitations)
+                .HasForeignKey(i => i.HostId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

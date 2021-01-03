@@ -19,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IGoogleService, GoogleService>();
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IPictureService, PictureService>();
+            services.AddScoped<IInvitationService, InvitationService>();
             return services;
         }
     }

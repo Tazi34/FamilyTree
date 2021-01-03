@@ -21,5 +21,7 @@ namespace FamilyTree.Entities
         public string Sex { get; set; }
         public List<Chat> Chats1 { get; set; }
         public List<Chat> Chats2 { get; set; }
+        public List<Invitation> HostedInvitations { get; set; }
+        public List<Invitation> AskedInvitations { get; set; }
     }
 }
