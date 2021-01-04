@@ -59,7 +59,7 @@ namespace FamilyTree.Services
                 return null;
 
             await CreateNode(tree, model);
-            return new DrawableTreeResponse(tree);
+            return new DrawableTreeResponse(tree, user);
         }
 
         public async Task<DrawableTreeResponse> AddSiblingAsync(int userId, AddSiblingRequest model)
@@ -132,7 +132,7 @@ namespace FamilyTree.Services
                 return null;
             }
 
-            return new DrawableTreeResponse(tree);
+            return new DrawableTreeResponse(tree, user);
         }
 
         public async Task<DrawableTreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model)
@@ -170,7 +170,7 @@ namespace FamilyTree.Services
             };
             context.Trees.Add(tree);
             await context.SaveChangesAsync();
-            return new DrawableTreeResponse(tree);
+            return new DrawableTreeResponse(tree, user);
         }
 
         public async Task<DrawableTreeResponse> DeleteNodeAsync(int userId, int nodeId)
@@ -187,13 +187,13 @@ namespace FamilyTree.Services
                     return new DrawableTreeResponse(new Tree()
                     {
                         Nodes = new List<Node>()
-                    });
+                    }, user);
                 else
                     return null;
             }
             else if (await DeleteNodeAsync(node))
             {
-                return new DrawableTreeResponse(tree);
+                return new DrawableTreeResponse(tree, user);
             }
             return null;
         }
@@ -206,7 +206,10 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
-            return new NodeResponse(node);
+            bool userInTree = false;
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
+                userInTree = true;
+            return new NodeResponse(node, user, userInTree);
         }
         
         public async Task<DrawableTreeResponse> ConnectNodesAsync(int userId, ConnectNodesRequest model)
@@ -263,7 +266,7 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
-            return new DrawableTreeResponse(tree);
+            return new DrawableTreeResponse(tree, user);
         }
 
         public async Task<TreeUserResponse> GetUserTreesAsync(int userId, int askingUserId)
@@ -512,7 +515,10 @@ namespace FamilyTree.Services
         private async Task<User> GetUserFromContextAsync (int userId)
         {
             if (userId == 0) //user with no token
-                return new User { UserId = 0 };
+                return new User { 
+                    UserId = 0,
+                    Role = Role.User
+                };
             return await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
         }
         private async Task<List<Tree>> GetUserTreesFromContextAsync (int userId)
