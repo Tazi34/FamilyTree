@@ -11,7 +11,7 @@ namespace FamilyTree.Models
     {
         public List<Link> Links { get; set; }
         public List<Family> Families { get; set; }
-        public DrawableTreeResponse(Tree tree) : base(tree)
+        public DrawableTreeResponse(Tree tree, User user) : base(tree, user)
         {
             var families = new Dictionary<(int firstParentId, int secondParentId), Family>();
             var links = new List<Link>();
