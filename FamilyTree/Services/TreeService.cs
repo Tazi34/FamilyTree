@@ -12,18 +12,20 @@ namespace FamilyTree.Services
 {
     public interface ITreeService
     {
-        public Task<TreeResponse> GetTreeAsync(int id, int userId);
+
+        public Task<DrawableTreeResponse> GetTreeAsync(int id, int userId);
+        public Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model);
+        public Task<DrawableTreeResponse> DeleteNodeAsync(int userId, int NodeId);
+        public Task<DrawableTreeResponse> ConnectNodesAsync(int userId, ConnectNodesRequest model);
+        public Task<DrawableTreeResponse> AddSiblingAsync(int userId, AddSiblingRequest model);
+        public Task<DrawableTreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model);
+        public Task<DrawableTreeResponse> ModifyTreeAsync(int userId, ModifyTreeRequest model);
+        public Task<DrawableTreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model);
         public Task<NodeResponse> GetNodeAsync(int id, int userId);
         public Task<TreeUserResponse> GetUserTreesAsync(int id, int claimId);
-        public Task<TreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model);
-        public Task<TreeResponse> ModifyTreeAsync(int userId, ModifyTreeRequest model);
-        public Task<TreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model);
-        public Task<TreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model);
-        public Task<TreeResponse> DeleteNodeAsync(int userId, int NodeId);
+        public Task<MoveNodeResponse> MoveNodeAsync(int userId, MoveNodeRequest model);
         public Task<bool> DeleteTreeAsync(int userId, int TreeId);
 
-        public Task<TreeResponse> AddSiblingAsync(int userId, AddSiblingRequest model);
-        public Task<MoveNodeResponse> MoveNodeAsync(int userId, MoveNodeRequest model);
     }
     public class TreeService : ITreeService  
     {
@@ -45,7 +47,7 @@ namespace FamilyTree.Services
             defaultUserPictureUrl = azureBlobSettings.Value.DefaultUserUrl;
         }
 
-        public async Task<TreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model)
+        public async Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model)
         {
             var tree = await GetTreeFromContextAsync(model.TreeId);
             var user = await GetUserFromContextAsync(userId);
@@ -57,10 +59,10 @@ namespace FamilyTree.Services
                 return null;
 
             await CreateNode(tree, model);
-            return new TreeResponse(tree);
+            return new DrawableTreeResponse(tree);
         }
 
-        public async Task<TreeResponse> AddSiblingAsync(int userId, AddSiblingRequest model)
+        public async Task<DrawableTreeResponse> AddSiblingAsync(int userId, AddSiblingRequest model)
         {
             var newNodeRequest = model.NewNode;
             var tree = await GetTreeFromContextAsync(newNodeRequest.TreeId);
@@ -130,10 +132,10 @@ namespace FamilyTree.Services
                 return null;
             }
 
-            return new TreeResponse(tree);
+            return new DrawableTreeResponse(tree);
         }
 
-        public async Task<TreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model)
+        public async Task<DrawableTreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model)
         {
             var user = await GetUserFromContextAsync(userId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user);
@@ -168,10 +170,10 @@ namespace FamilyTree.Services
             };
             context.Trees.Add(tree);
             await context.SaveChangesAsync();
-            return new TreeResponse(tree);
+            return new DrawableTreeResponse(tree);
         }
 
-        public async Task<TreeResponse> DeleteNodeAsync(int userId, int nodeId)
+        public async Task<DrawableTreeResponse> DeleteNodeAsync(int userId, int nodeId)
         {
             var node = await GetNodeFromContextAsync(nodeId);
             var user = await GetUserFromContextAsync(userId);
@@ -182,13 +184,16 @@ namespace FamilyTree.Services
             if (treeValidationService.LastNotEmptyNode(node, tree))
             {
                 if (await DeleteTreeAsync(userId, tree.TreeId))
-                    return new TreeResponse(new Tree());
+                    return new DrawableTreeResponse(new Tree()
+                    {
+                        Nodes = new List<Node>()
+                    });
                 else
                     return null;
             }
             else if (await DeleteNodeAsync(node))
             {
-                return new TreeResponse(tree);
+                return new DrawableTreeResponse(tree);
             }
             return null;
         }
@@ -203,15 +208,62 @@ namespace FamilyTree.Services
                 return null;
             return new NodeResponse(node);
         }
+        
+        public async Task<DrawableTreeResponse> ConnectNodesAsync(int userId, ConnectNodesRequest model)
+        {
+            var user = await GetUserFromContextAsync(userId);
+            var tree = await GetTreeFromContextAsync(model.TreeId);
+            var child = await GetNodeFromContextAsync(model.ChildId);
+            if(child == null)
+            {
+                return null;
+            }
+            var firstParent = await GetNodeFromContextAsync(model.FirstParentId);
+            if (firstParent == null)
+            {
+                return null;
+            }
+            Node secondParent = null;
+            if (model.SecondParentId.HasValue)
+            {
+                //ma obu rodzicow a chcemy cos zmieniac w obu
+                if (child.Parents.Any())
+                {
+                    return null;
+                }
+                secondParent = await GetNodeFromContextAsync(model.SecondParentId.Value);
+                if (secondParent == null)
+                {
+                    return null;
+                }
+            }
+            var transcation = context.Database.BeginTransaction();
+            context.NodeNode.RemoveRange(child.Parents);
+            context.SaveChanges();
 
-        public async Task<TreeResponse> GetTreeAsync(int treeId, int userId)
+            child.Parents.Add(new NodeNode() { Parent = firstParent, ParentId = firstParent.NodeId });
+            if (secondParent != null)
+            {
+               child.Parents.Add(new NodeNode() { Parent = secondParent, ParentId = secondParent.NodeId });
+            }
+            context.SaveChanges();
+            transcation.Commit();
+
+
+            //var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
+            //if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
+            //    return null;
+            return new DrawableTreeResponse(tree);
+        }
+
+        public async Task<DrawableTreeResponse> GetTreeAsync(int treeId, int userId)
         {
             var tree = await GetTreeFromContextAsync(treeId);
             var user = await GetUserFromContextAsync(userId);
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
-            return new TreeResponse(tree);
+            return new DrawableTreeResponse(tree);
         }
 
         public async Task<TreeUserResponse> GetUserTreesAsync(int userId, int askingUserId)
@@ -228,7 +280,7 @@ namespace FamilyTree.Services
             return new TreeUserResponse(authorizedTrees);
         }
 
-        public async Task<TreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model)
+        public async Task<DrawableTreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model)
         {
             var node = await GetNodeFromContextAsync(model.NodeId);
             var user = await GetUserFromContextAsync(userId);
@@ -317,7 +369,7 @@ namespace FamilyTree.Services
             context.SaveChanges();
             return new MoveNodeResponse() { NodeId = node.NodeId, X = node.X, Y = node.Y };
         }
-        public async Task<TreeResponse> ModifyTreeAsync(int userId, ModifyTreeRequest model)
+        public async Task<DrawableTreeResponse> ModifyTreeAsync(int userId, ModifyTreeRequest model)
         {
             var user = await GetUserFromContextAsync(userId);
             var tree = await GetTreeFromContextAsync(model.TreeId);

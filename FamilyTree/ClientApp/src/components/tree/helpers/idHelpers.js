@@ -2,7 +2,7 @@ export const getNodeId = (id) => {
   return `n${id}`;
 };
 export const getLinkId = (sourceId, targetId) => {
-  return `l${sourceId}_${targetId}`;
+  return `l${sourceId}${targetId}`;
 };
 export const getNodeIdSelector = (id) => {
   return `#${getNodeId(id)}`;

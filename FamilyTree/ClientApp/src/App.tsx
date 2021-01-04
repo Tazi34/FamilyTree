@@ -104,6 +104,7 @@ const App = (props: any) => {
 
         <Switch>
           <AuthorizedPrivateRoute
+            requiredRoles={["GUEST"]}
             path={`${TREE_PAGE_URI}/:treeId`}
             component={Tree}
             layout={EmptyLayout}

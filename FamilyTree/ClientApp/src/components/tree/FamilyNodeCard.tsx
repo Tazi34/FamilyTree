@@ -25,7 +25,7 @@ type Props = {
 //TODO ujednolicic ruszanie z personnode
 const FamilyNodeCard = ({ family }: Props) => {
   const classes = useStyles(family);
-  const elementId = "f" + family.id;
+  const elementId = family.id.toString();
 
   console.log("RENDER FAMILY");
   if (!(family.fatherId && family.motherId)) {

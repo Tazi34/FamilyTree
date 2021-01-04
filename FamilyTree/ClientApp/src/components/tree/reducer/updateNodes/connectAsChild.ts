@@ -1,47 +1,45 @@
-import { treeNodeMapper } from "../../API/utils/NodeMapper";
+import { AxiosResponse } from "axios";
+import {
+  ConnectNodesRequestData,
+  ConnectNodesResponse,
+} from "./../../API/connectNodes/connectNodesRequest";
+import { createAsyncThunk, EntityId } from "@reduxjs/toolkit";
 import {
   UpdateNodeRequestData,
   updateTreeNode,
 } from "../../API/updateNode/updateNodeRequest";
-import { createAction, EntityId } from "@reduxjs/toolkit";
-
+import { treeNodeMapper } from "../../API/utils/NodeMapper";
+import { FamilyNode } from "../../model/FamilyNode";
+import { Link } from "../../model/Link";
+import { PersonNode } from "../../model/PersonNode";
 import {
+  connectAsChild,
   familyNodesAdapter,
   linksAdapter,
   personNodesLocalSelectors,
   selectPersonNodeLocal,
-  treeActionsPrefix,
+  setTree,
   TreeState,
 } from "../treeReducer";
-
-import { Link } from "../../model/Link";
-import { PersonNode } from "../../model/PersonNode";
-import { FamilyNode } from "../../model/FamilyNode";
 import { createLink } from "../utils/getOutboundLinks";
+import { treeAPI } from "../../API/treeAPI";
 
-export const connectAsChild = createAction(
-  `${treeActionsPrefix}/parentConnected`,
-  (childId: EntityId, parentId: EntityId): any => ({
-    payload: { childId, parentId },
-  })
-);
-export const connectAsChildAsync = (childId: EntityId, parentId: EntityId) => (
+export const connectNodes = (data: ConnectNodesRequestData) => (
   dispatch: any,
   getState: any
 ) => {
-  const state = getState();
-  const child = personNodesLocalSelectors.selectById(state.tree.nodes, childId);
-  if (!child) {
-    throw "Unrecognized child node " + childId;
-  }
-
-  const updateNodeData: UpdateNodeRequestData = treeNodeMapper.mapToAPI(child);
-  updateNodeData.fatherId = parentId as number;
-
-  return updateTreeNode(updateNodeData).then(() =>
-    dispatch(connectAsChild(childId, parentId))
-  );
+  dispatch(connectNodesThunk(data)).then((response: any) => {
+    if (response.type === connectNodesThunk.fulfilled.toString()) {
+      dispatch(setTree(response.payload.data));
+    }
+  });
 };
+export const connectNodesThunk = createAsyncThunk<
+  AxiosResponse<ConnectNodesResponse>,
+  ConnectNodesRequestData
+>("tree/nodes/connect", async (data) => {
+  return treeAPI.connectNodesRequest(data);
+});
 
 export const addFamily = (
   state: TreeState,
@@ -108,7 +106,7 @@ export const addFamily = (
   //dodawanie dzieci mozna wydzielic
   childrenNodes.forEach((childNode) => {
     linksToAdd.push(createLink(newFamily, childNode));
-    childNode.families.push(newFamily.id);
+   // childNode.families.push(newFamily.id);
   });
   familyNodesAdapter.addOne(state.families, newFamily);
   linksAdapter.addMany(state.links, linksToAdd);

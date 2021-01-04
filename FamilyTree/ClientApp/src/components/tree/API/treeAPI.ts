@@ -1,3 +1,6 @@
+import { connectNodesRequest } from "./connectNodes/connectNodesRequest";
+import { changeTreeNameRequest } from "./changeTreeName/changeTreeNameRequest";
+import { changeTreeVisibilityRequest } from "./changeVisibility/changeTreeVisibilityRequest";
 import { uploadTreeNodePicture } from "./uploadPicture/uploadTreeNodePicture";
 import { addSiblingTreeNode } from "./addSibling/addSiblingRequest";
 import { moveTreeNode } from "./moveNode/moveNodeRequest";
@@ -11,4 +14,7 @@ export const treeAPI = {
   moveTreeNode,
   addSiblingTreeNode,
   uploadTreeNodePicture,
+  changeTreeVisibilityRequest,
+  changeTreeNameRequest,
+  connectNodesRequest,
 };

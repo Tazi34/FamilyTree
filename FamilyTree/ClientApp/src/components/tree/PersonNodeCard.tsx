@@ -16,17 +16,17 @@ import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { formatDate } from "../../helpers/formatters";
-
+import LinkIcon from "@material-ui/icons/Link";
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 30;
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles<any, any>((theme: Theme) => ({
   personRoot: {
     position: "absolute",
     transform: `translate(${-RECT_WIDTH / 2}px,${-RECT_HEIGHT / 2}px)`,
     top: 0,
     left: 0,
-    height: RECT_HEIGHT + "px",
+    minHeight: RECT_HEIGHT + "px",
     width: RECT_WIDTH + "px",
     borderRadius: 10,
     borderColor: theme.palette.primary.light,
@@ -35,6 +35,14 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: "flex",
     flexDirection: "column",
     cursor: "pointer",
+    "&:hover": {
+      background: ({ isConnecting, canConnectTo }) => {
+        if (isConnecting) {
+          return canConnectTo ? "green" : "#FFCCCB";
+        }
+        return theme.palette.background.paper;
+      },
+    },
   },
   buttonBase: {
     padding: 8,
@@ -134,6 +142,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     alignSelf: "flex-end",
     width: "100%",
     display: "flex",
+    flexWrap: "wrap",
   },
   visible: {
     visibility: "visible",
@@ -146,7 +155,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Props = {
   onNodeDelete: (id: number) => void;
   onSiblingAdd: (id: number, data: CreateNodeRequestData) => void;
-
   onParentAdd: (id: number, data: CreateNodeRequestData) => void;
   onPartnerAdd: (id: number, data: CreateNodeRequestData) => void;
   onChildAdd: (
@@ -154,12 +162,13 @@ type Props = {
     firstParent: number,
     secondParent?: number
   ) => void;
-
   onNodeMove: (node: Node, x: number, y: number) => void;
   onMoveNodeOnCanvas: (e: DragEvent, node: Node) => void;
   onNodeSelect: (node: PersonNode) => void;
-
+  onConnectStart: (node: PersonNode) => void;
   person: PersonNode;
+  disabled: boolean;
+  canConnectTo?: boolean;
 };
 
 const PersonNodeCard = ({
@@ -172,9 +181,12 @@ const PersonNodeCard = ({
   onPartnerAdd,
   onChildAdd,
   onSiblingAdd,
+  onConnectStart,
+  canConnectTo,
+  disabled,
 }: Props) => {
   const elementId = "n" + person.id;
-  const classes = useStyles({ x: person.x, y: person.y });
+  const classes = useStyles({ isConnecting: disabled, canConnectTo });
   const newPerson: CreateNodeRequestData = {
     treeId: person.treeId,
     name: "New",
@@ -211,6 +223,9 @@ const PersonNodeCard = ({
   ) => {
     onNodeSelect(person);
   };
+  const handleStartConnect = () => {
+    onConnectStart(person);
+  };
   const details = Object.assign({}, person.personDetails);
   if (!Boolean(details.pictureUrl)) {
     details.pictureUrl = `https://eu.ui-avatars.com/api/?name=${details.name}+${details.surname}`;
@@ -223,7 +238,7 @@ const PersonNodeCard = ({
   };
   const canAddParent = !(person.motherId && person.fatherId);
   console.log("NODEE");
-
+  const hasBothParent = person.fatherId && person.motherId;
   return (
     <Paper
       id={elementId}
@@ -235,6 +250,7 @@ const PersonNodeCard = ({
         {canAddParent && (
           <Tooltip title="Add parent" placement="top">
             <IconButton
+              disabled={disabled}
               id="add-icon"
               className={`${classes.addIcon}`}
               onClick={handleParentAdd}
@@ -282,27 +298,54 @@ const PersonNodeCard = ({
       <div className={classes.filler} />
       <div className={classes.actions}>
         <Tooltip title="Delete node">
-          <IconButton onClick={handleNodeDelete} onMouseUp={preventMouseUp}>
+          <IconButton
+            disabled={disabled}
+            onClick={handleNodeDelete}
+            onMouseUp={preventMouseUp}
+          >
             <DeleteIcon />
           </IconButton>
         </Tooltip>
 
-        <IconButton onClick={handlePartnerAdd} onMouseUp={preventMouseUp}>
+        <IconButton
+          disabled={disabled}
+          onClick={handlePartnerAdd}
+          onMouseUp={preventMouseUp}
+        >
           <AddCircleIcon className={classes.addIconSvg} />
         </IconButton>
         <Tooltip title="Add child">
-          <IconButton onClick={handleChildAdd} onMouseUp={preventMouseUp}>
+          <IconButton
+            disabled={disabled}
+            onClick={handleChildAdd}
+            onMouseUp={preventMouseUp}
+          >
             <AddCircleIcon className={classes.addIconSvg} />
           </IconButton>
         </Tooltip>
         <Tooltip title="Add Sibling">
-          <IconButton onClick={handleSiblingAdd} onMouseUp={preventMouseUp}>
+          <IconButton
+            disabled={disabled}
+            onClick={handleSiblingAdd}
+            onMouseUp={preventMouseUp}
+          >
             <AddCircleIcon className={classes.addIconSvg} />
           </IconButton>
         </Tooltip>
+        {!hasBothParent && (
+          <Tooltip title="Add Sibling">
+            <IconButton
+              disabled={disabled}
+              onClick={handleStartConnect}
+              onMouseUp={preventMouseUp}
+            >
+              <LinkIcon className={classes.addIconSvg} />
+            </IconButton>
+          </Tooltip>
+        )}
       </div>
     </Paper>
   );
 };
 
-export default React.memo(PersonNodeCard);
+export default PersonNodeCard;

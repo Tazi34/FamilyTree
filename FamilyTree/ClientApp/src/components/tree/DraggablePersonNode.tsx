@@ -59,6 +59,9 @@ const DraggablePersonNode = (props: any) => {
     >
       <div ref={ref}>
         <PersonNodeCard
+          canConnectTo={props.canConnectTo}
+          disabled={props.disabled}
+          onConnectStart={props.onConnectStart}
           onSiblingAdd={props.onSiblingAdd}
           onPartnerAdd={props.onPartnerAdd}
           onNodeSelect={props.onNodeSelect}

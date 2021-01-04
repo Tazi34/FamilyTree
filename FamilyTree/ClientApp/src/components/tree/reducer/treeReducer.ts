@@ -1,19 +1,14 @@
-import { AnyAction } from "redux";
-import { TreeInformation } from "./../../../model/TreeInformation";
-import { LinkLoaded } from "./../LinkComponent";
 import {
   createAction,
   createAsyncThunk,
   createDraftSafeSelector,
   createEntityAdapter,
   createReducer,
-  createSelector,
   EntityId,
   EntityState,
   Update,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
-import { X_SEP, Y_SEP } from "../../../d3/RectMapper";
 import { GetTreeStructures } from "../../../d3/treeStructureGenerator";
 import { baseURL } from "../../../helpers/apiHelpers";
 import {
@@ -21,7 +16,7 @@ import {
   mapCollectionToEntity,
 } from "../../../helpers/helpers";
 import { ApplicationState } from "../../../helpers/index";
-import { Family, Person } from "../../../model/TreeStructureInterfaces";
+import { Person } from "../../../model/TreeStructureInterfaces";
 import { selectSelf } from "../../loginPage/authenticationReducer";
 import {
   CreateNodeRequestData,
@@ -30,13 +25,27 @@ import {
 import { GetTreeResponse } from "../API/getTree/getTreeRequest";
 import { treeAPI } from "../API/treeAPI";
 import { treeNodeMapper } from "../API/utils/NodeMapper";
+import { TreeAPI } from "../API/utils/TreeModel";
 import { getLinkId } from "../helpers/idHelpers";
 import { FamilyNode, getFamilyLocation } from "../model/FamilyNode";
+import { Link } from "../model/Link";
 import { Node } from "../model/NodeClass";
 import { PersonNode } from "../model/PersonNode";
 import { Point } from "../Point";
-import { Link } from "../model/Link";
-import { addFamily, connectAsChild } from "./updateNodes/connectAsChild";
+import { TreeInformation } from "./../../../model/TreeInformation";
+import {
+  ChangeTreeNameRequestData,
+  ChangeTreeNameResponse,
+} from "./../API/changeTreeName/changeTreeNameRequest";
+import { ChangeTreeVisibilityResponse } from "./../API/changeVisibility/changeTreeVisibilityRequest";
+import { LinkLoaded } from "./../LinkComponent";
+import { deleteLink } from "./updateLinks/deleteLink";
+import { addParent, addParentReducerHandler } from "./updateNodes/addParent";
+import { addFamily } from "./updateNodes/connectAsChild";
+import { connectToFamily } from "./updateNodes/connectToFamily";
+import { deleteNode, removeNodeFromTree } from "./updateNodes/deleteNode";
+import { moveNode, moveNodeThunk } from "./updateNodes/moveNode";
+import { uploadTreeNodePictureRequest } from "./updateNodes/setNodePicture";
 import {
   createLink,
   getIncomingLinks,
@@ -44,14 +53,6 @@ import {
   getOutboundLinks,
   randomFamilyId,
 } from "./utils/getOutboundLinks";
-import { connectToFamily } from "./updateNodes/connectToFamily";
-import { deleteLink } from "./updateLinks/deleteLink";
-
-import { addParent, addParentReducerHandler } from "./updateNodes/addParent";
-import { deleteNode, removeNodeFromTree } from "./updateNodes/deleteNode";
-import { moveNodeThunk, moveNode } from "./updateNodes/moveNode";
-import { TreeAPI } from "../API/utils/TreeModel";
-import { uploadTreeNodePictureRequest } from "./updateNodes/setNodePicture";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -85,7 +86,12 @@ export const treeInitialState: TreeState = {
   treeId: null,
   treeInformation: null,
 };
-
+export const connectAsChild = createAction(
+  `tree/parentConnected`,
+  (childId: EntityId, parentId: EntityId): any => ({
+    payload: { childId, parentId },
+  })
+);
 //SELECTORS
 export const {
   selectAll: selectAllLinksLocal,
@@ -162,7 +168,12 @@ export const deleteFamily = createActionWithPayload<string>(
 export const setFamilyNodes = createActionWithPayload<FamilyNode[]>(
   `${treeActionsPrefix}/${familyNodesActionsPrefix}/familiesSet`
 );
-
+export const changeTreeName = createAsyncThunk<
+  AxiosResponse<ChangeTreeNameResponse>,
+  ChangeTreeNameRequestData
+>(`userTrees/changeTreeName`, async (requestData) => {
+  return await treeAPI.changeTreeNameRequest(requestData);
+});
 export const getTree = createAsyncThunk<AxiosResponse<GetTreeResponse>, number>(
   `${treeActionsPrefix}/treeGenerated`,
   async (id) => {
@@ -191,6 +202,16 @@ export const addChild = createAction(
     payload: { parentId, child },
   })
 );
+export const changeTreeVisibility = createAsyncThunk<
+  AxiosResponse<ChangeTreeVisibilityResponse>,
+  TreeInformation
+>(`userTrees/changeVisibility`, async (treeInformation: TreeInformation) => {
+  const modifiedTreeData: TreeInformation = {
+    ...treeInformation,
+    isPrivate: !treeInformation.isPrivate,
+  };
+  return await treeAPI.changeTreeVisibilityRequest(modifiedTreeData);
+});
 
 //REDUCER
 export const treeReducer = createReducer(treeInitialState, (builder) => {
@@ -303,7 +324,6 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     .addCase(deleteFamily, (state, action) => {
       familyNodesAdapter.removeOne(state.families, action.payload);
     })
-    .addCase(deleteNode.fulfilled, () => treeInitialState)
     .addCase(setFamilyNodes, (state, action) => {
       familyNodesAdapter.setAll(state.families, action.payload);
     })
@@ -340,9 +360,25 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
 
       childNode.fatherId = familyNode.fatherId;
       childNode.motherId = familyNode.motherId;
-      childNode.families.push(familyId);
+      //  childNode.families.push(familyId);
       const newLink = createLink(familyNode, childNode);
       linksAdapter.addOne(state.links, newLink);
+    })
+    .addCase(changeTreeVisibility.fulfilled, (state, action) => {
+      const response = action.payload.data;
+      state.treeInformation = {
+        isPrivate: response.isPrivate,
+        name: response.name,
+        treeId: response.treeId,
+      };
+    })
+    .addCase(changeTreeName.fulfilled, (state, action) => {
+      const response = action.payload.data;
+      state.treeInformation = {
+        isPrivate: response.isPrivate,
+        name: response.name,
+        treeId: response.treeId,
+      };
     })
     .addCase(setTree, (state, action: any) => {
       const tree: TreeAPI = action.payload.tree;
@@ -359,15 +395,6 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     })
     .addCase(getTree.rejected, (state) => {
       state.isLoading = false;
-    })
-    .addCase(addNode.fulfilled, (state, action) => {
-      const newNode = action.payload.data;
-      if (!newNode) {
-        throw "Unrecognized new node ";
-      }
-      // const convertedNewNode = treeNodeMapper.mapToLocal(newNode);
-      // personNodesAdapter.addOne(state.nodes, convertedNewNode);
-      return treeInitialState;
     })
     .addCase(connectAsChild, (state, action: any) => {
       const { childId, parentId } = action.payload;
@@ -435,85 +462,114 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     })
     .addCase(addChild, (state, action: any) => {});
 });
-function createTree(treeData: TreeAPI, state: TreeState) {
-  const nodes: PersonNode[] = treeData.nodes.map((node) =>
+function createTree(tree: TreeAPI, state: TreeState) {
+  linksAdapter.setAll(state.links, tree.links);
+
+  var familyNodes = tree.families.map(
+    (familyAPI) =>
+      new FamilyNode(
+        familyAPI.id,
+        tree.treeId,
+        familyAPI.x,
+        familyAPI.y,
+        familyAPI.children,
+        familyAPI.firstParentId,
+        familyAPI.secondParentId
+      )
+  );
+  const nodes: PersonNode[] = tree.nodes.map((node) =>
     treeNodeMapper.mapToLocal(node)
   );
+
+  familyNodesAdapter.setAll(state.families, familyNodes);
+  personNodesAdapter.setAll(state.nodes, nodes);
+
   const treeInformation: TreeInformation = {
-    isPrivate: treeData.isPrivate,
-    name: treeData.name,
-    treeId: treeData.treeId,
+    isPrivate: tree.isPrivate,
+    name: tree.name,
+    treeId: tree.treeId,
   };
+  state.treeId = tree.treeId;
+  state.isLoading = false;
   state.treeInformation = treeInformation;
 
-  var nodesNormalized = mapCollectionToEntity(nodes);
+  // var nodesNormalized = mapCollectionToEntity(nodes);
 
-  const trees = GetTreeStructures(nodesNormalized);
+  // const trees = GetTreeStructures(nodesNormalized);
 
-  var links: string[][] = [];
-  var families: FamilyNode[] = [];
+  // var links: string[][] = [];
+  // var families: FamilyNode[] = [];
 
-  trees.forEach((tree) => {
-    links = [...links, ...tree.links];
-    families = [...families, ...tree.families];
-  });
+  // trees.forEach((tree) => {
+  //   links = [...links, ...tree.links];
+  //   families = [...families, ...tree.families];
+  // });
 
-  var linksEntities: Link[] = links.map((link) => ({
-    source: link[0],
-    target: link[1],
-    id: getLinkId(link[0], link[1]),
-  }));
+  // var linksEntities: Link[] = links.map((link) => ({
+  //   source: link[0],
+  //   target: link[1],
+  //   id: getLinkId(link[0], link[1]),
+  // }));
 
-  families.forEach((node: FamilyNode) => {
-    var familyMembers: EntityId[] = [];
-    const familyId = node.id;
-    if (node.fatherId) {
-      familyMembers.push(node.fatherId);
-    }
-    if (node.motherId) {
-      familyMembers.push(node.motherId);
-    }
-    familyMembers = [...node.children, ...familyMembers];
+  // families.forEach((node: FamilyNode) => {
+  //   var familyMembers: EntityId[] = [];
+  //   const familyId = node.id;
+  //   if (node.fatherId) {
+  //     familyMembers.push(node.fatherId);
+  //   }
+  //   if (node.motherId) {
+  //     familyMembers.push(node.motherId);
+  //   }
+  //   familyMembers = [...node.children, ...familyMembers];
 
-    familyMembers.forEach((memberId) => {
-      const memberNode = nodes.find((n) => n.id == memberId);
-      if (memberNode && !memberNode.families.includes(familyId)) {
-        memberNode.families.push(familyId);
-      }
-    });
-  });
+  //   familyMembers.forEach((memberId) => {
+  //     const memberNode = nodes.find((n) => n.id == memberId);
+  //     if (memberNode && !memberNode.families.includes(familyId)) {
+  //     //  memberNode.families.push(familyId);
+  //     }
+  //   });
+  // });
 
-  families.forEach((family) => {
-    let mother: PersonNode | undefined = undefined;
-    let father: PersonNode | undefined = undefined;
+  // families.forEach((family) => {
+  //   let mother: PersonNode | undefined = undefined;
+  //   let father: PersonNode | undefined = undefined;
 
-    if (family.motherId) {
-      mother = nodes.find((n) => n.id == family.motherId);
-    }
-    if (family.fatherId) {
-      father = nodes.find((n) => n.id == family.fatherId);
-    }
-    if (mother && father) {
-      family.x =
-        Math.min(mother.x, father.x) + Math.abs(mother.x - father.x) / 2;
-      family.y =
-        Math.min(mother.y, father.y) + Math.abs(mother.y - father.y) / 2;
-    } else {
-      const existingMember = father ?? mother;
-      if (!existingMember) {
-        //TODO co jak nie ma? exception?
-      } else {
-        family.x = existingMember.x;
-        family.y = existingMember.y;
-      }
-    }
-  });
+  //   if (family.motherId) {
+  //     mother = nodes.find((n) => n.id == family.motherId);
+  //   }
+  //   if (family.fatherId) {
+  //     father = nodes.find((n) => n.id == family.fatherId);
+  //   }
+  //   if (mother && father) {
+  //     family.x =
+  //       Math.min(mother.x, father.x) + Math.abs(mother.x - father.x) / 2;
+  //     family.y =
+  //       Math.min(mother.y, father.y) + Math.abs(mother.y - father.y) / 2;
+  //   } else {
+  //     const existingMember = father ?? mother;
+  //     if (!existingMember) {
+  //       //TODO co jak nie ma? exception?
+  //     } else {
+  //       family.x = existingMember.x;
+  //       family.y = existingMember.y;
+  //     }
+  //   }
+  // });
 
-  state.isLoading = false;
-  linksAdapter.setAll(state.links, linksEntities);
-  personNodesAdapter.setAll(state.nodes, nodes);
-  familyNodesAdapter.setAll(state.families, families);
-  state.treeId = treeData.treeId;
+  // families.forEach((family) => {
+  //   let familyId = `f${family.fatherId ?? ""}${family.motherId ?? ""}`;
+  //   const childrenIds = family.children.map((child) => child as number).sort();
+
+  //   childrenIds.forEach((id) => {
+  //     familyId += id;
+  //   });
+  //   family.id = familyId;
+  // });
+
+  // linksAdapter.setAll(state.links, linksEntities);
+  // personNodesAdapter.setAll(state.nodes, nodes);
+  // familyNodesAdapter.setAll(state.families, families);
+  //
 }
 
 export const linkLoader = (state: TreeState, link: Link): LinkLoaded | null => {

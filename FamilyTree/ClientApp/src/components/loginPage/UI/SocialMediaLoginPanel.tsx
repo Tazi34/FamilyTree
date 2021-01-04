@@ -54,7 +54,6 @@ const SocialMediaLoginPanel = ({ onGmailLogin }: Props) => {
       >
         <FacebookLogin
           appId="397727788098228"
-          autoLoad={true}
           fields="name,email,picture"
           callback={responseFacebook}
         />

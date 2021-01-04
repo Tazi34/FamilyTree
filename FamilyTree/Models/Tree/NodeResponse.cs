@@ -22,6 +22,8 @@ namespace FamilyTree.Models
         public int Y { get; set; }
         public List<int> Children { get; set; }
         public List<int> Partners { get; set; }
+        //do drawable tree response : TODO co z tym zrobic
+        public List<string> Families { get; set; }
         public NodeResponse(Node node)
         {
             NodeId = node.NodeId;
@@ -47,6 +49,7 @@ namespace FamilyTree.Models
             {
                 Partners.Add(partner.Partner1Id);
             }
+            Families = new List<string>();
         }
         /// <summary>
         /// 

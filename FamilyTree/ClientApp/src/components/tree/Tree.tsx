@@ -1,6 +1,7 @@
 import { Button, Paper, Theme, withStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
+import { withRouter } from "react-router";
 import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { compose } from "recompose";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
@@ -8,18 +9,22 @@ import { ApplicationState } from "../../helpers";
 import { TreeInformation } from "../../model/TreeInformation";
 import { SendInvitationRequestData } from "../invitation/API/sendInvitation/sendInvitationRequest";
 import { sendInvitation } from "../invitation/reducer/invitationsReducer";
-import {
-  changeTreeName,
-  changeTreeVisibility,
-} from "../userTreeList/usersTreeReducer";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
-import { addNode, getTree } from "./reducer/treeReducer";
+import { PersonNode } from "./model/PersonNode";
+import { connectNodes } from "./reducer/updateNodes/connectAsChild";
+import {
+  addNode,
+  getTree,
+  changeTreeVisibility,
+  changeTreeName,
+} from "./reducer/treeReducer";
 import { addChild } from "./reducer/updateNodes/addChild";
 import { addParentAsync2 } from "./reducer/updateNodes/addParent";
 import { addPartner } from "./reducer/updateNodes/addPartner";
 import { addSiblingRequest } from "./reducer/updateNodes/addSibling";
 import TreeInformationPanel from "./TreeInformationPanel";
 import TreeRenderer from "./TreeRenderer";
+import { ConnectNodesRequestData } from "./API/connectNodes/connectNodesRequest";
 
 type TreeContainerState = {
   isAddMenuOpen: boolean;
@@ -74,10 +79,16 @@ class Tree extends React.Component<any, TreeContainerState> {
   getSvg = () => {
     return this.svgRef.current;
   };
+  handleConnectStart = () => {};
 
   componentDidMount() {
     const treeId = this.props.computedMatch.params.treeId;
-    this.props.getTree(treeId);
+    //TODO rozwiazanie kwesti goscia - jak wejdzie gosc rzuca blad i elo
+    this.props.getTree(treeId).then((resp: any) => {
+      // if (resp.error) {
+      //   this.props.history.back();
+      // }
+    });
 
     this.resetDimensions();
     const canvas = document.getElementById("tree-canvas") as HTMLElement;
@@ -118,7 +129,7 @@ class Tree extends React.Component<any, TreeContainerState> {
     treeInformation: TreeInformation,
     newName: string
   ) => {
-    this.props.changeTreeName({ treeInformation, newName });
+    this.props.changeTreeName({ ...treeInformation, name: newName });
   };
   handleTreeVisibilityChange = (treeInformation: TreeInformation) => {
     this.props.changeTreeVisibility(treeInformation);
@@ -163,6 +174,25 @@ class Tree extends React.Component<any, TreeContainerState> {
     };
     this.props.sendInvitation(data);
   };
+  handleConnectAsChild = (
+    childNode: PersonNode,
+    parentNode: PersonNode,
+    secondParentNode?: PersonNode
+  ) => {
+    const treeId = parseFloat(this.props.computedMatch.params.treeId);
+
+    let secondParentId: number | undefined = undefined;
+    if (secondParentNode) {
+      secondParentId = secondParentNode.id as number;
+    }
+    const data: ConnectNodesRequestData = {
+      treeId: treeId,
+      childId: childNode.id as number,
+      firstParentId: parentNode.id as number,
+      secondParentId,
+    };
+    this.props.connectNodes(data);
+  };
 
   handleSiblingAdd = (id: number, data: CreateNodeRequestData) => {
     this.props.addSibling(id, data);
@@ -202,7 +232,8 @@ class Tree extends React.Component<any, TreeContainerState> {
               options={{
                 limitToBounds: false,
                 centerContent: true,
-                minScale: 0.1,
+                minScale: 0.4,
+                maxScale: 1.4,
               }}
               onWheelStop={this.setScale}
               defaultPositionX={this.state.canvasWidth / 2}
@@ -225,8 +256,11 @@ class Tree extends React.Component<any, TreeContainerState> {
                     onPartnerAdd={this.handlePartnerAdd}
                     onChildAdd={this.handleChildAdd}
                     onSiblingAdd={this.handleSiblingAdd}
+                    onConnectAsChild={this.handleConnectAsChild}
                     rectHeight={RECT_HEIGHT}
                     rectWidth={RECT_WIDTH}
+                    positionX={positionX}
+                    positionY={positionY}
                   />
                 </TransformComponent>
               )}
@@ -248,6 +282,7 @@ const mapDispatch = {
   addChild,
   addSibling: addSiblingRequest,
   sendInvitation,
+  connectNodes,
 };
 const mapState = (state: ApplicationState) => ({
   isLoading: state.tree.isLoading,
@@ -256,6 +291,7 @@ const mapState = (state: ApplicationState) => ({
 });
 
 export default compose(
+  withRouter,
   withStyles(styles),
   connect(mapState, mapDispatch)
 )(Tree);

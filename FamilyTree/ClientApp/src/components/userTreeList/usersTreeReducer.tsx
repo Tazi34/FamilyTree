@@ -11,6 +11,7 @@ import { baseURL } from "../../helpers/apiHelpers";
 import { addThunkWithStatusHandlers, StatusState } from "../../helpers/helpers";
 import { TreeInformation } from "../../model/TreeInformation";
 import { initialStatus } from "../blog/redux/postsReducer";
+import { treeAPI } from "../tree/API/treeAPI";
 import { TreeAPI } from "../tree/API/utils/TreeModel";
 
 const treesReducerPath = "userTrees";
@@ -40,16 +41,6 @@ export const getUserTrees = createAsyncThunk(
     return axios.get(`${baseURL}/tree/user/${userId}`);
   }
 );
-export const changeTreeVisibility = createAsyncThunk(
-  `userTrees/changeVisibility`,
-  (treeInformation: TreeInformation) => async () => {
-    const modifiedTreeData: TreeInformation = {
-      ...treeInformation,
-      isPrivate: !treeInformation.isPrivate,
-    };
-    return axios.put(`${baseURL}/tree/`, modifiedTreeData);
-  }
-);
 
 export const createTree = createAsyncThunk<AxiosResponse<TreeAPI>, string>(
   `userTrees/createTree`,
@@ -62,21 +53,6 @@ export const createTree = createAsyncThunk<AxiosResponse<TreeAPI>, string>(
   }
 );
 
-type ChangeTreeNameRequest = {
-  treeInformation: TreeInformation;
-  newName: string;
-};
-
-export const changeTreeName = createAsyncThunk(
-  `userTrees/changeTreeName`,
-  (requestData: ChangeTreeNameRequest) => async () => {
-    const modifiedTreeData: TreeInformation = {
-      ...requestData.treeInformation,
-      name: requestData.newName,
-    };
-    return axios.put(`${baseURL}/tree/`, modifiedTreeData);
-  }
-);
 export const userTreesReducer = createReducer<UserTreesState>(
   initialUserTreesState,
   (builder) => {
@@ -88,33 +64,15 @@ export const userTreesReducer = createReducer<UserTreesState>(
         userTreesAdapter.setAll(state.trees, userTrees);
       }
     );
-    builder
-      .addCase(changeTreeVisibility.fulfilled, (state, action) => {
-        const treeInformation = action.meta.arg;
-        userTreesAdapter.removeOne(state.trees, treeInformation.treeId);
-        userTreesAdapter.addOne(state.trees, {
-          ...treeInformation,
-          isPrivate: !treeInformation.isPrivate,
-        });
-      })
-      .addCase(createTree.fulfilled, (state, action) => {
-        const tree = action.payload.data;
-        const treeInformation: TreeInformation = {
-          isPrivate: tree.isPrivate,
-          treeId: tree.treeId,
-          name: tree.name,
-        };
-        userTreesAdapter.addOne(state.trees, treeInformation);
-      })
-      .addCase(changeTreeName.fulfilled, (state, action) => {
-        const treeInformation = action.meta.arg.treeInformation;
-        const newName = action.meta.arg.newName;
-        userTreesAdapter.removeOne(state.trees, treeInformation.treeId);
-        userTreesAdapter.addOne(state.trees, {
-          ...treeInformation,
-          name: newName,
-        });
-      });
+    builder.addCase(createTree.fulfilled, (state, action) => {
+      const tree = action.payload.data;
+      const treeInformation: TreeInformation = {
+        isPrivate: tree.isPrivate,
+        treeId: tree.treeId,
+        name: tree.name,
+      };
+      userTreesAdapter.addOne(state.trees, treeInformation);
+    });
   }
 );
 
