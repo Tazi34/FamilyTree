@@ -350,6 +350,20 @@ class TreeRenderer extends React.Component<Props, State, any> {
             personNode.id
           );
         }
+        if (connectionMode.mode === "AsParent") {
+          const startNode = connectionMode.start;
+          if (!startNode || (startNode.fatherId && startNode.motherId)) {
+            this.resetConnectingMode();
+            return;
+          }
+          var existingParent = personNode.fatherId ?? personNode.motherId;
+
+          this.props.onConnectAsChild(
+            personNode.id,
+            connectionMode.start!.id,
+            existingParent
+          );
+        }
       }
       this.resetConnectingMode();
     } else {

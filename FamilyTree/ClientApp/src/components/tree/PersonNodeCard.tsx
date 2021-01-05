@@ -294,7 +294,7 @@ const PersonNodeCard = ({
             variant="subtitle1"
             className={classes.nameSection}
           >
-            {details.name} {details.surname}
+            {person.id} {details.name} {details.surname}
           </Typography>
           <Typography
             align="center"
