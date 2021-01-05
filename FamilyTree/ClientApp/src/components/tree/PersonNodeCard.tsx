@@ -208,7 +208,7 @@ const PersonNodeCard = ({
     surname: "Node",
     birthday: "2020-12-16T20:29:42.677Z",
     description: "Cool description",
-    pictureUrl: "",
+    picture: "",
     userId: 0,
     fatherId: 0,
     sex: "Male",

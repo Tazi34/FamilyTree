@@ -144,6 +144,7 @@ class Tree extends React.Component<any, TreeContainerState> {
       partners: [],
       x: 0,
       y: 0,
+      picture: null,
       treeId: parseFloat(this.props.computedMatch.params.treeId),
     };
     this.props.addEmptyNode(createNodeData).then((resp: any) => {
@@ -162,7 +163,7 @@ class Tree extends React.Component<any, TreeContainerState> {
       children: [],
       fatherId: 0,
       motherId: 0,
-      pictureUrl: "",
+      picture: "",
       description: "Very fascinating description :0",
       name: "Adam",
       sex: "Male",
