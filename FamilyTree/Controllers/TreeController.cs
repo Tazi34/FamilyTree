@@ -9,6 +9,8 @@ using FamilyTree.Entities;
 using FamilyTree.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace FamilyTree.Controllers
 {
@@ -142,7 +144,7 @@ namespace FamilyTree.Controllers
         /// <summary>
         /// Ustawia polaczenia partnerow 
         /// </summary>
-        /// <param name=""></param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         [Authorize]
@@ -182,10 +184,15 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("node")]
-        public async Task<ActionResult<NodeResponse>> CreateNode(CreateNodeRequest model)
+        public async Task<ActionResult<NodeResponse>> CreateNode(IFormFile picture, [FromForm] string jsonBody)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = await treeService.CreateNodeAsync(userId, model);
+            var options = new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var model = JsonSerializer.Deserialize<CreateNodeRequest>(jsonBody, options);
+            var tree = await treeService.CreateNodeAsync(userId, model, picture);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
