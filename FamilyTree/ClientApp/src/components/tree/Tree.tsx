@@ -144,7 +144,7 @@ class Tree extends React.Component<any, TreeContainerState> {
       partners: [],
       x: 0,
       y: 0,
-      picture: null,
+      picture: formData.picture,
       treeId: parseFloat(this.props.computedMatch.params.treeId),
     };
     this.props.addEmptyNode(createNodeData).then((resp: any) => {

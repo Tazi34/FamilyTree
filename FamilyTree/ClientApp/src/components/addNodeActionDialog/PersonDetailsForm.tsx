@@ -98,28 +98,23 @@ export type FormProps = {
   description: string;
   sex: Sex;
 };
-type Props = {
-  onPictureUpload: (data: UploadNodePictureRequestData) => Promise<any>;
-} & FormikProps;
-const PersonDetailsForm = ({
-  change,
-  values,
-  onPictureUpload,
-  setFieldValue,
-}: Props) => {
+type Props = {} & FormikProps;
+const PersonDetailsForm = ({ change, values, setFieldValue }: Props) => {
   const classes = useStyles();
   const [pictureDialog, setPictureDialog] = React.useState(false);
+  const [picturePreview, setPicturePreview] = React.useState<any>(null);
   const handleSetPicture = (data: any) => {
     if (data) {
-      onPictureUpload(data).then((response: any) => {
-        if (response.error) {
-          //TODO ERROR
-        } else {
-          values.pictureUrl = response.payload.data.pictureUrl;
-          setPictureDialog(false);
+      values.picture = data;
+      const fileReader = new FileReader();
+      fileReader.onload = (e) => {
+        if (e) {
+          setPicturePreview(e.target?.result as any);
         }
-      });
+      };
+      fileReader.readAsDataURL(data);
     }
+    setPictureDialog(false);
   };
 
   const handlePictureDialog = () => {
@@ -128,11 +123,11 @@ const PersonDetailsForm = ({
 
   return (
     <div>
-      {/* <PicturePickerDialog
+      <PicturePickerDialog
         open={pictureDialog}
         onClose={handlePictureDialog}
         onPickPicture={handleSetPicture}
-      /> */}
+      />
       {/* <Formik
         initialValues={{
           name: "",
@@ -157,6 +152,15 @@ const PersonDetailsForm = ({
             <form onSubmit={handleSubmit}> */}
       <div className={classes.personDialog}>
         <div className={classes.contentSection}>
+          <div className={classes.pictureContainer}>
+            <IconButton
+              className={classes.editPictureIconContainer}
+              onClick={handlePictureDialog}
+            >
+              <i className={`fas fa-camera ${classes.editPictureIcon}`} />
+            </IconButton>
+            <img src={picturePreview ?? ""} className={classes.picture} />
+          </div>
           <div className={classes.information}>
             <TextField
               name="name"

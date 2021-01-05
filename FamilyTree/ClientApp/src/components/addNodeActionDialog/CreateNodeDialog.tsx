@@ -22,8 +22,8 @@ export type CreateNodeFormData = {
   description: string;
   name: string;
   surname: string;
-  pictureUrl: string;
   sex: Sex;
+  picture: File | null;
 };
 
 type Props = {
@@ -34,9 +34,6 @@ type Props = {
 const CreateNodeDialog = ({ open, onClose, onSubmit }: Props) => {
   const dispatch = useThunkDispatch();
 
-  const handlePictureUpload = (data: UploadNodePictureRequestData) => {
-    return dispatch(uploadTreeNodePicture(data));
-  };
   return (
     <Dialog open={open} onClose={onClose}>
       <Paper>
@@ -49,7 +46,7 @@ const CreateNodeDialog = ({ open, onClose, onSubmit }: Props) => {
               birthday: new Date().toString(),
               description: "",
               sex: "Male" as Sex,
-              pictureUrl: "",
+              picture: null,
             }}
             onSubmit={(values: CreateNodeFormData) => {
               onSubmit(values);
@@ -71,7 +68,6 @@ const CreateNodeDialog = ({ open, onClose, onSubmit }: Props) => {
                 <form onSubmit={handleSubmit}>
                   <PersonDetailsForm
                     change={change}
-                    onPictureUpload={handlePictureUpload}
                     values={values}
                     onSubmit={(values: any) => {
                       alert(values);
