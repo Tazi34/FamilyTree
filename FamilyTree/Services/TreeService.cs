@@ -16,18 +16,20 @@ namespace FamilyTree.Services
         public Task<DrawableTreeResponse> GetTreeAsync(int id, int userId);
         public Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model);
         public Task<DrawableTreeResponse> DeleteNodeAsync(int userId, int NodeId);
-        public Task<DrawableTreeResponse> ConnectNodesAsync(int userId, ConnectNodesRequest model);
+        public Task<DrawableTreeResponse> ConnectChildToParents(int userId, ConnectNodesRequest model);
         public Task<DrawableTreeResponse> AddSiblingAsync(int userId, AddSiblingRequest model);
         public Task<DrawableTreeResponse> CreateTreeAsync(int userId, CreateTreeRequest model);
         public Task<DrawableTreeResponse> ModifyTreeAsync(int userId, ModifyTreeRequest model);
         public Task<DrawableTreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model);
+        public Task<CheckPossibleConnectionResponse> CheckPossibleConnections(int userId, CheckPossibleConnectionsRequest model);
+        Task<DrawableTreeResponse> ConnectPartners(int userId, ConnectPartnersRequest model);
         public Task<NodeResponse> GetNodeAsync(int id, int userId);
         public Task<TreeUserResponse> GetUserTreesAsync(int id, int claimId);
         public Task<MoveNodeResponse> MoveNodeAsync(int userId, MoveNodeRequest model);
         public Task<bool> DeleteTreeAsync(int userId, int TreeId);
 
     }
-    public class TreeService : ITreeService  
+    public class TreeService : ITreeService
     {
         private DataContext context;
         private ITreeAuthService treeAuthService;
@@ -35,8 +37,8 @@ namespace FamilyTree.Services
         private string defaultNodePictureUrl;
         private string defaultUserPictureUrl;
         public TreeService(
-            DataContext dataContext, 
-            ITreeAuthService treeAuthService, 
+            DataContext dataContext,
+            ITreeAuthService treeAuthService,
             ITreeValidationService treeValidationService,
             IOptions<AzureBlobSettings> azureBlobSettings)
         {
@@ -74,8 +76,8 @@ namespace FamilyTree.Services
             if (!treeValidationService.ValidateNewNode(newNodeRequest, tree))
                 return null;
 
-       
-            var sibling =await GetNodeFromContextAsync(model.SiblingId);
+
+            var sibling = await GetNodeFromContextAsync(model.SiblingId);
 
             //nie znaleziono rodzenstwa bad request
             if (sibling == null)
@@ -114,7 +116,7 @@ namespace FamilyTree.Services
                 else
                 {
                     newNodeRequest.FatherId = sibling.Parents[0].ParentId;
-                    if(sibling.Parents.Count > 1)
+                    if (sibling.Parents.Count > 1)
                     {
                         newNodeRequest.MotherId = sibling.Parents[1].ParentId;
                     }
@@ -127,7 +129,8 @@ namespace FamilyTree.Services
                     context.SaveChanges();
                 }
                 transaction.Commit();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return null;
             }
@@ -211,16 +214,18 @@ namespace FamilyTree.Services
                 userInTree = true;
             return new NodeResponse(node, user, userInTree);
         }
-        
-        public async Task<DrawableTreeResponse> ConnectNodesAsync(int userId, ConnectNodesRequest model)
+
+        public async Task<DrawableTreeResponse> ConnectChildToParents(int userId, ConnectNodesRequest model)
         {
             var user = await GetUserFromContextAsync(userId);
             var tree = await GetTreeFromContextAsync(model.TreeId);
             var child = await GetNodeFromContextAsync(model.ChildId);
-            if(child == null)
+            if (child == null)
             {
                 return null;
             }
+
+
             var firstParent = await GetNodeFromContextAsync(model.FirstParentId);
             if (firstParent == null)
             {
@@ -229,35 +234,176 @@ namespace FamilyTree.Services
             Node secondParent = null;
             if (model.SecondParentId.HasValue)
             {
-                //ma obu rodzicow a chcemy cos zmieniac w obu
-                if (child.Parents.Any())
-                {
-                    return null;
-                }
                 secondParent = await GetNodeFromContextAsync(model.SecondParentId.Value);
                 if (secondParent == null)
                 {
                     return null;
                 }
             }
-            var transcation = context.Database.BeginTransaction();
-            context.NodeNode.RemoveRange(child.Parents);
-            context.SaveChanges();
 
-            child.Parents.Add(new NodeNode() { Parent = firstParent, ParentId = firstParent.NodeId });
-            if (secondParent != null)
+            //juz ma rodzicow
+            if (child.Parents.Count == 2)
             {
-               child.Parents.Add(new NodeNode() { Parent = secondParent, ParentId = secondParent.NodeId });
+                var firstParentId = child.Parents[0].ParentId;
+                var secondParentId = child.Parents[1].ParentId;
+                if (firstParentId == model.FirstParentId && secondParentId == model.SecondParentId ||
+                    firstParentId == model.SecondParentId && secondParentId == model.FirstParentId)
+                {
+                    //jesli rodzice sie zgadzaja - ok, po prostu zwroc drzewo
+                    return new DrawableTreeResponse(tree, user);
+                }
+
+                return null;
             }
-            context.SaveChanges();
-            transcation.Commit();
+            //ma rodzica trzeba kombinowac
+            if (child.Parents.Count == 1)
+            {
+                var firstParentId = child.Parents[0].ParentId;
+                //jesli jest tylko jeden rodzic i sie zgadza to okej 
+                if(secondParent == null)
+                {
+                    if(firstParentId == model.FirstParentId)
+                    {
+                        return new DrawableTreeResponse(tree, user);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                //jesli jest dwoch i jeden sie zgadza to ok
+                if (firstParentId == model.FirstParentId || firstParentId == model.SecondParentId)
+                {
+                    if(model.FirstParentId == firstParentId)
+                    {
+                        context.NodeNode.Add(new NodeNode()
+                        {
+                            Parent = secondParent,
+                            ParentId = secondParent.NodeId,
+                            Child = child,
+                            ChildId = child.NodeId
+                        });
+                    }
+                    else
+                    {
+                        context.NodeNode.Add(new NodeNode()
+                        {
+                            Parent = firstParent,
+                            ParentId = firstParent.NodeId,
+                            Child = child,
+                            ChildId = child.NodeId
+                        });                       
+                    }
+                    context.SaveChanges();
+                    return new DrawableTreeResponse(tree, user);
+                }
+                else
+                {
+                    return null;
+                }
+
+            }
+            else
+            {
+                //nie ma rodzicow - podepnij
+                var transcation = context.Database.BeginTransaction();
+                context.NodeNode.RemoveRange(child.Parents);
+                context.SaveChanges();
+
+                child.Parents.Add(new NodeNode() { Parent = firstParent, ParentId = firstParent.NodeId });
+                if (secondParent != null)
+                {
+                    child.Parents.Add(new NodeNode() { Parent = secondParent, ParentId = secondParent.NodeId });
+                }
+                context.SaveChanges();
+                transcation.Commit();
+            }
 
 
             //var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
             //if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
             //    return null;
-            return new DrawableTreeResponse(tree);
+            return new DrawableTreeResponse(tree, user);
         }
+        public async Task<DrawableTreeResponse> ConnectPartners(int userId, ConnectPartnersRequest model)
+        {
+            var user = await GetUserFromContextAsync(userId);
+            var firstPartner = await GetNodeFromContextAsync(model.FirstPartnerId);
+            if (firstPartner == null)
+            {
+                return null;
+            }
+            var secondPartner = await GetNodeFromContextAsync(model.SecondPartnerId);
+            if (secondPartner == null)
+            {
+                return null;
+            }
+            var tree = await GetTreeFromContextAsync(firstPartner.TreeId);
+
+            context.NodeNodeMarriage.Add(new NodeNodeMarriage()
+            {
+                Partner1 = firstPartner,
+                Partner2 = secondPartner
+            });
+
+            context.SaveChanges();
+
+
+            //var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
+            //if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
+            //    return null;
+            return new DrawableTreeResponse(tree, user);
+        }
+
+
+        //public async Task<DrawableTreeResponse> ConnectNodeToFamily(int userId, ConnectNodeToFamilyRequest model)
+        //{
+        //    //var user = await GetUserFromContextAsync(userId);
+        //    //var node = await GetNodeFromContextAsync(model.NodeId);
+
+        //    //var tree = await GetTreeFromContextAsync(node.TreeId);
+        //    //if (node == null)
+        //    //{
+        //    //    return null;
+        //    //}
+        //    //var firstParent = await GetNodeFromContextAsync(model.FirstParentId);
+        //    //if (firstParent == null)
+        //    //{
+        //    //    return null;
+        //    //}
+        //    //Node secondParent = null;
+        //    //if (model.SecondParentId.HasValue)
+        //    //{
+        //    //    //ma obu rodzicow a chcemy cos zmieniac w obu
+        //    //    if (node.Parents.Any())
+        //    //    {
+        //    //        return null;
+        //    //    }
+        //    //    secondParent = await GetNodeFromContextAsync(model.SecondParentId.Value);
+        //    //    if (secondParent == null)
+        //    //    {
+        //    //        return null;
+        //    //    }
+        //    //}
+        //    //var transcation = context.Database.BeginTransaction();
+        //    //context.NodeNode.RemoveRange(node.Parents);
+        //    //context.SaveChanges();
+
+        //    //node.Parents.Add(new NodeNode() { Parent = firstParent, ParentId = firstParent.NodeId });
+        //    //if (secondParent != null)
+        //    //{
+        //    //    node.Parents.Add(new NodeNode() { Parent = secondParent, ParentId = secondParent.NodeId });
+        //    //}
+        //    //context.SaveChanges();
+        //    //transcation.Commit();
+
+
+        //    ////var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
+        //    ////if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
+        //    ////    return null;
+        //    //return new DrawableTreeResponse(tree, user);
+        //}
 
         public async Task<DrawableTreeResponse> GetTreeAsync(int treeId, int userId)
         {
@@ -274,7 +420,7 @@ namespace FamilyTree.Services
             var askingUser = await GetUserFromContextAsync(askingUserId);
             var treeList = await GetUserTreesFromContextAsync(userId);
             var authorizedTrees = new List<FlatTree>();
-            foreach(Tree tree in treeList)
+            foreach (Tree tree in treeList)
             {
                 var authLevel = treeAuthService.GetTreeAuthLevel(askingUser, tree);
                 if (treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
@@ -282,6 +428,17 @@ namespace FamilyTree.Services
             }
             return new TreeUserResponse(authorizedTrees);
         }
+
+        public async Task<CheckPossibleConnectionResponse> CheckPossibleConnections(int userId, CheckPossibleConnectionsRequest model)
+        {
+            var user = await GetUserFromContextAsync(userId);
+            var node = await GetNodeFromContextAsync(model.NodeId);
+            var tree = await GetTreeFromContextAsync(node.TreeId);
+
+            var checker = new CanConnectToChecker();
+            return checker.Check(new DrawableTreeResponse(tree, user), node.NodeId, Enum.Parse<ConnectMode>(model.Mode));
+        }
+
 
         public async Task<DrawableTreeResponse> ModifyNodeAsync(int userId, ModifyNodeRequest model)
         {
@@ -295,7 +452,7 @@ namespace FamilyTree.Services
             if (!treeValidationService.ValidateModifiedNode(model, tree))
                 return null;
 
-            if(model.Birthday != null)
+            if (model.Birthday != null)
                 node.Birthday = model.Birthday;
             if (!string.IsNullOrWhiteSpace(model.Description))
                 node.Description = model.Description;
@@ -309,7 +466,7 @@ namespace FamilyTree.Services
                 if (currentChild == null)
                 {
                     var child_node = tree.Nodes.SingleOrDefault(n => n.NodeId == child);
-                    if(child_node != null)
+                    if (child_node != null)
                     {
                         var rel = new NodeNode
                         {
@@ -392,7 +549,7 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
                 return false;
-            while(tree.Nodes.Count > 0)
+            while (tree.Nodes.Count > 0)
                 await DeleteNodeAsync(tree.Nodes.First());
             context.Trees.Remove(tree);
             await context.SaveChangesAsync();
@@ -420,7 +577,7 @@ namespace FamilyTree.Services
         {
             string pictureUrl = defaultNodePictureUrl;
             var user = await GetUserFromContextAsync(model.UserId);
-            if(user != null && user.UserId != 0)
+            if (user != null && user.UserId != 0)
             {
                 if (user.PictureUrl != null && !user.PictureUrl.Equals("") && !user.PictureUrl.Equals(defaultUserPictureUrl))
                     pictureUrl = user.PictureUrl;
@@ -503,7 +660,7 @@ namespace FamilyTree.Services
                 .Include(x => x.Nodes).ThenInclude(x => x.Partners2)
                 .FirstOrDefaultAsync(tree => tree.TreeId == treeId);
         }
-        private async Task<Node> GetNodeFromContextAsync (int nodeId)
+        private async Task<Node> GetNodeFromContextAsync(int nodeId)
         {
             return await context.Nodes
                 .Include(n => n.Children)
@@ -512,16 +669,17 @@ namespace FamilyTree.Services
                 .Include(n => n.Partners2)
                 .FirstOrDefaultAsync(n => n.NodeId == nodeId);
         }
-        private async Task<User> GetUserFromContextAsync (int userId)
+        private async Task<User> GetUserFromContextAsync(int userId)
         {
             if (userId == 0) //user with no token
-                return new User { 
+                return new User
+                {
                     UserId = 0,
                     Role = Role.User
                 };
             return await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
         }
-        private async Task<List<Tree>> GetUserTreesFromContextAsync (int userId)
+        private async Task<List<Tree>> GetUserTreesFromContextAsync(int userId)
         {
             return await context.Trees
                 .Include(x => x.Nodes).ThenInclude(x => x.Children)
@@ -531,6 +689,5 @@ namespace FamilyTree.Services
                 .Where(tree => tree.Nodes.Any(node => node.UserId == userId)).ToListAsync();
         }
 
-    
     }
 }

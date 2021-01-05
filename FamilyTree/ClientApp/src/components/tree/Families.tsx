@@ -12,7 +12,12 @@ const Families = (props: any) => {
   return (
     <div>
       {props.families.map((family: FamilyNode) => (
-        <FamilyNodeCard key={family.id} family={family} />
+        <FamilyNodeCard
+          canConnectTo={props.possibleConnections.includes(family.id)}
+          key={family.id}
+          family={family}
+          onSelect={props.onSelect}
+        />
       ))}
     </div>
   );

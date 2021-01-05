@@ -1,5 +1,4 @@
 import { EntityId } from "@reduxjs/toolkit";
-import { Point } from "../Point";
 
 export type NodeId = string | number | null;
 
@@ -13,7 +12,7 @@ export class Node {
   fatherId: EntityId | null = null;
   motherId: EntityId | null = null;
   graph: number | undefined = undefined;
-  d3Node: any;
+
   treeId: number;
 
   constructor(

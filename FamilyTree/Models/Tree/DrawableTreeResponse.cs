@@ -15,7 +15,7 @@ namespace FamilyTree.Models
         {
             var families = new Dictionary<(int firstParentId, int secondParentId), Family>();
             var links = new List<Link>();
-
+            
             foreach (var node in Nodes)
             {
                 //jesli ma rodzicow to bedzie/jest rodzina

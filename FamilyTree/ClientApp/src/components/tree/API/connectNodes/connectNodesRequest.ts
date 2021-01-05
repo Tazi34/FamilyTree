@@ -12,5 +12,5 @@ export type ConnectNodesRequestData = {
 export type ConnectNodesResponse = TreeAPI;
 
 export const connectNodesRequest = (data: ConnectNodesRequestData) => {
-  return axios.post(`${baseURL}/tree/node/connect`, data);
+  return axios.post(`${baseURL}/tree/node/connect/child`, data);
 };

@@ -11,6 +11,7 @@ class NodesList extends React.Component<any> {
         {this.props.nodes.map((node: PersonNode) => {
           return (
             <DraggablePersonNode
+              onAddActionMenuClick={props.onAddActionMenuClick}
               canConnectTo={this.props.possibleConnections.includes(node.id)}
               disabled={this.props.disabled}
               onSiblingAdd={this.props.onSiblingAdd}

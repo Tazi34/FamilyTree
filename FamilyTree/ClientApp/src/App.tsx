@@ -48,6 +48,7 @@ import PrivacyPolicyPage from "./components/privacy/PrivacyPolicyPage";
 import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
 import { useThunkDispatch } from ".";
 import { getInvitations } from "./components/invitation/reducer/invitationsReducer";
+import CreateNodeDialog from "./components/addNodeActionDialog/CreateNodeDialog";
 
 export const theme = createMuiTheme({
   palette: {

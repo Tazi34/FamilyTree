@@ -101,7 +101,6 @@ export type TreeNodeDialogProps = {
   open: boolean;
   node: PersonNode | null;
   onClose: () => void;
-  canEdit: boolean;
 };
 type FormProps = {
   name: string;
@@ -115,7 +114,6 @@ const TreeNodeDetailsDialog = ({
   open,
   onClose,
   node,
-  canEdit,
 }: TreeNodeDialogProps) => {
   const classes = useStyles();
   const [pictureDialog, setPictureDialog] = React.useState(false);
@@ -123,10 +121,12 @@ const TreeNodeDetailsDialog = ({
   const [pictureUrl, setPictureUrl] = React.useState(
     node?.personDetails.pictureUrl
   );
+
   const dispatch = useThunkDispatch();
   if (!node) {
     return null;
   }
+  const canEdit = node.canEdit;
   const handlePictureDialog = () => {
     setPictureDialog(!pictureDialog);
   };
@@ -285,9 +285,11 @@ const TreeNodeDetailsDialog = ({
                     )}
                   </div>
                   <div className={classes.actionsSection}>
-                    <IconButton onClick={() => setEditMode(!editMode)}>
-                      {editMode ? <PanoramaFishEyeIcon /> : <EditIcon />}
-                    </IconButton>
+                    {canEdit && (
+                      <IconButton onClick={() => setEditMode(!editMode)}>
+                        {editMode ? <PanoramaFishEyeIcon /> : <EditIcon />}
+                      </IconButton>
+                    )}
                   </div>
                 </div>
                 <Divider className={classes.divider} />

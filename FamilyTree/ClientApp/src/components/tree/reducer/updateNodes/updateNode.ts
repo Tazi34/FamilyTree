@@ -11,5 +11,6 @@ export const updateTreeNode = createAsyncThunk<
   AxiosResponse<UpdateNodeResponse>,
   UpdateNodeRequestData
 >(`${treeActionsPrefix}/updateNode`, async (updateNodeData) => {
+  updateNodeData.birthday = new Date(updateNodeData.birthday).toISOString();
   return await treeAPI.updateTreeNode(updateNodeData);
 });

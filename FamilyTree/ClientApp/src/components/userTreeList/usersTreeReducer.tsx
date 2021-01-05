@@ -67,6 +67,7 @@ export const userTreesReducer = createReducer<UserTreesState>(
     builder.addCase(createTree.fulfilled, (state, action) => {
       const tree = action.payload.data;
       const treeInformation: TreeInformation = {
+        canEdit: tree.canEdit,
         isPrivate: tree.isPrivate,
         treeId: tree.treeId,
         name: tree.name,

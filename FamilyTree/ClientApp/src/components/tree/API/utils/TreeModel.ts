@@ -17,6 +17,7 @@ export type TreeNodeAPI = {
   x: number;
   y: number;
   families: string[];
+  canEdit: boolean;
 };
 
 export type TreeAPI = {
@@ -26,6 +27,7 @@ export type TreeAPI = {
   nodes: TreeNodeAPI[];
   links: LinkAPI[];
   families: FamilyAPI[];
+  canEdit: boolean;
 };
 
 export type LinkAPI = {

@@ -90,6 +90,22 @@ namespace FamilyTree.Controllers
         }
 
         /// <summary>
+        /// Sprawdza do jakich elementow mozna wykonac operacje podpiecia
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>Zwraca stworzone drzewo</returns>
+        [HttpPost]
+        [Route("node/possibleConnections")]
+        public async Task<ActionResult<CheckPossibleConnectionResponse>> CheckPossibleConnections(CheckPossibleConnectionsRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = await treeService.CheckPossibleConnections(userId, model);
+            if (response == null)
+                return BadRequest("Error occured");
+            return Ok(response);
+        }
+
+        /// <summary>
         /// Przenosi węzeł w podane miejsce
         /// </summary>
         /// <param name="model"></param>
@@ -112,12 +128,30 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authorize]
-        [Route("node/connect")]
-        public async Task<ActionResult<DrawableTreeResponse>> ConnectNodes(int nodeId, ConnectNodesRequest model)
+        [Route("node/connect/child")]
+        public async Task<ActionResult<DrawableTreeResponse>> ConnectNodes(ConnectNodesRequest model)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-            var tree = await treeService.ConnectNodesAsync(userId, model);
+            var tree = await treeService.ConnectChildToParents(userId, model);
+
+            if (tree == null)
+                return BadRequest("Error");
+            return Ok(tree);
+        }
+        /// <summary>
+        /// Ustawia polaczenia partnerow 
+        /// </summary>
+        /// <param name=""></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize]
+        [Route("node/connect/partner")]
+        public async Task<ActionResult<DrawableTreeResponse>> ConnectPartners(ConnectPartnersRequest model)
+        {
+            var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
+            var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
+            var tree = await treeService.ConnectPartners(userId, model);
 
             if (tree == null)
                 return BadRequest("Error");

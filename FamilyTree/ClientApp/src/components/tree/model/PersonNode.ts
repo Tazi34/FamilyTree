@@ -1,28 +1,23 @@
-import { moveNode } from "../reducer/updateNodes/moveNode";
 import { EntityId } from "@reduxjs/toolkit";
-import { RECT_HEIGHT, RECT_WIDTH } from "../../../d3/RectMapper";
-import { Point } from "../Point";
-import { Node } from "./NodeClass";
 import { Sex } from "../../../model/Sex";
+import { Node } from "./NodeClass";
 
 export class PersonNode extends Node {
   personDetails: PersonInformation;
   families: EntityId[];
   userId: number | null;
   partners: EntityId[];
-  getCanvasLocation = (): Point => {
-    return {
-      x: this.x - RECT_WIDTH / 2,
-      y: this.y - RECT_HEIGHT / 2,
-    };
-  };
+  canEdit: boolean;
+
   constructor(
     id: EntityId,
     treeId: number,
+    canEdit: boolean,
     personDetails: PersonInformation,
     x: number,
     y: number,
     children: EntityId[] = [],
+
     fatherId: EntityId | null = null,
     motherId: EntityId | null = null,
     families: EntityId[] = [],
@@ -31,6 +26,7 @@ export class PersonNode extends Node {
   ) {
     super(id, treeId, x, y, false, children, fatherId, motherId);
 
+    this.canEdit = canEdit;
     this.personDetails = personDetails;
     this.families = families;
     this.userId = userId;

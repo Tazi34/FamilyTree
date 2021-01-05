@@ -209,7 +209,9 @@ namespace FamilyTree.Services
                 Token = tokenService.GetToken(user.UserId),
                 Role = user.Role,
                 PreviousSurnames = user.PrevSurnames?.Select(x => x.Surname).ToList(),
-                PictureUrl = user.PictureUrl
+                PictureUrl = user.PictureUrl,
+                Birthday = user.Birthday
+                
             };
         }
     }

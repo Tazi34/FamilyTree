@@ -41,7 +41,6 @@ import { ChangeTreeVisibilityResponse } from "./../API/changeVisibility/changeTr
 import { LinkLoaded } from "./../LinkComponent";
 import { deleteLink } from "./updateLinks/deleteLink";
 import { addParent, addParentReducerHandler } from "./updateNodes/addParent";
-import { addFamily } from "./updateNodes/connectAsChild";
 import { connectToFamily } from "./updateNodes/connectToFamily";
 import { deleteNode, removeNodeFromTree } from "./updateNodes/deleteNode";
 import { moveNode, moveNodeThunk } from "./updateNodes/moveNode";
@@ -187,12 +186,27 @@ export const setTree = createAction(
   })
 );
 
+export const addEmptyNode = (data: CreateNodeRequestData) => (
+  dispatch: any
+) => {
+  return dispatch(addNode(data)).then((resp: any) => {
+    if (resp.type === addNode.fulfilled.toString()) {
+      return dispatch(setTree(resp.payload.data));
+    }
+    return resp;
+  });
+};
+
 export const addNode = createAsyncThunk<
   AxiosResponse<CreateNodeResponse>,
   CreateNodeRequestData
 >(
   `${treeActionsPrefix}/${personNodesActionsPrefix}/addNewNode`,
   async (createNodeRequestData): Promise<AxiosResponse<any>> => {
+    createNodeRequestData.birthday = new Date(
+      createNodeRequestData.birthday
+    ).toISOString();
+
     return await treeAPI.createTreeNode(createNodeRequestData);
   }
 );
@@ -367,6 +381,7 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     .addCase(changeTreeVisibility.fulfilled, (state, action) => {
       const response = action.payload.data;
       state.treeInformation = {
+        canEdit: response.canEdit,
         isPrivate: response.isPrivate,
         name: response.name,
         treeId: response.treeId,
@@ -375,6 +390,7 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     .addCase(changeTreeName.fulfilled, (state, action) => {
       const response = action.payload.data;
       state.treeInformation = {
+        canEdit: response.canEdit,
         isPrivate: response.isPrivate,
         name: response.name,
         treeId: response.treeId,
@@ -396,10 +412,7 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
     .addCase(getTree.rejected, (state) => {
       state.isLoading = false;
     })
-    .addCase(connectAsChild, (state, action: any) => {
-      const { childId, parentId } = action.payload;
-      addFamily(state, randomFamilyId(), parentId, null, [childId]);
-    })
+
     .addCase(addParent, addParentReducerHandler)
     .addCase(getTree.fulfilled, (state, action) => {
       const treeData = action.payload.data;
@@ -485,6 +498,7 @@ function createTree(tree: TreeAPI, state: TreeState) {
   personNodesAdapter.setAll(state.nodes, nodes);
 
   const treeInformation: TreeInformation = {
+    canEdit: tree.canEdit,
     isPrivate: tree.isPrivate,
     name: tree.name,
     treeId: tree.treeId,

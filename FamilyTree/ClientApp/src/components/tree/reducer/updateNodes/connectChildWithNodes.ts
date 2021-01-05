@@ -1,19 +1,14 @@
+import { createAsyncThunk, EntityId } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
 import {
   ConnectNodesRequestData,
   ConnectNodesResponse,
-} from "./../../API/connectNodes/connectNodesRequest";
-import { createAsyncThunk, EntityId } from "@reduxjs/toolkit";
-import {
-  UpdateNodeRequestData,
-  updateTreeNode,
-} from "../../API/updateNode/updateNodeRequest";
-import { treeNodeMapper } from "../../API/utils/NodeMapper";
+} from "../../API/connectNodes/connectNodesRequest";
+import { treeAPI } from "../../API/treeAPI";
 import { FamilyNode } from "../../model/FamilyNode";
 import { Link } from "../../model/Link";
 import { PersonNode } from "../../model/PersonNode";
 import {
-  connectAsChild,
   familyNodesAdapter,
   linksAdapter,
   personNodesLocalSelectors,
@@ -22,11 +17,9 @@ import {
   TreeState,
 } from "../treeReducer";
 import { createLink } from "../utils/getOutboundLinks";
-import { treeAPI } from "../../API/treeAPI";
 
 export const connectNodes = (data: ConnectNodesRequestData) => (
-  dispatch: any,
-  getState: any
+  dispatch: any
 ) => {
   dispatch(connectNodesThunk(data)).then((response: any) => {
     if (response.type === connectNodesThunk.fulfilled.toString()) {
@@ -106,7 +99,7 @@ export const addFamily = (
   //dodawanie dzieci mozna wydzielic
   childrenNodes.forEach((childNode) => {
     linksToAdd.push(createLink(newFamily, childNode));
-   // childNode.families.push(newFamily.id);
+    // childNode.families.push(newFamily.id);
   });
   familyNodesAdapter.addOne(state.families, newFamily);
   linksAdapter.addMany(state.links, linksToAdd);

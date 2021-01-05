@@ -19,26 +19,53 @@ export const createMockFamily = (
 
   if (firstParent) {
     people.push(
-      new PersonNode(firstParent, 0, mockPerson, 0, 0, children, null, null, [
-        familyId,
-      ])
+      new PersonNode(
+        firstParent,
+        0,
+        false,
+        mockPerson,
+        0,
+        0,
+        children,
+        null,
+        null,
+        [familyId]
+      )
     );
     links.push(new Link(firstParent, familyId));
   }
   if (secondParent) {
     people.push(
-      new PersonNode(secondParent, 0, mockPerson, 0, 0, children, null, null, [
-        familyId,
-      ])
+      new PersonNode(
+        secondParent,
+        0,
+        false,
+        mockPerson,
+        0,
+        0,
+        children,
+        null,
+        null,
+        [familyId]
+      )
     );
     links.push(new Link(secondParent, familyId));
   }
 
   children.forEach((c) => {
     people.push(
-      new PersonNode(c, 0, mockPerson, 0, 0, [], firstParent, secondParent, [
-        familyId,
-      ])
+      new PersonNode(
+        c,
+        0,
+        false,
+        mockPerson,
+        0,
+        0,
+        [],
+        firstParent,
+        secondParent,
+        [familyId]
+      )
     );
     links.push(new Link(familyId, c));
   });

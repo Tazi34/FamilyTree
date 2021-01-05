@@ -23,8 +23,6 @@ const DraggablePersonNode = (props: any) => {
   const classes = useStyles();
   const node = props.person;
 
-  console.log("DRAGGABLE");
-
   const { ref, inView, entry } = useInView({
     /* Optional options */
     threshold: 0,
@@ -59,6 +57,7 @@ const DraggablePersonNode = (props: any) => {
     >
       <div ref={ref}>
         <PersonNodeCard
+          onAddActionMenuClick={props.onAddActionMenuClick}
           canConnectTo={props.canConnectTo}
           disabled={props.disabled}
           onConnectStart={props.onConnectStart}

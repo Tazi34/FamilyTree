@@ -21,9 +21,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 type Props = {
   family: FamilyNode;
+  onSelect: (family: FamilyNode) => void;
+  canConnectTo: boolean;
 };
 //TODO ujednolicic ruszanie z personnode
-const FamilyNodeCard = ({ family }: Props) => {
+const FamilyNodeCard = ({ family, onSelect, canConnectTo }: Props) => {
   const classes = useStyles(family);
   const elementId = family.id.toString();
 
@@ -31,7 +33,16 @@ const FamilyNodeCard = ({ family }: Props) => {
   if (!(family.fatherId && family.motherId)) {
     return null;
   }
-  return <div id={elementId} className={classes.familyCard}></div>;
+  return (
+    <div
+      onClick={() => {
+        onSelect(family);
+      }}
+      style={{ backgroundColor: canConnectTo ? "green" : "black" }}
+      id={elementId}
+      className={classes.familyCard}
+    ></div>
+  );
 };
 
 export default React.memo(FamilyNodeCard);
