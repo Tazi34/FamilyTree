@@ -7,6 +7,7 @@ using FamilyTree.Helpers;
 using Microsoft.EntityFrameworkCore;
 using FamilyTree.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http;
 
 namespace FamilyTree.Services
 {
@@ -14,7 +15,7 @@ namespace FamilyTree.Services
     {
 
         public Task<DrawableTreeResponse> GetTreeAsync(int id, int userId);
-        public Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model);
+        public Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model, IFormFile picture);
         public Task<DrawableTreeResponse> DeleteNodeAsync(int userId, int NodeId);
         public Task<DrawableTreeResponse> ConnectChildToParents(int userId, ConnectNodesRequest model);
         public Task<DrawableTreeResponse> AddSiblingAsync(int userId, AddSiblingRequest model);
@@ -34,22 +35,25 @@ namespace FamilyTree.Services
         private DataContext context;
         private ITreeAuthService treeAuthService;
         private ITreeValidationService treeValidationService;
+        private IPictureService pictureService;
         private string defaultNodePictureUrl;
         private string defaultUserPictureUrl;
         public TreeService(
             DataContext dataContext,
             ITreeAuthService treeAuthService,
             ITreeValidationService treeValidationService,
+            IPictureService pictureService,
             IOptions<AzureBlobSettings> azureBlobSettings)
         {
             context = dataContext;
             this.treeAuthService = treeAuthService;
             this.treeValidationService = treeValidationService;
+            this.pictureService = pictureService;
             defaultNodePictureUrl = azureBlobSettings.Value.DefaultNodeUrl;
             defaultUserPictureUrl = azureBlobSettings.Value.DefaultUserUrl;
         }
 
-        public async Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model)
+        public async Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model, IFormFile picture)
         {
             var tree = await GetTreeFromContextAsync(model.TreeId);
             var user = await GetUserFromContextAsync(userId);
@@ -60,7 +64,7 @@ namespace FamilyTree.Services
             if (!treeValidationService.ValidateNewNode(model, tree))
                 return null;
 
-            await CreateNode(tree, model);
+            await CreateNode(tree, model, picture);
             return new DrawableTreeResponse(tree, user);
         }
 
@@ -573,7 +577,7 @@ namespace FamilyTree.Services
             await context.SaveChangesAsync();
             return true;
         }
-        private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model)
+        private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model, IFormFile picture=null)
         {
             string pictureUrl = defaultNodePictureUrl;
             var user = await GetUserFromContextAsync(model.UserId);
@@ -648,7 +652,11 @@ namespace FamilyTree.Services
                 Y = model.Y
             };
             tree.Nodes.Add(node);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
+            if(picture != null)
+            {
+                var setPictureResponse = await pictureService.SetNodePicture(model.UserId, node.NodeId, picture);
+            }
             return node;
         }
         private async Task<Tree> GetTreeFromContextAsync(int treeId)
