@@ -224,17 +224,10 @@ namespace FamilyTree.Services
             var user = await GetUserFromContextAsync(userId);
             var tree = await GetTreeFromContextAsync(model.TreeId);
             var child = await GetNodeFromContextAsync(model.ChildId);
-            if (child == null)
-            {
-                return null;
-            }
-
-
             var firstParent = await GetNodeFromContextAsync(model.FirstParentId);
-            if (firstParent == null)
-            {
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, child);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel) || firstParent == null)
                 return null;
-            }
             Node secondParent = null;
             if (model.SecondParentId.HasValue)
             {
@@ -334,29 +327,17 @@ namespace FamilyTree.Services
         {
             var user = await GetUserFromContextAsync(userId);
             var firstPartner = await GetNodeFromContextAsync(model.FirstPartnerId);
-            if (firstPartner == null)
-            {
-                return null;
-            }
             var secondPartner = await GetNodeFromContextAsync(model.SecondPartnerId);
-            if (secondPartner == null)
-            {
+            var tree = await GetTreeFromContextAsync(firstPartner == null ? -1 : firstPartner.TreeId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel) || secondPartner == null)
                 return null;
-            }
-            var tree = await GetTreeFromContextAsync(firstPartner.TreeId);
-
             context.NodeNodeMarriage.Add(new NodeNodeMarriage()
             {
                 Partner1 = firstPartner,
                 Partner2 = secondPartner
             });
-
-            context.SaveChanges();
-
-
-            //var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
-            //if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
-            //    return null;
+            await context.SaveChangesAsync();
             return new DrawableTreeResponse(tree, user);
         }
 
@@ -438,7 +419,9 @@ namespace FamilyTree.Services
             var user = await GetUserFromContextAsync(userId);
             var node = await GetNodeFromContextAsync(model.NodeId);
             var tree = await GetTreeFromContextAsync(node.TreeId);
-
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
+                return null;
             var checker = new CanConnectToChecker();
             return checker.Check(new DrawableTreeResponse(tree, user), node.NodeId, Enum.Parse<ConnectMode>(model.Mode));
         }
