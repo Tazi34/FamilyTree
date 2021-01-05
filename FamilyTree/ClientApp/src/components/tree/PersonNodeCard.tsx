@@ -179,6 +179,7 @@ type Props = {
   person: PersonNode;
   disabled: boolean;
   canConnectTo?: boolean;
+  hidden?: boolean;
 };
 
 const PersonNodeCard = ({
@@ -195,6 +196,7 @@ const PersonNodeCard = ({
   onAddActionMenuClick,
   canConnectTo,
   disabled,
+  hidden,
 }: Props) => {
   const elementId = "n" + person.id;
   const classes = useStyles({
@@ -257,9 +259,10 @@ const PersonNodeCard = ({
       component={"span"}
       className={`${classes.personRoot}`}
       onMouseUp={handleNodeSelect}
+      hidden={hidden}
     >
       <div className={classes.addButtonContainer}>
-        {canAddParent && (
+        {/* {canAddParent && (
           <Tooltip title="Add parent" placement="top">
             <IconButton
               disabled={disabled}
@@ -272,7 +275,7 @@ const PersonNodeCard = ({
               <AddCircleIcon className={classes.addIconSvg} />
             </IconButton>
           </Tooltip>
-        )}
+        )} */}
       </div>
       <div className={classes.overflowHidden}>
         <div className={classes.background}>

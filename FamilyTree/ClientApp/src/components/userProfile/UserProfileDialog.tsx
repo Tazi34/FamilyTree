@@ -4,6 +4,7 @@ import {
   Dialog,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   makeStyles,
   MenuItem,
@@ -25,13 +26,26 @@ import {
   getUser,
   User,
 } from "../loginPage/authenticationReducer";
+import PicturePickerDialog from "../UI/PicturePickerDialog";
+import { requestUploadProfilePicture } from "./API/uploadProfilePicture";
 import userProfileAPI from "./API/userProfileAPI";
 
+const imgSize = 100;
 const useStyles = makeStyles((theme: Theme) => ({
   profileEditorRoot: {
     width: "100%",
     height: "100%",
     padding: 40,
+  },
+  editPictureIconContainer: {
+    zIndex: 100000,
+    position: "absolute",
+    right: 5,
+    bottom: 5,
+    padding: 7,
+  },
+  editPictureIcon: {
+    fontSize: 17,
   },
   title: {
     marginBottom: 15,
@@ -42,9 +56,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     alignItems: "center",
   },
   pictureContainer: {
+    width: imgSize,
+    height: imgSize,
+    cursor: "pointer",
     marginRight: 30,
-    height: 100,
-    width: 100,
+    position: "relative",
   },
   picture: {
     height: "100%",
@@ -72,8 +88,11 @@ type FormData = {
 };
 
 const UserProfileDialog = (props: any) => {
-  const classes = useStyles();
   const user = useSelector(getUser) as User;
+  const [pictureDialog, setPictureDialog] = React.useState(false);
+  const [picturePreview, setPicturePreview] = React.useState(user.pictureUrl);
+  const classes = useStyles();
+
   const dispatch = useDispatch();
 
   const handleProfileEdit = (data: FormData) => {
@@ -89,22 +108,51 @@ const UserProfileDialog = (props: any) => {
         props.onError("Error editing your profile. Try again later");
       });
   };
+
+  const closePictureDialog = () => {
+    setPictureDialog(false);
+  };
+  const handleProfilePictureUpdate = (data: any) => {
+    userProfileAPI
+      .requestUploadProfilePicture({ picture: data })
+      .then((resp: any) => {
+        console.log(resp);
+        if (!resp.error) {
+          setPicturePreview(resp.data.pictureUrl);
+          closePictureDialog();
+        } else {
+          //TOD
+        }
+      });
+  };
   const displayDate = formatDate(user.birthday);
   const nameText = `${user.name} ${user.surname}`;
   return (
     <Dialog onClose={props.onClose} open={props.open}>
+      <PicturePickerDialog
+        open={pictureDialog}
+        onClose={closePictureDialog}
+        onPickPicture={handleProfilePictureUpdate}
+      />
       <Paper className={classes.profileEditorRoot}>
         <Typography variant="h4" align="center" className={classes.title}>
           User profile
         </Typography>
         <div className={classes.profilePreview}>
-          <Avatar
+          <div
             className={classes.pictureContainer}
-            alt={nameText}
-            sizes={"(min-width: 40em) 80vw, 100vw"}
-            src={user.pictureUrl}
-          />
-
+            onClick={() => setPictureDialog(true)}
+          >
+            <IconButton className={classes.editPictureIconContainer}>
+              <i className={`fas fa-camera ${classes.editPictureIcon}`} />
+            </IconButton>
+            <Avatar
+              className={classes.pictureContainer}
+              alt={nameText}
+              sizes={"(min-width: 40em) 80vw, 100vw"}
+              src={picturePreview}
+            />
+          </div>
           <div className={classes.previewContent}>
             <div>
               <Typography variant="h5">{nameText}</Typography>

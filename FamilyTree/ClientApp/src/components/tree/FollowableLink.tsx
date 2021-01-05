@@ -18,6 +18,9 @@ const FollowableLink = (props: any) => {
         setTarget({ x, y });
       }
     };
+    return () => {
+      document.onmousemove = null;
+    };
   });
   if (!props.enabled) {
     return null;

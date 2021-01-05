@@ -1,13 +1,21 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
 import { treeAPI } from "../../API/treeAPI";
-import {
-  UpdateNodeRequestData,
-  UpdateNodeResponse,
-} from "../../API/updateNode/updateNodeRequest";
-import { treeActionsPrefix } from "../treeReducer";
+import { UpdateNodeResponse } from "../../API/updateNode/updateNodeRequest";
+import { setTree, treeActionsPrefix } from "../treeReducer";
+import { UpdateNodeRequestData } from "./../../API/updateNode/updateNodeRequest";
 
-export const updateTreeNode = createAsyncThunk<
+export const updateTreeNode = (data: UpdateNodeRequestData) => (
+  dispatch: any
+) => {
+  dispatch(updateTreeNodeRequest(data)).then((resp: any) => {
+    if (resp.type === updateTreeNodeRequest.fulfilled.toString()) {
+      return dispatch(setTree(resp.payload.data));
+    }
+    return resp;
+  });
+};
+export const updateTreeNodeRequest = createAsyncThunk<
   AxiosResponse<UpdateNodeResponse>,
   UpdateNodeRequestData
 >(`${treeActionsPrefix}/updateNode`, async (updateNodeData) => {

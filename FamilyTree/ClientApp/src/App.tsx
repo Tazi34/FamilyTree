@@ -41,7 +41,7 @@ import EditPostFormContainer from "./components/postForm/EditPostFormContainer";
 import PostForm from "./components/postForm/PostForm";
 import Registration from "./components/registration/Registration";
 import Tree from "./components/tree/Tree";
-import UserProfileDialog from "./components/userProfile/UserProfileContainer";
+import UserProfileDialog from "./components/userProfile/UserProfileDialog";
 
 import { ApplicationState } from "./helpers";
 import PrivacyPolicyPage from "./components/privacy/PrivacyPolicyPage";
@@ -49,6 +49,7 @@ import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
 import { useThunkDispatch } from ".";
 import { getInvitations } from "./components/invitation/reducer/invitationsReducer";
 import CreateNodeDialog from "./components/addNodeActionDialog/CreateNodeDialog";
+import LayoutBase from "./components/layout/LayoutBase";
 
 export const theme = createMuiTheme({
   palette: {
@@ -173,7 +174,7 @@ const App = (props: any) => {
             exact
             path="/"
             component={HomePage}
-            layout={EmptyLayout}
+            layout={LayoutBase}
           />
           <LayoutRoute
             exact

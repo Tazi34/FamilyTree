@@ -1,5 +1,7 @@
 import {
+  Avatar,
   Button,
+  ButtonBase,
   Dialog,
   Divider,
   FormControl,
@@ -25,6 +27,8 @@ import PicturePickerDialog from "../UI/PicturePickerDialog";
 import { useDispatch } from "react-redux";
 import { useThunkDispatch } from "../..";
 import { uploadTreeNodePictureRequest } from "./reducer/updateNodes/setNodePicture";
+import { updateTreeNode } from "./reducer/updateNodes/updateNode";
+import { UpdateNodeRequestData } from "./API/updateNode/updateNodeRequest";
 const imgSize = 128;
 const useStyles = makeStyles((theme: Theme) => ({
   personDialog: {
@@ -56,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   pictureContainer: {
     width: imgSize,
     height: imgSize,
-    //cursor: "pointer ",
+    cursor: "pointer ",
     border: "solid #2f2f2f 1px",
     marginRight: 10,
     position: "relative",
@@ -66,6 +70,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     right: 5,
     bottom: 5,
     padding: 7,
+    zIndex: 100000,
   },
   editPictureIcon: {
     fontSize: 17,
@@ -121,6 +126,12 @@ const TreeNodeDetailsDialog = ({
   const [pictureUrl, setPictureUrl] = React.useState(
     node?.personDetails.pictureUrl
   );
+
+  React.useEffect(() => {
+    if (pictureUrl !== node?.personDetails.pictureUrl) {
+      setPictureUrl(node?.personDetails.pictureUrl);
+    }
+  });
 
   const dispatch = useThunkDispatch();
   if (!node) {
@@ -193,7 +204,22 @@ const TreeNodeDetailsDialog = ({
       <Formik
         initialValues={details}
         onSubmit={(values: FormProps, { resetForm }) => {
-          alert(JSON.stringify(values));
+          const data: UpdateNodeRequestData = {
+            ...values,
+            nodeId: node.id as number,
+            children: node.children as number[],
+            fatherId: (node.fatherId ?? 0) as number,
+            motherId: (node.motherId ?? 0) as number,
+            partners: node.partners as number[],
+            userId: node.userId as any,
+            treeId: node.treeId,
+          };
+          dispatch(updateTreeNode(data)).then((resp: any) => {
+            if (resp.error) {
+            } else {
+              onClose();
+            }
+          });
         }}
       >
         {({
@@ -212,16 +238,24 @@ const TreeNodeDetailsDialog = ({
             <form onSubmit={handleSubmit}>
               <div className={classes.personDialog}>
                 <div className={classes.contentSection}>
-                  <div className={classes.pictureContainer}>
-                    <IconButton
-                      className={classes.editPictureIconContainer}
-                      onClick={handlePictureDialog}
-                    >
-                      <i
-                        className={`fas fa-camera ${classes.editPictureIcon}`}
-                      />
-                    </IconButton>
-                    <img src={pictureUrl} className={classes.picture} />
+                  <div
+                    className={classes.pictureContainer}
+                    onClick={handlePictureDialog}
+                  >
+                    {canEdit && (
+                      <IconButton className={classes.editPictureIconContainer}>
+                        <i
+                          className={`fas fa-camera ${classes.editPictureIcon}`}
+                        />
+                      </IconButton>
+                    )}
+
+                    <Avatar
+                      component={ButtonBase}
+                      src={pictureUrl}
+                      variant="square"
+                      className={classes.picture}
+                    />
                   </div>
                   <div className={classes.information}>
                     {editMode && (

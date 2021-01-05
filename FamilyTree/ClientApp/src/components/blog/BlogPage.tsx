@@ -25,7 +25,7 @@ import { Post } from "../../model/Post";
 import { withAlertMessage } from "../alerts/withAlert";
 import { tryOpenChat } from "../chat/chatReducer";
 import { getUser, User } from "../loginPage/authenticationReducer";
-import UserProfileDialog from "../userProfile/UserProfileContainer";
+import UserProfileDialog from "../userProfile/UserProfileDialog";
 import TreesListProvider from "../userTreeList/TreesListProvider";
 import BlogOwnerSection from "./BlogOwnerSection";
 import BlogProfileSection from "./BlogProfileSection";

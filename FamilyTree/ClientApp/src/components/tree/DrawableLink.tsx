@@ -21,7 +21,7 @@ const DrawableLink = ({ source, target, ...otherProps }: Props) => {
   const classes = useStyles();
   const path = createPath(source.x, source.y, target.x, target.y) as any;
   console.log("RENDER Link");
-  return <path {...otherProps} d={path} className={classes.path} />;
+  return <path {...otherProps} d={path} className={classes.path}></path>;
 };
 
 export default React.memo(DrawableLink);
