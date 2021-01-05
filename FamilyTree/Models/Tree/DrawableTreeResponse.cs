@@ -115,6 +115,11 @@ namespace FamilyTree.Models
                       Math.Min(firstParent.Y, secondParent.Y) +
                       Math.Abs(firstParent.Y - secondParent.Y) / 2;
 
+                    if(family.Children.Count > 0)
+                    {
+                        family.Y += 200;
+                    }
+
                 }
                 else
                 {

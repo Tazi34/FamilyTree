@@ -9,12 +9,12 @@ const d3 = require("d3");
 const useStyles = makeStyles((theme: Theme) => ({
   familyCard: (node: FamilyNode) => ({
     position: "absolute",
-    transform: `translate(${node.x - 6}px,${node.y - 6}px)`,
+    transform: `translate(${node.x - 10}px,${node.y - 10}px)`,
     top: 0,
     left: 0,
     borderRadius: "50%",
-    width: 10,
-    height: 10,
+    width: 20,
+    height: 20,
     background: theme.palette.primary.dark,
     cursor: "pointer",
   }),

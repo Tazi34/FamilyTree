@@ -286,7 +286,10 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
             //przelacz rodzine na jednego usera - trzeba usunac linki
             if (otherNodeId) {
               const otherNode = selectPersonNodeLocal(state.nodes, otherNodeId);
-              const newLocation = getFamilyLocation(otherNode as PersonNode);
+              const newLocation = getFamilyLocation(
+                family,
+                otherNode as PersonNode
+              );
 
               familyNodesAdapter.updateOne(state.families, {
                 id: family.id,
@@ -436,9 +439,13 @@ export const treeReducer = createReducer(treeInitialState, (builder) => {
             const nodeToLoadId =
               family.fatherId === node.id ? family.motherId : family.fatherId;
             const otherNode = selectPersonNodeLocal(state.nodes, nodeToLoadId);
-            familyLocation = getFamilyLocation({ x: x, y: y }, otherNode);
+            familyLocation = getFamilyLocation(
+              family,
+              { x: x, y: y },
+              otherNode
+            );
           } else {
-            familyLocation = getFamilyLocation({ x, y });
+            familyLocation = getFamilyLocation(family, { x, y });
           }
           const update: Update<FamilyNode> = {
             id: family.id,

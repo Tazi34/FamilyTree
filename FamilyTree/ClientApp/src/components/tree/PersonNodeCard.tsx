@@ -33,7 +33,7 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
     borderRadius: 10,
     borderColor: ({ hasUser }) =>
       hasUser ? "white" : theme.palette.primary.light,
-
+    zIndex: 1000,
     borderWidth: 2,
     border: "solid",
     display: "flex",

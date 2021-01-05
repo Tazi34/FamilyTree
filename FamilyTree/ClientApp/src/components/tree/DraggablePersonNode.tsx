@@ -29,6 +29,7 @@ const DraggablePersonNode = (props: any) => {
     root: props.viewRef.current,
     rootMargin: RECT_HEIGHT + "px",
   });
+  console.log("DRAGGABLE");
   return (
     <Draggable
       defaultPosition={{

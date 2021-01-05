@@ -203,14 +203,18 @@ class TreeRenderer extends React.Component<Props, State, any> {
         const otherNode = this.props.nodes.find(
           (n) => n.id === nodeToLoadId
         ) as PersonNode;
-        familyLocation = getFamilyLocation({ x: e.x, y: e.y }, otherNode);
+        familyLocation = getFamilyLocation(
+          family,
+          { x: e.x, y: e.y },
+          otherNode
+        );
       } else {
-        familyLocation = getFamilyLocation({ x: e.x, y: e.y });
+        familyLocation = getFamilyLocation(family, { x: e.x, y: e.y });
       }
       const familyNode = d3.select("#" + family.id);
       familyNode.style(
         "transform",
-        `translate(${familyLocation.x}px,${familyLocation.y}px)`
+        `translate(${familyLocation.x - 10}px,${familyLocation.y - 10}px)`
       );
 
       //Przesun wszystkie polaczenia rodziny
