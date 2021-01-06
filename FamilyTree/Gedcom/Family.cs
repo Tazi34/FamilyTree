@@ -12,7 +12,7 @@ namespace FamilyTree.Gedcom
         public string Id { get; private set; }
         private Individual father;
         private Individual mother;
-        private List<Individual> children;
+        private List<Individual> children = new List<Individual>();
         public Family()
         {
             Id = "F" + idGeneratorValue.ToString();
@@ -32,9 +32,9 @@ namespace FamilyTree.Gedcom
                     mother = parent;
             }
             else if (father == null)
-                mother = parent;
-            else
                 father = parent;
+            else
+                mother = parent;
         }
         public bool HasParentsNodes(int parent1Id, int parent2Id)
         {

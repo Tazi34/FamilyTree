@@ -18,7 +18,7 @@ namespace FamilyTree.Gedcom
         public Node Node { get; private set; }
 
         private Family famc;
-        private List<Family> fams;
+        private List<Family> fams = new List<Family>();
         public Individual(Node node)
         {
             Id = "I" + idGeneratorValue.ToString();
@@ -48,7 +48,7 @@ namespace FamilyTree.Gedcom
             if (famc != null)
                 gedcom.AppendLine("1 FAMC @" + famc.Id + "@");
             foreach (Family f in fams)
-                gedcom.AppendLine("1 FAMC @" + f.Id + "@");
+                gedcom.AppendLine("1 FAMS @" + f.Id + "@");
         }
     }
 }

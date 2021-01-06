@@ -4,21 +4,22 @@ using System.Linq;
 using System.Threading.Tasks;
 using FamilyTree.Entities;
 using System.Text;
+using System.IO;
 
 namespace FamilyTree.Gedcom
 {
-    public class Gedcom
+    public class GedcomWriter
     {
         private Tree tree;
-        private List<Family> families;
-        private List<Individual> people;
-        public Gedcom(Tree tree)
+        private List<Family> families = new List<Family>();
+        private List<Individual> people = new List<Individual>();
+        public GedcomWriter(Tree tree)
         {
             this.tree = tree;
             CreateIndividuals();
             CreateFamilies();
         }
-        public string GetGedcom()
+        public Stream GetGedcom()
         {
             StringBuilder gedcom = new StringBuilder();
             GenerateHead(gedcom, tree.Name);
@@ -27,7 +28,14 @@ namespace FamilyTree.Gedcom
             foreach(Family f in families)
                 f.GenerateGedcom(gedcom);
             GenerateFooter(gedcom);
-            return gedcom.ToString();
+            //return gedcom.ToString();
+
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+            writer.Write(gedcom.ToString());
+            writer.Flush();
+            stream.Position = 0;
+            return stream;
         }
         private void GenerateHead(StringBuilder gedcom, string fileName)
         {
@@ -89,7 +97,7 @@ namespace FamilyTree.Gedcom
                     var family = families.FirstOrDefault(f => f.HasSingleParentNode(i.Node.Parents[0].ParentId));
                     if(family == null)
                     {
-                        Individual parent = people.FirstOrDefault(i => i.Node.NodeId == i.Node.Parents[0].ParentId);
+                        Individual parent = people.FirstOrDefault(p => p.Node.NodeId == i.Node.Parents[0].ParentId);
                         family = new Family();
                         family.AddParent(parent);
                         parent.AddSpouseFamily(family);
