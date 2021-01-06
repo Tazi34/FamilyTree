@@ -153,7 +153,7 @@ export const addParentReducerHandler = (
       createLink(parent, familyNode),
       createLink(familyNode, sourceNode),
     ];
-    sourceNode.families.push(familyNode.id);
+   // sourceNode.families.push(familyNode.id);
     sourceNode.fatherId = parent.id;
     familyNodesAdapter.addOne(state.families, familyNode);
     parent.families.push(familyNode.id);

@@ -68,9 +68,9 @@ export const GetTreeStructure = (people: PersonNode[]): TreeStructure => {
       family.children.push(id);
     } else {
       if (person.fatherId || person.motherId) {
-        const familyId = person.graph + "u" + familyIdCounter++;
+
         family = new FamilyNode(
-          familyId,
+          "-1",
           person.treeId,
           0,
           0,

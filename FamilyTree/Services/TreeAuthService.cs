@@ -35,7 +35,7 @@ namespace FamilyTree.Services
                 return TreeAuthLevel.Error;
             if (user.Role.Equals(Role.Admin))
                 return TreeAuthLevel.Admin;
-            if (node.UserId == user.UserId)
+            if (node.UserId == user.UserId || (node.UserId == 0 && IsUserInTree(tree, user)))
                 return TreeAuthLevel.InNode;
             if (IsUserInTree(tree, user))
                 return TreeAuthLevel.InTree;

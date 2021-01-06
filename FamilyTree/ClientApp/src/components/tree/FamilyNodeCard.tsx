@@ -9,29 +9,40 @@ const d3 = require("d3");
 const useStyles = makeStyles((theme: Theme) => ({
   familyCard: (node: FamilyNode) => ({
     position: "absolute",
-    transform: `translate(${node.x - 6}px,${node.y - 6}px)`,
+    transform: `translate(${node.x - 10}px,${node.y - 10}px)`,
     top: 0,
     left: 0,
     borderRadius: "50%",
-    width: 10,
-    height: 10,
+    width: 20,
+    height: 20,
     background: theme.palette.primary.dark,
     cursor: "pointer",
   }),
 }));
 type Props = {
   family: FamilyNode;
+  onSelect: (family: FamilyNode) => void;
+  canConnectTo: boolean;
 };
 //TODO ujednolicic ruszanie z personnode
-const FamilyNodeCard = ({ family }: Props) => {
+const FamilyNodeCard = ({ family, onSelect, canConnectTo }: Props) => {
   const classes = useStyles(family);
-  const elementId = "f" + family.id;
+  const elementId = family.id.toString();
 
   console.log("RENDER FAMILY");
   if (!(family.fatherId && family.motherId)) {
     return null;
   }
-  return <div id={elementId} className={classes.familyCard}></div>;
+  return (
+    <div
+      onClick={() => {
+        onSelect(family);
+      }}
+      style={{ backgroundColor: canConnectTo ? "green" : "black" }}
+      id={elementId}
+      className={classes.familyCard}
+    ></div>
+  );
 };
 
 export default React.memo(FamilyNodeCard);

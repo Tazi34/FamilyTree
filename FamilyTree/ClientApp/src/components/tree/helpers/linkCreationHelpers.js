@@ -19,13 +19,20 @@ export const createPath = (p1x, p1y, p2x, p2y) => {
   var curve =
     "M" + p1x + " " + p1y + " Q " + c1x + " " + c1y + " " + p2x + " " + p2y;
 
-  // var yDif = p2y - p1y;
-  // var xDif = p2x - p1x;
+  var yDif = p2y - p1y;
+  var xDif = p2x - p1x;
 
-  // var pathData = d3.path();
-  // pathData.moveTo(p1x, p1y);
-  // pathData.bezierCurveTo(p1x, p1y + 0.5 * yDif, p2x, p1y + 0.5 * yDif, p2x, p2y);
-  return curve;
+  var pathData = d3.path();
+  pathData.moveTo(p1x, p1y);
+  pathData.bezierCurveTo(
+    p1x,
+    p1y + 0.5 * yDif,
+    p2x,
+    p1y + 0.5 * yDif,
+    p2x,
+    p2y
+  );
+  return pathData;
 };
 
 var colorArray = ["black", "red", "blue", "green", "purple", "pink"];

@@ -1,4 +1,5 @@
 import {
+  Avatar,
   IconButton,
   makeStyles,
   Paper,
@@ -16,25 +17,38 @@ import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { formatDate } from "../../helpers/formatters";
-
+import LinkIcon from "@material-ui/icons/Link";
+import { ConnectionMode } from "./TreeRenderer";
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 30;
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles<any, any>((theme: Theme) => ({
   personRoot: {
     position: "absolute",
     transform: `translate(${-RECT_WIDTH / 2}px,${-RECT_HEIGHT / 2}px)`,
     top: 0,
     left: 0,
-    height: RECT_HEIGHT + "px",
+    minHeight: RECT_HEIGHT + "px",
     width: RECT_WIDTH + "px",
     borderRadius: 10,
-    borderColor: theme.palette.primary.light,
-    borderWidth: 1,
+    borderColor: ({ hasUser }) =>
+      hasUser ? "white" : theme.palette.primary.light,
+    zIndex: 1000,
+    borderWidth: 2,
     border: "solid",
     display: "flex",
     flexDirection: "column",
     cursor: "pointer",
+
+    background: ({ isConnecting, canConnectTo, hasUser }) => {
+      if (isConnecting) {
+        return canConnectTo ? theme.palette.primary.light : "#FFCCCB";
+      } else {
+        return hasUser
+          ? theme.palette.primary.light
+          : theme.palette.background.paper;
+      }
+    },
   },
   buttonBase: {
     padding: 8,
@@ -45,16 +59,19 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: "100%",
     height: "100%",
   },
-  pictureContainer: {
-    marginRight: 10,
-  },
-  pictureContainer2: {
+  picture: {
     position: "absolute",
     top: dividerScale * RECT_HEIGHT - imageSize / 2,
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
+    width: imageSize,
+    height: imageSize,
+    alignSelf: "center",
+    background: "#f4f4f4",
+    color: theme.palette.primary.dark,
+    border: ({ hasUser }) => {
+      return "1px solid " + (hasUser ? "white" : theme.palette.primary.light);
+    },
   },
+
   addButtonContainer: {
     position: "absolute",
     top: 0,
@@ -134,6 +151,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     alignSelf: "flex-end",
     width: "100%",
     display: "flex",
+    flexWrap: "wrap",
   },
   visible: {
     visibility: "visible",
@@ -146,7 +164,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Props = {
   onNodeDelete: (id: number) => void;
   onSiblingAdd: (id: number, data: CreateNodeRequestData) => void;
-
   onParentAdd: (id: number, data: CreateNodeRequestData) => void;
   onPartnerAdd: (id: number, data: CreateNodeRequestData) => void;
   onChildAdd: (
@@ -154,12 +171,15 @@ type Props = {
     firstParent: number,
     secondParent?: number
   ) => void;
-
   onNodeMove: (node: Node, x: number, y: number) => void;
   onMoveNodeOnCanvas: (e: DragEvent, node: Node) => void;
   onNodeSelect: (node: PersonNode) => void;
-
+  onConnectStart: (node: PersonNode, mode: ConnectionMode) => void;
+  onAddActionMenuClick: (node: PersonNode) => void;
   person: PersonNode;
+  disabled: boolean;
+  canConnectTo?: boolean;
+  hidden?: boolean;
 };
 
 const PersonNodeCard = ({
@@ -172,16 +192,25 @@ const PersonNodeCard = ({
   onPartnerAdd,
   onChildAdd,
   onSiblingAdd,
+  onConnectStart,
+  onAddActionMenuClick,
+  canConnectTo,
+  disabled,
+  hidden,
 }: Props) => {
   const elementId = "n" + person.id;
-  const classes = useStyles({ x: person.x, y: person.y });
+  const classes = useStyles({
+    isConnecting: disabled,
+    canConnectTo,
+    hasUser: person.userId !== 0,
+  });
   const newPerson: CreateNodeRequestData = {
     treeId: person.treeId,
     name: "New",
     surname: "Node",
     birthday: "2020-12-16T20:29:42.677Z",
     description: "Cool description",
-    pictureUrl: "",
+    picture: "",
     userId: 0,
     fatherId: 0,
     sex: "Male",
@@ -211,57 +240,57 @@ const PersonNodeCard = ({
   ) => {
     onNodeSelect(person);
   };
+  const handleStartConnect = (mode: ConnectionMode) => {
+    onConnectStart(person, mode);
+  };
   const details = Object.assign({}, person.personDetails);
-  if (!Boolean(details.pictureUrl)) {
-    details.pictureUrl = `https://eu.ui-avatars.com/api/?name=${details.name}+${details.surname}`;
-  }
-  const hasPicture = Boolean(details.pictureUrl);
+
   let displayDate = formatDate(details.birthday);
 
   const preventMouseUp = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
   const canAddParent = !(person.motherId && person.fatherId);
-  console.log("NODEE");
-
+  // console.log("NODEE");
+  const hasBothParent = person.fatherId && person.motherId;
   return (
     <Paper
       id={elementId}
       component={"span"}
       className={`${classes.personRoot}`}
       onMouseUp={handleNodeSelect}
+      hidden={hidden}
     >
       <div className={classes.addButtonContainer}>
-        {canAddParent && (
+        {/* {canAddParent && (
           <Tooltip title="Add parent" placement="top">
             <IconButton
+              disabled={disabled}
               id="add-icon"
               className={`${classes.addIcon}`}
               onClick={handleParentAdd}
+              //onClick={() => onAddActionMenuClick(person)}
               onMouseUp={preventMouseUp}
             >
               <AddCircleIcon className={classes.addIconSvg} />
             </IconButton>
           </Tooltip>
-        )}
+        )} */}
       </div>
       <div className={classes.overflowHidden}>
         <div className={classes.background}>
           <div className={classes.backgroundColorTheme}></div>
         </div>
         <div className={classes.contentContainer}>
-          <div className={classes.pictureContainer2}>
-            {hasPicture ? (
-              <img
-                src={details.pictureUrl}
-                className={classes.profilePicture}
-              />
-            ) : (
-              <AccountCircleIcon
-                className={classes.defaultProfileIcon}
-              ></AccountCircleIcon>
-            )}
-          </div>
+          <Avatar
+            title={details.name}
+            src={details.pictureUrl}
+            className={classes.picture}
+          >
+            {details.name[0].toUpperCase()}
+            {details.surname[0].toUpperCase()}
+          </Avatar>
+
           <div className={classes.topFiller}></div>
           <Typography
             align="center"
@@ -269,7 +298,7 @@ const PersonNodeCard = ({
             className={classes.nameSection}
           >
             {person.id} {details.name} {details.surname}
-          </Typography>{" "}
+          </Typography>
           <Typography
             align="center"
             variant="subtitle2"
@@ -282,27 +311,99 @@ const PersonNodeCard = ({
       <div className={classes.filler} />
       <div className={classes.actions}>
         <Tooltip title="Delete node">
-          <IconButton onClick={handleNodeDelete} onMouseUp={preventMouseUp}>
+          <IconButton
+            disabled={disabled}
+            onClick={handleNodeDelete}
+            onMouseUp={preventMouseUp}
+          >
             <DeleteIcon />
           </IconButton>
         </Tooltip>
 
-        <IconButton onClick={handlePartnerAdd} onMouseUp={preventMouseUp}>
+        {/* 
+        <IconButton
+          disabled={disabled}
+          onClick={handlePartnerAdd}
+          onMouseUp={preventMouseUp}
+        >
           <AddCircleIcon className={classes.addIconSvg} />
         </IconButton>
         <Tooltip title="Add child">
-          <IconButton onClick={handleChildAdd} onMouseUp={preventMouseUp}>
+          <IconButton
+            disabled={disabled}
+            onClick={handleChildAdd}
+            onMouseUp={preventMouseUp}
+          >
             <AddCircleIcon className={classes.addIconSvg} />
           </IconButton>
         </Tooltip>
         <Tooltip title="Add Sibling">
-          <IconButton onClick={handleSiblingAdd} onMouseUp={preventMouseUp}>
+          <IconButton
+            disabled={disabled}
+            onClick={handleSiblingAdd}
+            onMouseUp={preventMouseUp}
+          >
             <AddCircleIcon className={classes.addIconSvg} />
+          </IconButton>
+        </Tooltip> */}
+        <Tooltip title="Connect as child">
+          <IconButton
+            disabled={disabled}
+            onClick={() => handleStartConnect("AsChild")}
+            onMouseUp={preventMouseUp}
+          >
+            <LinkIcon className={classes.addIconSvg} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Connect as partner">
+          <IconButton
+            disabled={disabled}
+            onClick={() => handleStartConnect("AsPartner")}
+            onMouseUp={preventMouseUp}
+          >
+            <LinkIcon className={classes.addIconSvg} />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="Connect as parent">
+          <IconButton
+            disabled={disabled}
+            onClick={() => handleStartConnect("AsParent")}
+            onMouseUp={preventMouseUp}
+          >
+            <LinkIcon className={classes.addIconSvg} />
           </IconButton>
         </Tooltip>
       </div>
     </Paper>
   );
 };
+const areEqual = (prev: Props, next: Props) => {
+  if (
+    prev.disabled != next.disabled ||
+    prev.canConnectTo != next.canConnectTo ||
+    prev.person.id != next.person.id ||
+    prev.person.motherId != next.person.motherId ||
+    prev.person.fatherId != next.person.fatherId ||
+    prev.person.canEdit != next.person.canEdit ||
+    prev.person.x != next.person.x ||
+    prev.person.y != next.person.y ||
+    !areEqualShallow(prev.person.personDetails, next.person.personDetails)
+  ) {
+    console.log("NOT EQUAL");
+    return false;
+  }
 
-export default React.memo(PersonNodeCard);
+  return true;
+};
+
+function areEqualShallow(a: any, b: any) {
+  for (var key in a) {
+    if (a[key] !== b[key]) {
+      return false;
+    }
+  }
+  return true;
+}
+export default React.memo(PersonNodeCard, areEqual);

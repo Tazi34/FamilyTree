@@ -1,18 +1,5 @@
-import { makeStyles } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
-import Draggable from "react-draggable";
-import { connect, useSelector } from "react-redux";
-import { ApplicationState } from "../../helpers";
 import LinkComponent, { LinkLoaded } from "./LinkComponent";
-import { Link } from "./model/Link";
-import { PersonNode } from "./model/PersonNode";
-import PersonNodeCard from "./PersonNodeCard";
-import {
-  linkLoader,
-  selectAllLinks,
-  selectAllPersonNodes,
-} from "./reducer/treeReducer";
 
 class Links extends React.Component<any> {
   render() {
@@ -57,6 +44,7 @@ class Links extends React.Component<any> {
             target={{ x: loadedLink.target.x, y: loadedLink.target.y }}
           />
         ))}
+        {this.props.children}
       </svg>
     );
   }

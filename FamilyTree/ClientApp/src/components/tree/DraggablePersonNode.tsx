@@ -23,14 +23,13 @@ const DraggablePersonNode = (props: any) => {
   const classes = useStyles();
   const node = props.person;
 
-  console.log("DRAGGABLE");
-
   const { ref, inView, entry } = useInView({
     /* Optional options */
     threshold: 0,
     root: props.viewRef.current,
     rootMargin: RECT_HEIGHT + "px",
   });
+  console.log("DRAGGABLE");
   return (
     <Draggable
       defaultPosition={{
@@ -59,6 +58,10 @@ const DraggablePersonNode = (props: any) => {
     >
       <div ref={ref}>
         <PersonNodeCard
+          onAddActionMenuClick={props.onAddActionMenuClick}
+          canConnectTo={props.canConnectTo}
+          disabled={props.disabled}
+          onConnectStart={props.onConnectStart}
           onSiblingAdd={props.onSiblingAdd}
           onPartnerAdd={props.onPartnerAdd}
           onNodeSelect={props.onNodeSelect}

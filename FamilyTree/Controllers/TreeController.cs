@@ -9,6 +9,8 @@ using FamilyTree.Entities;
 using FamilyTree.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace FamilyTree.Controllers
 {
@@ -30,7 +32,7 @@ namespace FamilyTree.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{treeId:int}")]
-        public async Task<ActionResult<TreeResponse>> GetTree(int treeId)
+        public async Task<ActionResult<DrawableTreeResponse>> GetTree(int treeId)
         {
             var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
             var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
@@ -55,6 +57,7 @@ namespace FamilyTree.Controllers
                 return BadRequest("no such node, or tree is private");
             return Ok(node);
         }
+      
         /// <summary>
         /// Zwraca listę drzew użytkownika do wyświetlenia na profilu (drzewa publiczne + drzewa prywatne w których jest użytkownik z JWT)
         /// </summary>
@@ -79,13 +82,29 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("")]
-        public async Task<ActionResult<TreeResponse>> CreateTree(CreateTreeRequest model)
+        public async Task<ActionResult<DrawableTreeResponse>> CreateTree(CreateTreeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var tree = await treeService.CreateTreeAsync(userId, model);
             if (tree == null)
                 return BadRequest("Error occured");
             return Ok(tree);
+        }
+
+        /// <summary>
+        /// Sprawdza do jakich elementow mozna wykonac operacje podpiecia
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>Zwraca stworzone drzewo</returns>
+        [HttpPost]
+        [Route("node/possibleConnections")]
+        public async Task<ActionResult<CheckPossibleConnectionResponse>> CheckPossibleConnections(CheckPossibleConnectionsRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var response = await treeService.CheckPossibleConnections(userId, model);
+            if (response == null)
+                return BadRequest("Error occured");
+            return Ok(response);
         }
 
         /// <summary>
@@ -104,6 +123,42 @@ namespace FamilyTree.Controllers
                 return BadRequest("Error occured");
             return Ok(response);
         }
+        /// <summary>
+        /// Ustawia polaczenia dziecko -==- rodzice. Sluzy do podpiania istniejacych juz wezlow
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize]
+        [Route("node/connect/child")]
+        public async Task<ActionResult<DrawableTreeResponse>> ConnectNodes(ConnectNodesRequest model)
+        {
+            var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
+            var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
+            var tree = await treeService.ConnectChildToParents(userId, model);
+
+            if (tree == null)
+                return BadRequest("Error");
+            return Ok(tree);
+        }
+        /// <summary>
+        /// Ustawia polaczenia partnerow 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize]
+        [Route("node/connect/partner")]
+        public async Task<ActionResult<DrawableTreeResponse>> ConnectPartners(ConnectPartnersRequest model)
+        {
+            var userIdClaim = HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name);
+            var userId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
+            var tree = await treeService.ConnectPartners(userId, model);
+
+            if (tree == null)
+                return BadRequest("Error");
+            return Ok(tree);
+        }
 
         /// <summary>
         /// Modyfikuje drzewo (nazwa drzewa, czy prywatne)
@@ -113,7 +168,7 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("")]
-        public async Task<ActionResult<TreeResponse>> ModifyTree(ModifyTreeRequest model)
+        public async Task<ActionResult<DrawableTreeResponse>> ModifyTree(ModifyTreeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var tree = await treeService.ModifyTreeAsync(userId, model);
@@ -124,15 +179,21 @@ namespace FamilyTree.Controllers
         /// <summary>
         /// Tworzy nowy node
         /// </summary>
-        /// <param name="model">CreateNodeRequest</param>
+        /// <param name="picture">obrazek</param>
+        /// <param name="jsonBody">CreateNodeRequest w formacie json/string</param>
         /// <returns>Zwraca całe drzewo</returns>
         [HttpPost]
         [Authorize]
         [Route("node")]
-        public async Task<ActionResult<NodeResponse>> CreateNode(CreateNodeRequest model)
+        public async Task<ActionResult<NodeResponse>> CreateNode(IFormFile picture, [FromForm] string jsonBody)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
-            var tree = await treeService.CreateNodeAsync(userId, model);
+            var options = new JsonSerializerOptions()
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var model = JsonSerializer.Deserialize<CreateNodeRequest>(jsonBody, options);
+            var tree = await treeService.CreateNodeAsync(userId, model, picture);
             if (tree == null)
                 return BadRequest("No authorization or other error");
             return Ok(tree);
@@ -146,7 +207,7 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("node/addSibling")]
-        public async Task<ActionResult<TreeResponse>> AddSibling(AddSiblingRequest model)
+        public async Task<ActionResult<DrawableTreeResponse>> AddSibling(AddSiblingRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var tree = await treeService.AddSiblingAsync(userId, model);
@@ -162,7 +223,7 @@ namespace FamilyTree.Controllers
         [HttpPut]
         [Authorize]
         [Route("node")]
-        public async Task<ActionResult<TreeResponse>> ModifyNode(ModifyNodeRequest model)
+        public async Task<ActionResult<DrawableTreeResponse>> ModifyNode(ModifyNodeRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var tree = await treeService.ModifyNodeAsync(userId, model);
@@ -178,7 +239,7 @@ namespace FamilyTree.Controllers
         [HttpDelete]
         [Authorize]
         [Route("node/{node_id:int}")]
-        public async Task<ActionResult<TreeResponse>> DeleteNode(int node_id)
+        public async Task<ActionResult<DrawableTreeResponse>> DeleteNode(int node_id)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var result = await treeService.DeleteNodeAsync(userId, node_id);
@@ -196,6 +257,28 @@ namespace FamilyTree.Controllers
             if (!result)
                 return BadRequest();
             return Ok();
+        }
+        [HttpPost]
+        [Authorize]
+        [Route("hide")]
+        public async Task<ActionResult<DrawableTreeResponse>> Hide(HideRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var result = await treeService.Hide(userId, model);
+            if (result == null)
+                return BadRequest();
+            return Ok(result);
+        }
+        [HttpPost]
+        [Authorize]
+        [Route("detach")]
+        public async Task<ActionResult<DrawableTreeResponse>> DetachNode(DetachRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var result = await treeService.DetachNode(userId, model);
+            if (result == null)
+                return BadRequest();
+            return Ok(result);
         }
         /// <summary>
         /// Ustawia zdjęcie dla node

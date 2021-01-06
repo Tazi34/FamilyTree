@@ -14,5 +14,6 @@ export type EditProfileRequestData = {
 export type EditProfileResponse = FullUserInformation;
 
 export const requestEditProfile = (data: EditProfileRequestData) => {
+  data.birthday = new Date(data.birthday).toISOString();
   return axios.put<EditProfileResponse>(`${PROFILE_API_URL}`, data);
 };

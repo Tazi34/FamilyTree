@@ -12,7 +12,6 @@ export type UpdateNodeRequestData = {
   description: string;
   name: string;
   surname: string;
-  pictureUrl: string;
   fatherId: number;
   motherId: number;
   children: number[];

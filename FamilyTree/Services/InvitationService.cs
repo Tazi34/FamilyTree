@@ -48,7 +48,7 @@ namespace FamilyTree.Services
                 MotherId = 0,
                 Partners = new List<int>()
             };
-            var createNodeResponse = await treeService.CreateNodeAsync(invitation.HostId, createNodeRequest);
+            var createNodeResponse = await treeService.CreateNodeAsync(invitation.HostId, createNodeRequest, null);
             if (createNodeRequest == null)
                 return null;
             var treeRequest = await treeService.GetTreeAsync(invitation.TreeId, model.UserId);

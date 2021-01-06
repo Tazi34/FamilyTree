@@ -12,7 +12,7 @@ export type CreateNodeRequestData = {
   description: string;
   name: string;
   surname: string;
-  pictureUrl: string;
+  picture: any | null;
   fatherId: number;
   motherId: number;
   sex: Sex;
@@ -25,5 +25,10 @@ export type CreateNodeRequestData = {
 export type CreateNodeResponse = TreeNodeAPI;
 
 export const createTreeNode = (data: CreateNodeRequestData) => {
-  return axios.post<CreateNodeResponse>(CREATE_NODE_API_URL, data);
+  var form = new FormData();
+  form.append("picture", data.picture);
+  var dataWithoutPicture = Object.assign({}, data) as any;
+  delete dataWithoutPicture.picture;
+  form.append("jsonBody", JSON.stringify(dataWithoutPicture));
+  return axios.post<CreateNodeResponse>(CREATE_NODE_API_URL, form);
 };

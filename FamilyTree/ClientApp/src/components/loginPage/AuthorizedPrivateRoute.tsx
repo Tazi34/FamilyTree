@@ -4,11 +4,13 @@ import React, { Component } from "react";
 import { User } from "./authenticationReducer";
 import { LOGIN_PAGE_URI } from "../../applicationRouting";
 type Props = {
-  component: Component;
+  component: any;
   user: User | null;
-  requiredRoles: string[];
-  layout: Component;
-} & any;
+  requiredRoles?: string[];
+  layout: any;
+  path: string;
+  [x: string]: any;
+};
 
 export default function AuthorizedPrivateRoute({
   component: Component,
@@ -20,6 +22,16 @@ export default function AuthorizedPrivateRoute({
   return (
     <Route
       render={(props) => {
+        if (requiredRoles) {
+          if (requiredRoles.includes("GUEST")) {
+            return (
+              <Layout>
+                <Component {...props} {...otherProps} />
+              </Layout>
+            );
+          }
+        }
+
         //not logged
         if (!user) {
           return (

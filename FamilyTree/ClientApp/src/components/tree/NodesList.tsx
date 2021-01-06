@@ -11,6 +11,9 @@ class NodesList extends React.Component<any> {
         {this.props.nodes.map((node: PersonNode) => {
           return (
             <DraggablePersonNode
+              onAddActionMenuClick={props.onAddActionMenuClick}
+              canConnectTo={this.props.possibleConnections.includes(node.id)}
+              disabled={this.props.disabled}
               onSiblingAdd={this.props.onSiblingAdd}
               viewRef={this.props.viewRef}
               key={node.id}
@@ -19,6 +22,7 @@ class NodesList extends React.Component<any> {
               onNodeMove={props.onNodeMove}
               onParentAdd={props.onParentAdd}
               onChildAdd={props.onChildAdd}
+              onConnectStart={props.onConnectStart}
               person={node}
               onNodeDelete={props.onNodeDelete}
               onMoveNodeOnCanvas={props.onMoveNodeOnCanvas}

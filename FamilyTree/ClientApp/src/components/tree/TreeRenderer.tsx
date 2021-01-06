@@ -1,49 +1,32 @@
-import { withStyles } from "@material-ui/core";
-import { CodeOutlined } from "@material-ui/icons";
 import { EntityId } from "@reduxjs/toolkit";
-import { notDeepEqual } from "assert";
-import React, { useEffect, useRef, useState } from "react";
-import Draggable from "react-draggable";
-import { connect, useDispatch, useSelector } from "react-redux";
-import { compose } from "recompose";
-import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+import Axios from "axios";
+import React, { Profiler } from "react";
+import { connect } from "react-redux";
 import { ApplicationState } from "../../helpers";
+import { baseURL } from "../../helpers/apiHelpers";
+import CreateNodeDialog from "../addNodeActionDialog/CreateNodeDialog";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
-import {
-  ConnectionPoint,
-  connectionStartPointSelector,
-  isConnectingSelector,
-} from "./connectionReducer";
 import Families from "./Families";
-import FamilyNodeCard from "./FamilyNodeCard";
+import FollowableLink from "./FollowableLink";
 import { isGraphCyclic } from "./graphAlgorithms/cycleDetection";
-import { getLinkIdSelector, getNodeIdSelector } from "./helpers/idHelpers";
 import { createPath } from "./helpers/linkCreationHelpers";
-import LinkComponent, { LinkLoaded } from "./LinkComponent";
+import { LinkLoaded } from "./LinkComponent";
 import Links from "./Links";
 import { FamilyNode, getFamilyLocation } from "./model/FamilyNode";
 import { Link } from "./model/Link";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import NodesList from "./NodesList";
-import PersonNodeCard from "./PersonNodeCard";
 import { Point } from "./Point";
 import {
   linkLoader,
   selectAllFamilies,
-  selectAllFamiliesLocal,
   selectAllLinks,
-  selectAllNodesLocal,
   selectAllPersonNodes,
-  selectPersonNodeLocal,
   TreeState,
 } from "./reducer/treeReducer";
-
-import { addParentAsync } from "./reducer/updateNodes/addParent";
-import {
-  requestDeleteNode,
-  removeNodeFromTree,
-} from "./reducer/updateNodes/deleteNode";
+import { connectNodes } from "./reducer/updateNodes/connectChildWithNodes";
+import { requestDeleteNode } from "./reducer/updateNodes/deleteNode";
 import { moveNode, moveNodeThunk } from "./reducer/updateNodes/moveNode";
 import {
   getIncomingLinks,
@@ -51,7 +34,6 @@ import {
   getOutboundLinks,
   randomFamilyId,
 } from "./reducer/utils/getOutboundLinks";
-
 import TreeNodeDetailsDialog from "./TreeNodeDetailsDialog";
 import "./treeRenderer.css";
 
@@ -78,7 +60,7 @@ type OwnProps = {
     firstParent: number,
     secondParent?: number
   ) => void;
-
+  [x: string]: any;
   scale: number;
 
   canvasRef: any;
@@ -94,25 +76,101 @@ type DispatchProps = {
 };
 
 type Props = DispatchProps & OwnProps;
+export type ConnectionMode = "AsChild" | "AsPartner" | "AsParent";
+type ConnectionProps = {
+  isConnecting: boolean;
+  start: PersonNode | null;
+  mode: ConnectionMode | null;
+  possibleConnections: {
+    nodes: number[];
+    families: EntityId[];
+  };
+  firstTarget: PersonNode | null;
+};
 type NodeDialogProps = {
+  open: boolean;
+  node: PersonNode | null;
+};
+type AddActionDialogProps = {
   open: boolean;
   node: PersonNode | null;
 };
 type State = {
   nodeDialog: NodeDialogProps;
+  connection: ConnectionProps;
+  addActionDialog: AddActionDialogProps;
 };
 
-class TreeRenderer extends React.Component<Props, State> {
+class TreeRenderer extends React.Component<Props, State, any> {
+  private ref: any;
   constructor(props: Props) {
     super(props);
+    this.ref = React.createRef();
     this.state = {
       nodeDialog: {
         open: false,
         node: null,
       },
+      connection: {
+        isConnecting: false,
+        start: null,
+        possibleConnections: {
+          families: [],
+          nodes: [],
+        },
+        mode: null,
+        firstTarget: null,
+      },
+      addActionDialog: {
+        open: false,
+        node: null,
+      },
     };
   }
+  resetConnectingMode = () => {
+    this.setState({
+      connection: {
+        firstTarget: null,
+        isConnecting: false,
+        possibleConnections: {
+          families: [],
+          nodes: [],
+        },
+        mode: null,
+        start: null,
+      },
+    });
+  };
 
+  openAddActionDialog = (node: PersonNode) => {
+    this.setState({
+      addActionDialog: {
+        open: true,
+        node: node,
+      },
+    });
+  };
+  resetAddActionDialog = () => {
+    this.setState({
+      addActionDialog: {
+        open: false,
+        node: null,
+      },
+    });
+  };
+
+  componentDidMount = () => {
+    document.oncontextmenu = (e: any) => {
+      if (this.state.connection.isConnecting) {
+        e.preventDefault();
+        this.resetConnectingMode();
+        return false;
+      }
+    };
+  };
+  componentWillUnmount = () => {
+    document.oncontextmenu = null;
+  };
   handleNodeDelete = (id: number) => {
     this.props.requestDeleteNode(id);
   };
@@ -127,6 +185,9 @@ class TreeRenderer extends React.Component<Props, State> {
     this.props.moveNodeThunk({ nodeId: node.id as number, x, y });
   };
   moveNodeOnCanvas = (e: any, node: Node) => {
+    if (this.state.connection.isConnecting) {
+      return;
+    }
     const treeState = this.props.treeState;
 
     const nodeFamilies = this.props.families.filter(
@@ -142,14 +203,18 @@ class TreeRenderer extends React.Component<Props, State> {
         const otherNode = this.props.nodes.find(
           (n) => n.id === nodeToLoadId
         ) as PersonNode;
-        familyLocation = getFamilyLocation({ x: e.x, y: e.y }, otherNode);
+        familyLocation = getFamilyLocation(
+          family,
+          { x: e.x, y: e.y },
+          otherNode
+        );
       } else {
-        familyLocation = getFamilyLocation({ x: e.x, y: e.y });
+        familyLocation = getFamilyLocation(family, { x: e.x, y: e.y });
       }
-      const familyNode = d3.select("#f" + family.id);
+      const familyNode = d3.select("#" + family.id);
       familyNode.style(
         "transform",
-        `translate(${familyLocation.x}px,${familyLocation.y}px)`
+        `translate(${familyLocation.x - 10}px,${familyLocation.y - 10}px)`
       );
 
       //Przesun wszystkie polaczenia rodziny
@@ -235,15 +300,108 @@ class TreeRenderer extends React.Component<Props, State> {
   traverseTree = (node: Node, callback: Function) => {
     //traverseRec(node, callback, 0, (id: number) => getNodeById(treeState, id));
   };
+
+  addFirstTargetToConnection = (node: PersonNode) => {
+    this.setState({
+      connection: {
+        ...this.state.connection,
+        firstTarget: node,
+      },
+    });
+  };
+  handleFamilySelect = (familyNode: FamilyNode) => {
+    const connectionMode = this.state.connection;
+    if (connectionMode.isConnecting) {
+      if (connectionMode.possibleConnections.families.includes(familyNode.id)) {
+        this.props.onConnectAsChild(
+          this.state.connection.start!.id,
+          familyNode.fatherId,
+          familyNode.motherId
+        );
+        this.resetConnectingMode();
+      }
+    }
+  };
   handleNodeSelect = (personNode: PersonNode) => {
-    this.setState({ nodeDialog: { open: true, node: personNode } });
+    const connectionMode = this.state.connection;
+    if (connectionMode.isConnecting) {
+      if (
+        connectionMode.possibleConnections.nodes.includes(
+          personNode.id as number
+        )
+      ) {
+        if (connectionMode.mode === "AsChild") {
+          const startNode = connectionMode.start;
+          if (!startNode || (startNode.fatherId && startNode.motherId)) {
+            this.resetConnectingMode();
+            return;
+          }
+          var existingParent = startNode.fatherId ?? startNode.motherId;
+
+          this.props.onConnectAsChild(
+            connectionMode.start!.id,
+            personNode.id,
+            existingParent
+          );
+        }
+        if (connectionMode.mode === "AsPartner") {
+          this.props.onConnectAsPartner(
+            this.state.connection.start!.id,
+            personNode.id
+          );
+        }
+        if (connectionMode.mode === "AsParent") {
+          const startNode = connectionMode.start;
+          if (!startNode || (startNode.fatherId && startNode.motherId)) {
+            this.resetConnectingMode();
+            return;
+          }
+          var existingParent = personNode.fatherId ?? personNode.motherId;
+
+          this.props.onConnectAsChild(
+            personNode.id,
+            connectionMode.start!.id,
+            existingParent
+          );
+        }
+      }
+      this.resetConnectingMode();
+    } else {
+      this.setState({ nodeDialog: { open: true, node: personNode } });
+    }
   };
   handleDialogClose = () => {
     this.setState({ nodeDialog: { open: false, node: null } });
   };
+  handleConnectStart = (node: PersonNode, mode: ConnectionMode) => {
+    Axios.post(baseURL + "/tree/node/possibleConnections", {
+      mode: mode,
+      nodeId: node.id,
+    }).then((resp) => {
+      this.setState({
+        connection: {
+          firstTarget: this.state.connection.firstTarget,
+          isConnecting: true,
+          start: node,
+          possibleConnections: resp.data,
+          mode,
+        },
+      });
+    });
+  };
 
+  handleChildAdd = (
+    data: CreateNodeRequestData,
+    firstParent: number,
+    secondParent?: number
+  ) => {
+    if (this.state.connection.isConnecting) {
+      return;
+    }
+    this.props.onChildAdd(data, firstParent, secondParent);
+  };
   render = () => {
-    const { nodeDialog } = this.state;
+    const { nodeDialog, addActionDialog } = this.state;
 
     console.log("RENDER TREE RENDERER ");
     const loadedLinks = this.props.links
@@ -251,19 +409,14 @@ class TreeRenderer extends React.Component<Props, State> {
       .filter((a: any) => a) as LinkLoaded[];
     return (
       <div>
-        <TreeNodeDetailsDialog
-          //TODO na podstawie nodea
-          canEdit={true}
-          open={nodeDialog.open}
-          node={nodeDialog.node}
-          onClose={this.handleDialogClose}
-        />
-
         <NodesList
           // positionX={this.props.positionX}
           // positionY={this.props.positionY}
           // canvasWidth={this.props.canvasWidth}
           // canvasHeight={this.props.canvasHeight}
+          possibleConnections={this.state.connection.possibleConnections.nodes}
+          disabled={this.state.connection.isConnecting}
+          onConnectStart={this.handleConnectStart}
           onSiblingAdd={this.props.onSiblingAdd}
           onChildAdd={this.props.onChildAdd}
           viewRef={this.props.canvasRef}
@@ -275,10 +428,33 @@ class TreeRenderer extends React.Component<Props, State> {
           onPartnerAdd={this.handlePartnerAdd}
           onNodeDelete={this.handleNodeDelete}
           onMoveNodeOnCanvas={this.moveNodeOnCanvas}
+          onAddActionMenuClick={this.openAddActionDialog}
         />
-        <Families families={this.props.families} />
+        <Families
+          possibleConnections={
+            this.state.connection.possibleConnections.families
+          }
+          families={this.props.families}
+          onSelect={this.handleFamilySelect}
+        />
+        <Links links={loadedLinks}>
+          <FollowableLink
+            enabled={this.state.connection.isConnecting}
+            positionX={this.props.positionX}
+            positionY={this.props.positionY}
+            scale={this.props.scale}
+            source={this.state.connection.start ?? { x: 1, y: 1 }}
+          />
+        </Links>
 
-        <Links links={loadedLinks} />
+        <div>
+          <TreeNodeDetailsDialog
+            //TODO na podstawie nodea
+            open={nodeDialog.open}
+            node={nodeDialog.node}
+            onClose={this.handleDialogClose}
+          />
+        </div>
       </div>
     );
   };
