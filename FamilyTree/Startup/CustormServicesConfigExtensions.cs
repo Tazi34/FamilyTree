@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IPictureService, PictureService>();
             services.AddScoped<IInvitationService, InvitationService>();
+            services.AddScoped<IGedcomService, GedcomService>();
             return services;
         }
     }
