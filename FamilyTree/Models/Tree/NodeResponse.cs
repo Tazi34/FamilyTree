@@ -23,6 +23,7 @@ namespace FamilyTree.Models
         public List<int> Children { get; set; }
         public List<int> Partners { get; set; }
         public bool CanEdit { get; set; }
+        public bool Hidden { get; set; } = false;
         
         //do drawable tree response : TODO co z tym zrobic
         public List<string> Families { get; set; }
@@ -55,7 +56,7 @@ namespace FamilyTree.Models
             Families = new List<string>();
         }
         /// <summary>
-        /// 
+        /// Wskazuje role rodzicielskie, według płci
         /// </summary>
         /// <param name="node"></param>
         /// <returns>item1 - father, item2 - mother</returns>

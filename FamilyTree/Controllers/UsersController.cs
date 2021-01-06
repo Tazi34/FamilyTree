@@ -69,7 +69,7 @@ namespace FamilyTree.Controllers
         {
             var newUser = await userService.CreateUserAsync(model);
             if (newUser == null)
-                return BadRequest("Not unique email");
+                return Conflict("Not unique email");
             return newUser;
         }
         /// <summary>

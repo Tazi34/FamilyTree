@@ -124,9 +124,9 @@ namespace FamilyTree.Controllers
             return Ok(response);
         }
         /// <summary>
-        /// Ustawia polaczenia dziecko <---> rodzice. Sluzy do podpiania istniejacych juz wezlow
+        /// Ustawia polaczenia dziecko -==- rodzice. Sluzy do podpiania istniejacych juz wezlow
         /// </summary>
-        /// <param name=""></param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         [Authorize]
@@ -179,7 +179,8 @@ namespace FamilyTree.Controllers
         /// <summary>
         /// Tworzy nowy node
         /// </summary>
-        /// <param name="model">CreateNodeRequest</param>
+        /// <param name="picture">obrazek</param>
+        /// <param name="jsonBody">CreateNodeRequest w formacie json/string</param>
         /// <returns>Zwraca całe drzewo</returns>
         [HttpPost]
         [Authorize]
@@ -256,6 +257,28 @@ namespace FamilyTree.Controllers
             if (!result)
                 return BadRequest();
             return Ok();
+        }
+        [HttpPost]
+        [Authorize]
+        [Route("hide")]
+        public async Task<ActionResult<DrawableTreeResponse>> Hide(HideRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var result = await treeService.Hide(userId, model);
+            if (result == null)
+                return BadRequest();
+            return Ok(result);
+        }
+        [HttpPost]
+        [Authorize]
+        [Route("detach")]
+        public async Task<ActionResult<DrawableTreeResponse>> DetachNode(DetachRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var result = await treeService.DetachNode(userId, model);
+            if (result == null)
+                return BadRequest();
+            return Ok(result);
         }
         /// <summary>
         /// Ustawia zdjęcie dla node
