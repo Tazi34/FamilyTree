@@ -3,4 +3,5 @@ export type BlogProfile = {
   name: string;
   surname: string;
   pictureUrl: string;
+  birthday: string;
 };

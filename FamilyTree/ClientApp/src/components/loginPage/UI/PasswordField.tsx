@@ -15,11 +15,13 @@ const PasswordField = (props: any) => {
   return (
     <TextField
       {...props}
+      fullWidth
       type={showPassword ? "text" : "password"}
       InputProps={{
         endAdornment: (
           <InputAdornment position="end">
             <IconButton
+              edge="start"
               aria-label="toggle password visibility"
               onClick={handleClickShowPassword}
               onMouseDown={handleMouseDownPassword}

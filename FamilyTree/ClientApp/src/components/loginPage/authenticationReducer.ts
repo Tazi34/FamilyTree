@@ -79,6 +79,15 @@ export const authenticateGmailToken = createAsyncThunk<
 >(`${userActionsPrefix}/authenticateGmailToken`, async (token) => {
   return await authenticationAPI.requestAuthenticateGmail({ idToken: token });
 });
+
+export const authenticateFacebookToken = createAsyncThunk<
+  AxiosResponse<AuthenticateGmailResponse>,
+  string
+>(`${userActionsPrefix}/authenticateFacebookToken`, async (token) => {
+  return await authenticationAPI.requestAuthenticateFacebook({
+    idToken: token,
+  });
+});
 export const logoutUser = createAction("users/userLoggedOut");
 
 //REDUCER

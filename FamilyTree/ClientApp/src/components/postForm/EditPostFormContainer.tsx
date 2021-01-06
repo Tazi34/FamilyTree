@@ -1,18 +1,26 @@
+import { makeStyles, Theme } from "@material-ui/core";
 import axios from "axios";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect, useHistory } from "react-router";
 import { useThunkDispatch } from "../..";
 import { HOME_PAGE_URI } from "../../applicationRouting";
-import { BLOG_API_URL } from "../../helpers/apiHelpers";
+import { baseURL, BLOG_API_URL } from "../../helpers/apiHelpers";
 import { Post } from "../../model/Post";
 import { withAlertMessage } from "../alerts/withAlert";
 import { EditPostRequestData } from "../blog/API/editPost";
 import { editPost, postByIdSelector } from "../blog/redux/postsReducer";
 import PostForm from "./PostForm";
+const useStyles = makeStyles((theme: Theme) => ({
+  container: {
+    minHeight: "100%",
+    background: theme.palette.background.paper,
+  },
+}));
 
 const EditPostFormContainer = (props: any) => {
   const dispatch = useThunkDispatch();
+  const classes = useStyles();
   const id = props.computedMatch.params.postId;
   const history = useHistory();
   const [post, setPost] = React.useState<Post | undefined>(undefined);
@@ -28,6 +36,20 @@ const EditPostFormContainer = (props: any) => {
   if (!post) {
     return null;
   }
+
+  const handlePicureUpload = (file: any) => {
+    const form = new FormData();
+    form.append("picture", file);
+    return axios.post(baseURL + "/blog/picture", form).then((resp) => {
+      if (resp.status == 200) {
+        return {
+          data: {
+            link: resp.data.pictureUrl,
+          },
+        };
+      }
+    });
+  };
 
   const handleEditPost = (content: string, title: string) => {
     const data: EditPostRequestData = {
@@ -46,7 +68,15 @@ const EditPostFormContainer = (props: any) => {
     });
   };
 
-  return <PostForm onSubmit={handleEditPost} post={post} />;
+  return (
+    <div className={classes.container}>
+      <PostForm
+        onPictureUpload={handlePicureUpload}
+        onSubmit={handleEditPost}
+        post={post}
+      />
+    </div>
+  );
 };
 
 export default withAlertMessage(EditPostFormContainer);

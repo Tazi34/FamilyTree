@@ -5,20 +5,16 @@ body,
   height: 100%;
 }
 
-/* body {
-  background: linear-gradient(
-      to bottom,
-      #aed581,
-      #aed581 85%,
-      #689f38 15%,
-      #689f38
-    )
-    no-repeat center center fixed;
+body {
+  background-size: cover;
+  background-position: 35% center;
+  background-repeat: no-repeat;
+  opacity: 2;
+  background-attachment: fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
-  background-size: cover;
-} */
+}
 .postFormTextEditor {
   height: 800px;
   padding: 5px;

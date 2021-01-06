@@ -29,11 +29,13 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Props = {
   post?: Post;
   onSubmit: (content: string, title: string) => void;
+  onPictureUpload?: (file: any) => Promise<any>;
 };
-const PostForm = ({ post, onSubmit }: Props) => {
+const PostForm = ({ post, onSubmit, onPictureUpload }: Props) => {
   const classes = useStyles();
 
   const [editorState, setEditorState] = React.useState(() => {
+    console.log("init state");
     if (post) {
       try {
         const raw = JSON.parse(post.text);
@@ -76,6 +78,14 @@ const PostForm = ({ post, onSubmit }: Props) => {
 
               <Divider />
               <Editor
+                toolbar={{
+                  image: {
+                    uploadEnabled: true,
+                    alignmentEnabled: true,
+                    previewImage: true,
+                    uploadCallback: onPictureUpload,
+                  },
+                }}
                 editorState={editorState}
                 wrapperClassName="postFormTextEditorWrapper"
                 editorClassName="postFormTextEditor"

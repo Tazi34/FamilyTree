@@ -17,10 +17,12 @@ import "../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { Post } from "../../model/Post";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { formatDistance } from "date-fns";
+import { areEqualShallow } from "../../helpers/helpers";
 
 const useStyles = makeStyles({
   root: {
     minWidth: 275,
+    height: 450,
   },
   bullet: {
     display: "inline-block",
@@ -36,7 +38,12 @@ const useStyles = makeStyles({
   cardRoot: {
     height: "100%",
     width: "100%",
-    border: "1px solid red",
+    // border: "1px solid red",
+  },
+  postContent: {
+    height: 300,
+    overflowY: "hidden",
+    paddingTop: 0,
   },
 });
 type PostCardProps = {
@@ -76,6 +83,7 @@ const PostCard = ({ post, onPostDelete, navigateToEdit }: PostCardProps) => {
   const date = new Date(post.creationTime);
   const displayDate = formatDistance(date, new Date());
 
+  console.log("POST CARD");
   return (
     <Card className={classes.cardRoot}>
       <Menu
@@ -91,12 +99,12 @@ const PostCard = ({ post, onPostDelete, navigateToEdit }: PostCardProps) => {
         title={post.title}
         subheader={displayDate}
         action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon onClick={handleContextMenuOpen} />
+          <IconButton aria-label="settings" onClick={handleContextMenuOpen}>
+            <MoreVertIcon />
           </IconButton>
         }
       />
-      <CardContent>
+      <CardContent className={classes.postContent}>
         <Editor
           editorState={editorState}
           toolbarHidden={true}
@@ -105,15 +113,15 @@ const PostCard = ({ post, onPostDelete, navigateToEdit }: PostCardProps) => {
         />
       </CardContent>
       <CardActions>
-        {/* <Button size="small" color="primary">
-          Read More
+        <Button size="small" color="primary">
+          Read more...
         </Button>
-        <Button onClick={handlePostDelete} size="small" color="secondary">
-          Delete
-        </Button> */}
       </CardActions>
     </Card>
   );
 };
 
-export default PostCard;
+const areEqual = (prev: PostCardProps, next: PostCardProps) => {
+  return areEqualShallow(prev.post, next.post);
+};
+export default React.memo(PostCard, areEqual);

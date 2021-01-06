@@ -1,41 +1,43 @@
-import { Box, Grid, makeStyles, Paper } from "@material-ui/core";
+import { Box, Button, Grid, IconButton, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
+
 import GoogleLogin from "react-google-login";
-import userProfileAPI from "../../userProfile/API/userProfileAPI";
-import FacebookLogin from "react-facebook-login";
 import { logger } from "../../../helpers/logger";
+import FacebookIcon from "@material-ui/icons/Facebook";
+
+const FacebookLogin = require("react-facebook-login/dist/facebook-login-render-props.js")
+  .default;
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: { width: "100%", minHeight: 120, padding: "10px 20px" },
+  root: { width: "100%" },
   buttonContainer: {
     margin: "10px 0",
+  },
+
+  button: {
+    borderRadius: 0,
+    width: "100%",
+  },
+  googleIcon: {
+    fontSize: 24,
+    paddingTop: 4,
+    paddingBottom: 4,
+  },
+  facebookIcon: {
+    fontSize: 32,
   },
 }));
 type Props = {
   onGmailLogin: (response: any) => void;
+  onFacebookLogin: (response: any) => void;
 };
-const SocialMediaLoginPanel = ({ onGmailLogin }: Props) => {
+const SocialMediaLoginPanel = ({ onGmailLogin, onFacebookLogin }: Props) => {
   const classes = useStyles();
-  const responseFacebook = (response: any) => {
-    logger.log(response);
-  };
+
   return (
-    <Box
-      className={classes.root}
-      border={1}
-      borderColor={"primary.main"}
-      borderRadius={7}
-      display="flex"
-      flexDirection="column"
-      justifyContent="space-around"
-    >
-      <Box
-        className={classes.buttonContainer}
-        display="flex"
-        flexDirection="column"
-        justifyContent="space-around"
-      >
+    <Grid className={classes.root} container>
+      <Grid item xs={6}>
         <GoogleLogin
           clientId="941927718703-sabevb4hdfuit5aca0egk363d1lth7m8.apps.googleusercontent.com"
           buttonText="Login"
@@ -43,22 +45,42 @@ const SocialMediaLoginPanel = ({ onGmailLogin }: Props) => {
           onFailure={(err: any) => {
             logger.log(err);
           }}
+          render={(renderProps) => (
+            <Button
+              variant="outlined"
+              className={classes.button}
+              onClick={renderProps.onClick}
+            >
+              <i
+                className={`fab fa-google ${classes.googleIcon}`}
+                style={{ color: "#DB4437" }}
+              ></i>
+            </Button>
+          )}
           cookiePolicy={"single_host_origin"}
         />
-      </Box>
-      <Box
-        className={classes.buttonContainer}
-        display="flex"
-        flexDirection="column"
-        justifyContent="space-around"
-      >
+      </Grid>
+      <Grid item xs={6}>
         <FacebookLogin
+          render={(renderProps: any) => (
+            <Button
+              variant="outlined"
+              className={classes.button}
+              onClick={renderProps.onClick}
+            >
+              <FacebookIcon
+                style={{ color: "#3b5998" }}
+                className={classes.facebookIcon}
+              />
+            </Button>
+          )}
+          icon={FacebookIcon}
+          cssClass={classes.button}
           appId="397727788098228"
-          fields="name,email,picture"
-          callback={responseFacebook}
+          callback={onFacebookLogin}
         />
-      </Box>
-    </Box>
+      </Grid>
+    </Grid>
   );
 };
 

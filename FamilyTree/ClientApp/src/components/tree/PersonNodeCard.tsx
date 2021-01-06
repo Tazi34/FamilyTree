@@ -19,6 +19,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { formatDate } from "../../helpers/formatters";
 import LinkIcon from "@material-ui/icons/Link";
 import { ConnectionMode } from "./TreeRenderer";
+import { areEqualShallow } from "../../helpers/helpers";
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 30;
@@ -398,12 +399,4 @@ const areEqual = (prev: Props, next: Props) => {
   return true;
 };
 
-function areEqualShallow(a: any, b: any) {
-  for (var key in a) {
-    if (a[key] !== b[key]) {
-      return false;
-    }
-  }
-  return true;
-}
 export default React.memo(PersonNodeCard, areEqual);

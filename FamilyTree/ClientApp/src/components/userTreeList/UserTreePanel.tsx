@@ -51,12 +51,14 @@ type Props = {
   onTreeSelect: (tree: TreeInformation) => void;
   onTreeCreate: (treeName: string) => void;
   isOwner: boolean;
+  loading: boolean;
 };
 const UserTreePanel = ({
   userTrees,
   onTreeSelect,
   onTreeCreate,
   isOwner,
+  loading,
 }: Props) => {
   const classes = useStyles();
 
@@ -74,9 +76,13 @@ const UserTreePanel = ({
       {/* <div className={classes.flexGrow}></div> */}
 
       <div className={classes.treeList}>
-        <TreesList onTreeSelect={onTreeSelect} trees={userTrees}></TreesList>
+        <TreesList
+          loading={loading}
+          onTreeSelect={onTreeSelect}
+          trees={userTrees}
+        ></TreesList>
       </div>
-      {isOwner && (
+      {!loading && isOwner && (
         <div>
           <Button
             variant="contained"

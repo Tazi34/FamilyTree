@@ -19,11 +19,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     right: 0,
   },
 }));
-export default (props: { children?: React.ReactNode }) => {
+export default (props: { children?: React.ReactNode; background?: string }) => {
   const classes = useStyles();
+
   const user = useSelector(getUser);
   return (
-    <LayoutBase>
+    <LayoutBase background={props.background}>
       <div className={classes.root}>
         <ResponsiveMainColumn>{props.children}</ResponsiveMainColumn>
       </div>

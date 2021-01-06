@@ -1,12 +1,4 @@
-import {
-  CircularProgress,
-  Dialog,
-  Grid,
-  makeStyles,
-  Paper,
-  Tab,
-  Tabs,
-} from "@material-ui/core";
+import { CircularProgress, makeStyles, Tab, Tabs } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -16,7 +8,6 @@ import { useThunkDispatch } from "../..";
 import {
   CREATE_POST_FORM_PAGE_URI,
   HOME_PAGE_URI,
-  PROFILE_PAGE_URI,
 } from "../../applicationRouting";
 import { ApplicationState } from "../../helpers";
 import { StatusState } from "../../helpers/helpers";
@@ -25,6 +16,7 @@ import { Post } from "../../model/Post";
 import { withAlertMessage } from "../alerts/withAlert";
 import { tryOpenChat } from "../chat/chatReducer";
 import { getUser, User } from "../loginPage/authenticationReducer";
+import ResponsiveMainColumn from "../ResponsiveMainColumn/ResponsiveMainColumn";
 import UserProfileDialog from "../userProfile/UserProfileDialog";
 import TreesListProvider from "../userTreeList/TreesListProvider";
 import BlogOwnerSection from "./BlogOwnerSection";
@@ -36,7 +28,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   main: {
     width: "100%",
     height: "100%",
-    background: "#ebf1f4",
   },
   backPictureSection: {
     width: "100%",
@@ -48,8 +39,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   profileSection: {},
   selectionBar: {},
   contentSection: {
+    minHeight: "100%",
+    background: theme.palette.background.paper,
     padding: 20,
+    position: "relative",
   },
+
   treesContainer: {
     padding: 10,
   },
@@ -110,69 +105,70 @@ const BlogPage = (props: any) => {
   if (!blogId) {
     return <Redirect to={HOME_PAGE_URI} />;
   }
-  if (fetchStatus.loading || !profile) {
-    return <Paper className={classes.main}></Paper>;
-  }
 
-  const isUserOwnerOfBlog = profile.userId === user?.id;
+  const isUserOwnerOfBlog = false; // profile && profile.userId === user?.id;
+  const isLoading = fetchStatus.loading || !profile;
   return (
     <div className={classes.main}>
-      <div className={classes.backPictureSection}>
-        <img
-          className={classes.backPicture}
-          src="https://picsum.photos/1800/300"
-        />
-      </div>
-      <div className={classes.contentSection}>
-        <Paper className={classes.topPart}>
-          {isUserOwnerOfBlog ? (
-            <BlogOwnerSection
-              user={user as User}
-              onEditProfile={openEditProfileDialog}
-              redirectToPostForm={redirectToPostForm}
-            ></BlogOwnerSection>
-          ) : (
-            <BlogProfileSection onContact={handleContact} profile={profile} />
-          )}
-        </Paper>
-
-        <Paper className={classes.selectionBar}>
-          <Tabs
-            indicatorColor="primary"
-            textColor="primary"
-            variant="fullWidth"
-            aria-label="full width tabs example"
-            value={selectedTab}
-            onChange={(e: any, value: any) => {
-              setSelectedTab(value);
-            }}
-          >
-            <Tab value={0} label="Posts" />
-            <Tab value={1} label="Trees" />
-          </Tabs>
-        </Paper>
-        <div className={classes.cardsBackground}>
-          <SwipeableViews
-            index={selectedTab}
-            onChangeIndex={(value: any) => {
-              setSelectedTab(value);
-            }}
-            slideStyle={{
-              overflowY: "hidden",
-            }}
-          >
-            {!Boolean(posts) ? (
-              <CircularProgress />
+      <ResponsiveMainColumn>
+        <div className={classes.contentSection}>
+          <div className={classes.topPart}>
+            {isUserOwnerOfBlog ? (
+              <BlogOwnerSection
+                user={user as User}
+                onEditProfile={openEditProfileDialog}
+                redirectToPostForm={redirectToPostForm}
+              ></BlogOwnerSection>
             ) : (
-              <PostsList posts={posts} onPostDelete={handlePostDelete} />
+              <BlogProfileSection onContact={handleContact} profile={profile} />
             )}
-            <div className={classes.treesContainer}>
-              <TreesListProvider isOwner={isUserOwnerOfBlog} userId={blogId} />
-            </div>
-          </SwipeableViews>
-        </div>
-      </div>
+          </div>
 
+          <div className={classes.selectionBar}>
+            <Tabs
+              indicatorColor="primary"
+              textColor="primary"
+              variant="fullWidth"
+              aria-label="full width tabs example"
+              value={selectedTab}
+              onChange={(e: any, value: any) => {
+                setSelectedTab(value);
+              }}
+            >
+              <Tab value={0} label="Posts" />
+              <Tab value={1} label="Trees" />
+            </Tabs>
+          </div>
+          <div>
+            <SwipeableViews
+              index={selectedTab}
+              onChangeIndex={(value: any) => {
+                setSelectedTab(value);
+              }}
+              slideStyle={{
+                overflowY: "hidden",
+              }}
+            >
+              <div style={selectedTab === 0 ? {} : { height: 1 }}>
+                <PostsList
+                  loaded={!isLoading}
+                  posts={posts}
+                  onPostDelete={handlePostDelete}
+                />
+              </div>
+
+              <div className={classes.treesContainer}>
+                <TreesListProvider
+                  loaded={!isLoading}
+                  isOwner={isUserOwnerOfBlog}
+                  userId={blogId}
+                />
+                <div style={{ flexGrow: 1 }} />
+              </div>
+            </SwipeableViews>
+          </div>
+        </div>
+      </ResponsiveMainColumn>
       <UserProfileDialog
         onSuccess={props.alertSuccess}
         onError={props.alertError}
