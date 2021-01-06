@@ -109,11 +109,11 @@ namespace FamilyTree.Models
                 if (firstParent != null && secondParent != null)
                 {
                     family.X =
-   Math.Min(firstParent.X, secondParent.X) +
-   Math.Abs(firstParent.X - secondParent.X) / 2;
+                        Math.Min(firstParent.X, secondParent.X) +
+                        Math.Abs(firstParent.X - secondParent.X) / 2;
                     family.Y =
-                      Math.Min(firstParent.Y, secondParent.Y) +
-                      Math.Abs(firstParent.Y - secondParent.Y) / 2;
+                        Math.Min(firstParent.Y, secondParent.Y) +
+                        Math.Abs(firstParent.Y - secondParent.Y) / 2;
 
                     if(family.Children.Count > 0)
                     {

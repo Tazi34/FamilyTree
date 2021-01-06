@@ -12,6 +12,7 @@ namespace FamilyTree.Services
         public bool ValidateNewNode(CreateNodeRequest model, Tree tree);
         public bool ValidateModifiedNode(ModifyNodeRequest model, Tree tree);
         public bool LastNotEmptyNode(Node node, Tree tree);
+        public bool ValidateHideRequest(HideRequest model, Tree tree);
     }
     public class TreeValidationService : ITreeValidationService
     {
@@ -22,6 +23,16 @@ namespace FamilyTree.Services
             foreach(var n in tree.Nodes)
             {
                 if (n.UserId != 0 && n.NodeId != node.NodeId)
+                    return false;
+            }
+            return true;
+        }
+
+        public bool ValidateHideRequest(HideRequest model, Tree tree)
+        {
+            foreach(int hideNode in model.Nodes)
+            {
+                if (!(tree.Nodes.Any(n => n.NodeId == hideNode)))
                     return false;
             }
             return true;
