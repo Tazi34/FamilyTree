@@ -144,16 +144,22 @@ namespace FamilyTree.Services
 
         private async Task DeletePicture(User user)
         {
-            var container = blobService.GetBlobContainerClient("profile");
-            var blob = container.GetBlobClient(user.PictureUrl.Substring(container.Uri.ToString().Length + 1));
-            await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            if(!user.PictureUrl.Equals(defaultUserUrl))
+            {
+                var container = blobService.GetBlobContainerClient("profile");
+                var blob = container.GetBlobClient(user.PictureUrl.Substring(container.Uri.ToString().Length + 1));
+                await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            }
             user.PictureUrl = null;
         }
         private async Task DeletePicture(Node node)
         {
-            var container = blobService.GetBlobContainerClient("node");
-            var blob = container.GetBlobClient(node.PictureUrl.Substring(container.Uri.ToString().Length + 1));
-            await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            if (!node.PictureUrl.Equals(defaultNodeUrl))
+            {
+                var container = blobService.GetBlobContainerClient("node");
+                var blob = container.GetBlobClient(node.PictureUrl.Substring(container.Uri.ToString().Length + 1));
+                await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            }
             node.PictureUrl = null;
         }
 
