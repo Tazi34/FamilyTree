@@ -22,7 +22,7 @@ namespace FamilyTree.Services
                 return TreeAuthLevel.Error;
             if (user.Role.Equals(Role.Admin))
                 return TreeAuthLevel.Admin;
-            if (IsUserInTree(tree, user))
+            if (IsUserInTree(tree, user) && user.UserId != 0)
                 return TreeAuthLevel.InTree;
             if (!tree.IsPrivate)
                 return TreeAuthLevel.PublicTree;
@@ -35,9 +35,9 @@ namespace FamilyTree.Services
                 return TreeAuthLevel.Error;
             if (user.Role.Equals(Role.Admin))
                 return TreeAuthLevel.Admin;
-            if (node.UserId == user.UserId || (node.UserId == 0 && IsUserInTree(tree, user)))
+            if (user.UserId != 0 && (node.UserId == user.UserId || (node.UserId == 0 && IsUserInTree(tree, user))))
                 return TreeAuthLevel.InNode;
-            if (IsUserInTree(tree, user))
+            if (IsUserInTree(tree, user) && user.UserId != 0)
                 return TreeAuthLevel.InTree;
             if (!tree.IsPrivate)
                 return TreeAuthLevel.PublicTree;
