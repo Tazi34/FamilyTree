@@ -29,6 +29,7 @@ namespace FamilyTree.Services
         public Task<MoveNodeResponse> MoveNodeAsync(int userId, MoveNodeRequest model);
         public Task<bool> DeleteTreeAsync(int userId, int TreeId);
         public Task<DrawableTreeResponse> Hide(int userId, HideRequest model);
+        public Task<DrawableTreeResponse> DetachNode(int userId, DetachRequest model);
 
     }
     public class TreeService : ITreeService
@@ -580,6 +581,30 @@ namespace FamilyTree.Services
                 }
             }
             return fullTreeResponse;
+        }
+        public async Task<DrawableTreeResponse> DetachNode(int userId, DetachRequest model)
+        {
+            var user = await GetUserFromContextAsync(userId);
+            var node = await GetNodeFromContextAsync(model.Nodes[0]);
+            var tree = await GetTreeFromContextAsync(node == null ? -1 : node.TreeId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
+            if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.InTree, authLevel))
+                return null;
+            if (!treeValidationService.ValidateDetachRequest(model, tree))
+                return null;
+            foreach(int detachNodeId in model.Nodes)
+            {
+                var detachNode = tree.Nodes.FirstOrDefault(n => n.NodeId == detachNodeId);
+                detachNode.FatherId = 0;
+                detachNode.MotherId = 0;
+                detachNode.Parents.Clear();
+                detachNode.Children.Clear();
+                detachNode.Partners1.Clear();
+                detachNode.Partners2.Clear();
+            }
+            context.Trees.Update(tree);
+            await context.SaveChangesAsync();
+            return await GetTreeAsync(tree.TreeId, userId);
         }
         private void HideBranchReq(DrawableTreeResponse tree, int hideNodeId)
         {

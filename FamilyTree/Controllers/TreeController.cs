@@ -269,6 +269,17 @@ namespace FamilyTree.Controllers
                 return BadRequest();
             return Ok(result);
         }
+        [HttpPost]
+        [Authorize]
+        [Route("detach")]
+        public async Task<ActionResult<DrawableTreeResponse>> DetachNode(DetachRequest model)
+        {
+            var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
+            var result = await treeService.DetachNode(userId, model);
+            if (result == null)
+                return BadRequest();
+            return Ok(result);
+        }
         /// <summary>
         /// Ustawia zdjęcie dla node
         /// </summary>
