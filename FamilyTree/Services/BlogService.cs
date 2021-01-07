@@ -40,7 +40,7 @@ namespace FamilyTree.Services
             };
             context.Posts.Add(newPost);
             await context.SaveChangesAsync();
-            return CreateResponse(newPost);
+            return CreateResponse(newPost, user);
         }
 
         public async Task<bool> DeletePostAsync(int userId, int postId)
@@ -56,10 +56,12 @@ namespace FamilyTree.Services
 
         public async Task<PostResponse> GetPostAsync(int postId)
         {
-            var post = await context.Posts.FirstOrDefaultAsync(post => post.PostId == postId);
+            var post = await context.Posts
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(post => post.PostId == postId);
             if (post == null)
                 return null;
-            return CreateResponse(post);
+            return CreateResponse(post, post.User);
         }
 
         public async Task<BlogListResponse> GetPostsListAsync(int userId)
@@ -88,7 +90,14 @@ namespace FamilyTree.Services
                     PostId = p.PostId,
                     Text = p.Text,
                     Title = p.Title,
-                    UserId = p.UserId
+                    UserId = p.UserId,
+                    User = new UserInfoResponse
+                    {
+                        UserId = user.UserId,
+                        Name = user.Name,
+                        Surname = user.Surname,
+                        PictureUrl = user.PictureUrl
+                    }
                 });
             }
             return response;
@@ -111,7 +120,7 @@ namespace FamilyTree.Services
             await context.SaveChangesAsync();
             return await GetPostAsync(post.PostId);
         }
-        private PostResponse CreateResponse(Post post)
+        private PostResponse CreateResponse(Post post, User user)
         {
             return new PostResponse
             {
@@ -120,7 +129,14 @@ namespace FamilyTree.Services
                 Title = post.Title,
                 Text = post.Text,
                 CreationTime = post.CreationTime,
-                PictureUrl = post.PictureUrl
+                PictureUrl = post.PictureUrl,
+                User = new UserInfoResponse
+                {
+                    UserId = user.UserId,
+                    Name = user.Name,
+                    Surname = user.Surname,
+                    PictureUrl = user.PictureUrl
+                }
             };
         }
     }
