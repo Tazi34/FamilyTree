@@ -10,3 +10,14 @@ export const formatDate = (date: string): string => {
     return date;
   }
 };
+
+export const formatInitials = (name: string, surname: string): string => {
+  var initials = "";
+  if (name && name.length > 0) {
+    initials += name[0];
+  }
+  if (surname && surname.length > 0) {
+    initials += surname[0];
+  }
+  return initials.toUpperCase();
+};

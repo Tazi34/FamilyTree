@@ -12,6 +12,7 @@ import chatAPI from "./API/chatAPI";
 
 import { getLatestChats } from "./reducer/getLatestChats";
 import { GetChatResponse } from "./API/getChat";
+import { closeAllChats } from "./reducer/closeAllChats";
 
 export type Message = {
   creationTime: Date;
@@ -172,6 +173,9 @@ export const chatReducer = createReducer<ChatsState>(
             creationTime: new Date(),
           });
         }
+      })
+      .addCase(closeAllChats, (state, action) => {
+        state.currentChats = [];
       })
       .addCase(getChat.fulfilled, (state, action) => {
         const chat = action.payload.data;

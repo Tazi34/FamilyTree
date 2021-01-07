@@ -16,6 +16,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     paddingBottom: 10,
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     paddingLeft: 10,
     borderBottom: "1px solid " + theme.palette.primary.dark,
   },

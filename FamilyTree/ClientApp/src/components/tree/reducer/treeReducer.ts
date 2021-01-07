@@ -206,6 +206,8 @@ export const addNode = createAsyncThunk<
     createNodeRequestData.birthday = new Date(
       createNodeRequestData.birthday
     ).toISOString();
+    createNodeRequestData.x = Math.floor(createNodeRequestData.x);
+    createNodeRequestData.y = Math.floor(createNodeRequestData.y);
 
     return await treeAPI.createTreeNode(createNodeRequestData);
   }

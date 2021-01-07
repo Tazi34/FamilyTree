@@ -12,6 +12,7 @@ export const FACEBOOK_AUTHENTICATION_API_URL = `${baseURL}/users/facebook`;
 
 export const REGISTER_API_URL = AUTHENTICATION_API_URL;
 export const LOGIN_API_URL = `${baseURL}/users`;
+export const COMMENTS_API_URL = `${baseURL}/comment`;
 
 export const BLOG_API_URL = `${baseURL}/blog`;
 export const SEARCH_API_URL = `${baseURL}/search`;

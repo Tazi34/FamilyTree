@@ -1,3 +1,4 @@
+import { requestGetPost } from "./getPost";
 import { requestCreatePost } from "./createPost";
 import { requestDeletePost } from "./deletePost";
 import { requestEditPost } from "./editPost";
@@ -8,4 +9,5 @@ export const postsAPI = {
   requestDeletePost,
   requestCreatePost,
   requestEditPost,
+  requestGetPost,
 };

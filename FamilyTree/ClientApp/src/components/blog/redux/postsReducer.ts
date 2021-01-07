@@ -1,8 +1,6 @@
-import { BlogProfile } from "./../../../model/BlogProfile";
-import { GetBlogResponse } from "../API/getBlog";
 import {
-  createAction,
   createAsyncThunk,
+  createDraftSafeSelector,
   createEntityAdapter,
   createReducer,
   createSelector,
@@ -15,12 +13,22 @@ import {
   createActionWithPayload,
   StatusState,
 } from "../../../helpers/helpers";
+import { Comment } from "../../../model/Comment";
 import { Post } from "../../../model/Post";
-import { CreatePostRequestData, CreatePostResponse } from "../API/createPost";
-import { postsAPI } from "../API/postsAPI";
-import { createStatusActions, Status } from "./genericStatusReducer";
-import { EditPostRequestData, EditPostResponse } from "../API/editPost";
 import { EditProfileResponse } from "../../userProfile/API/editProfile";
+import { CreatePostRequestData, CreatePostResponse } from "../API/createPost";
+import { EditPostRequestData, EditPostResponse } from "../API/editPost";
+import { GetBlogResponse } from "../API/getBlog";
+import { GetPostRequestData, GetPostResponse } from "../API/getPost";
+import { postsAPI } from "../API/postsAPI";
+import { BlogProfile } from "./../../../model/BlogProfile";
+import {
+  createComment,
+  deleteComment,
+  editComment,
+  getComments,
+} from "./comments/commentsActions";
+import { Status } from "./genericStatusReducer";
 const BLOG_API_URL = "posts/data";
 
 const postsAdapter = createEntityAdapter<Post>({
@@ -73,11 +81,15 @@ export const initialStatus: Status = {
 export type PostsState = EntityState<Post> & {
   status: StatusState;
   profile: BlogProfile | null;
+  comments: Comment[];
+  currentPost: Post | null;
 };
 
 export const postsInitialState = postsAdapter.getInitialState({
   status: initialStatus,
   profile: null,
+  comments: [],
+  currentPost: null,
 }) as PostsState;
 
 export const postByIdSelector = (id: number) => {
@@ -86,8 +98,17 @@ export const postByIdSelector = (id: number) => {
     (state) => postsSelectors.selectById(state, id)
   );
 };
+export const selectCurrentPost = createDraftSafeSelector(
+  (state: ApplicationState) => state,
+  (state) => state.posts.currentPost
+);
 //REDUCER
-
+export const fetchPost = createAsyncThunk<
+  AxiosResponse<GetPostResponse>,
+  GetPostRequestData
+>("/posts/getPost", async (data) => {
+  return postsAPI.requestGetPost(data);
+});
 export const postsReducer = createReducer(postsInitialState, (builder) => {
   builder.addCase(editProfileBlog, (state, action) => {
     state.profile = {
@@ -95,6 +116,58 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
       ...action.payload,
     };
   });
+  addThunkWithStatusHandlers(
+    builder,
+    fetchPost,
+    (state: PostsState, action: any) => {
+      state.currentPost = action.payload.data;
+    },
+    (state: PostsState, action: any) => {},
+
+    (state: PostsState, action: any) => {
+      state.currentPost = null;
+    }
+  );
+  addThunkWithStatusHandlers(
+    builder,
+    getComments,
+    (state: PostsState, action: any) => {
+      state.comments = action.payload.data.comments;
+    },
+    (state: PostsState, action: any) => {},
+
+    (state: PostsState, action: any) => {
+      state.comments = [];
+    }
+  );
+  addThunkWithStatusHandlers(
+    builder,
+    createComment,
+    (state: PostsState, action: any) => {
+      state.comments = action.payload.data.comments;
+    }
+  );
+  addThunkWithStatusHandlers(
+    builder,
+    deleteComment,
+    (state: PostsState, action: any) => {
+      state.comments = action.payload.data.comments;
+    }
+  );
+  addThunkWithStatusHandlers(
+    builder,
+    editComment,
+    (state: PostsState, action: any) => {
+      if (state.comments) {
+        const comments = state.comments.filter(
+          (c) => c.commentId != action.payload.data.commentId
+        );
+        comments.push(action.payload.data);
+        state.comments = comments;
+      }
+    }
+  );
+
   addThunkWithStatusHandlers(
     builder,
     createPost,
@@ -127,4 +200,11 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
   );
 });
 
-const statusReducerCreator = createStatusActions("posts");
+export const selectPostStatus = createDraftSafeSelector(
+  (state: ApplicationState) => state,
+  (state) => state.posts.status
+);
+export const selectComments = createDraftSafeSelector(
+  (state: ApplicationState) => state,
+  (state) => state.posts.comments
+);

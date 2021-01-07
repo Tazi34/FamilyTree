@@ -1,7 +1,8 @@
-import { Box, ButtonBase, makeStyles } from "@material-ui/core";
+import { Avatar, Box, ButtonBase, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import * as React from "react";
+import { formatInitials } from "../../helpers/formatters";
 import { Chat } from "../chat/chatReducer";
 import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
@@ -21,21 +22,20 @@ const useStyles = makeStyles((theme: Theme) => ({
   profilePictureContainer: {
     width: 42,
     height: 42,
-    position: "relative",
-    overflow: "hidden",
-    borderRadius: "50%",
+
     borderWidth: 2,
     cursor: "pointer",
-    //disable default buttonbase outline on click
-    " &:focus": { outline: "none" },
+
     margin: "7px 0",
   },
   profilePicture: {
-    borderRadius: "50%",
-    height: "100%",
-    width: "100%",
-    objectFit: "cover",
-    border: 0,
+    width: 42,
+    height: 42,
+    border: "solid " + theme.palette.primary.dark,
+    borderWidth: 2,
+    cursor: "pointer",
+
+    margin: "7px 0",
   },
 }));
 
@@ -44,21 +44,13 @@ const ChatEntry = ({ chatEntry, onChatClick }: Props) => {
   const hasPicture = chatEntry.pictureUrl && chatEntry.pictureUrl.length > 0;
   return (
     <TooltipMouseFollow title={`${chatEntry.name} ${chatEntry.surname}`}>
-      <Box
-        border={0}
-        borderColor="primary.dark"
-        component={ButtonBase}
-        className={classes.profilePictureContainer}
+      <Avatar
+        src={chatEntry.pictureUrl}
+        className={classes.profilePicture}
         onClick={() => onChatClick(chatEntry)}
       >
-        {hasPicture ? (
-          <img src={chatEntry.pictureUrl} className={classes.profilePicture} />
-        ) : (
-          <AccountCircleIcon
-            className={classes.accountIcon}
-          ></AccountCircleIcon>
-        )}
-      </Box>
+        {formatInitials(chatEntry.name, chatEntry.surname)}
+      </Avatar>
     </TooltipMouseFollow>
   );
 };

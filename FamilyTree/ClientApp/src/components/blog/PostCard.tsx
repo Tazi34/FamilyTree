@@ -47,6 +47,7 @@ type PostCardProps = {
   post: Post;
   onPostDelete?: (id: number) => void;
   navigateToEdit: () => void;
+  onReadMore: (id: number) => void;
   isAdmin?: boolean;
   isOwner?: boolean;
 };
@@ -55,6 +56,7 @@ const PostCard = ({
   post,
   onPostDelete,
   navigateToEdit,
+  onReadMore,
   isOwner,
   isAdmin,
 }: PostCardProps) => {
@@ -95,8 +97,6 @@ const PostCard = ({
       </IconButton>
     ) : null;
 
-  console.log("POST CARD");
-
   return (
     <Card className={classes.cardRoot}>
       {(isOwner || isAdmin) && (
@@ -125,7 +125,11 @@ const PostCard = ({
         />
       </CardContent>
       <CardActions>
-        <Button size="small" color="primary">
+        <Button
+          size="small"
+          color="primary"
+          onClick={() => onReadMore(post.postId)}
+        >
           Read more...
         </Button>
       </CardActions>

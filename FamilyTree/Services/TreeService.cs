@@ -620,6 +620,7 @@ namespace FamilyTree.Services
         {
             var family = tree.Families.FirstOrDefault(f => f.Id == familyId);
 
+ 
             family.Hidden = !show;
             var children = family.Children.Select(child => tree.Nodes.FirstOrDefault(node => node.NodeId == child));
 

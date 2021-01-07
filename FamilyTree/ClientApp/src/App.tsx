@@ -21,6 +21,7 @@ import {
   EDIT_POST_FORM_PAGE_URI,
   PROFILE_PAGE_URI,
   PRIVACY_POLICY_PAGE_URI,
+  POST_PAGE_URI,
 } from "./applicationRouting";
 import { withAlertMessage } from "./components/alerts/withAlert";
 import BlogPage from "./components/blog/BlogPage";
@@ -51,6 +52,7 @@ import { getInvitations } from "./components/invitation/reducer/invitationsReduc
 import CreateNodeDialog from "./components/addNodeActionDialog/CreateNodeDialog";
 import LayoutBase from "./components/layout/LayoutBase";
 import useBackground from "./components/lazyBackground/useBackground";
+import BlogPostPage from "./components/blog/BlogPostPage";
 
 export const theme = createMuiTheme({
   palette: {
@@ -113,7 +115,7 @@ const App = (props: any) => {
             requiredRoles={["GUEST"]}
             path={`${TREE_PAGE_URI}/:treeId`}
             component={Tree}
-            layout={EmptyLayout}
+            layout={LayoutBase}
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
@@ -153,6 +155,7 @@ const App = (props: any) => {
             layout={ThreeColumnLayout}
             user={loggedUser}
           />
+
           <LayoutRoute
             path={LOGIN_PAGE_URI}
             component={LoginPage}
@@ -181,6 +184,12 @@ const App = (props: any) => {
             component={HomePage}
             layout={LayoutBase}
             background={"/background.jpg"}
+          />
+          <LayoutRoute
+            exact
+            path={`${POST_PAGE_URI}/:postId`}
+            component={BlogPostPage}
+            layout={EmptyLayout}
           />
           <LayoutRoute
             exact
