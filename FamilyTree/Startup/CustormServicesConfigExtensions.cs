@@ -21,6 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IPictureService, PictureService>();
             services.AddScoped<IInvitationService, InvitationService>();
             services.AddScoped<IGedcomService, GedcomService>();
+            services.AddScoped<ICommentService, CommentService>();
             return services;
         }
     }

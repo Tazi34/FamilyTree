@@ -21,6 +21,11 @@ namespace FamilyTree.Controllers
         {
             this.gedcomService = gedcomService;
         }
+        /// <summary>
+        /// Tworzy i zwraca plik .ged, dla zadanego drzewa
+        /// </summary>
+        /// <param name="treeid">Id drzewa dla którego jest tworzony plik .ged</param>
+        /// <returns></returns>
         [Route("{treeid:int}")]
         [HttpGet]
         public async Task<ActionResult> GetMessagesList(int treeid)

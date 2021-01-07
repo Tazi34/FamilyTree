@@ -19,6 +19,7 @@ namespace FamilyTree.Helpers
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<Chat> Chats { get; set; }
         public virtual DbSet<Invitation> Invitations { get; set; }
+        public virtual DbSet<Comment> Comments { get; set; }
 
         public DataContext() { }
         public DataContext(DbContextOptions<DataContext> options)
