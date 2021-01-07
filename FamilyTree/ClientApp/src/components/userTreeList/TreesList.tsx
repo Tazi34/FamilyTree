@@ -17,6 +17,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: "100%",
     overflow: "auto",
   },
+  skeleton: {
+    marginBottom: 5,
+  },
 }));
 //
 const TreesList = ({ trees, onTreeSelect, loading }: TreeListProps) => {
@@ -27,7 +30,17 @@ const TreesList = ({ trees, onTreeSelect, loading }: TreeListProps) => {
         trees.map((tree) => (
           <TreeCard key={tree.treeId} onTreeSelect={onTreeSelect} tree={tree} />
         ))}
-      {loading && <Skeleton height={150} variant="rect" />}
+      {loading &&
+        [...Array(6)]
+          .map(Math.random)
+          .map((_, index) => (
+            <Skeleton
+              key={index}
+              className={classes.skeleton}
+              height={150}
+              variant="rect"
+            />
+          ))}
     </List>
   );
 };

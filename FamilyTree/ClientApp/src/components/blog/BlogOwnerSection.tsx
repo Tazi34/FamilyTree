@@ -9,6 +9,7 @@ import {
 import { Theme } from "@material-ui/core/styles";
 import SettingsIcon from "@material-ui/icons/Settings";
 import * as React from "react";
+import { formatInitials } from "../../helpers/formatters";
 import { User } from "../loginPage/authenticationReducer";
 import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
@@ -67,8 +68,7 @@ const BlogOwnerSection = ({
             src={picture}
             className={classes.profilePicture}
           >
-            {user.name[0]}
-            {user.surname[0]}
+            {formatInitials(user.name, user.surname)}
           </Avatar>
         </TooltipMouseFollow>
       </div>

@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Button,
   ButtonBase,
@@ -19,6 +20,7 @@ import SendIcon from "@material-ui/icons/Send";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import ChatMessage from "./ChatMessage";
 import { Formik } from "formik";
+import { formatInitials } from "../../helpers/formatters";
 const useStyles = makeStyles((theme: Theme) => ({
   chatTab: {
     position: "relative",
@@ -64,18 +66,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     padding: 0,
   },
-  pictureContainer: {
+
+  profilePicture: {
+    marginRight: 8,
     width: 34,
     height: 34,
-    marginRight: 8,
-    borderRadius: "50%",
     borderWidth: 2,
-  },
-  profilePicture: {
-    fontSize: 34,
-    height: "100%",
-    width: "100%",
-    borderRadius: "50%",
   },
   defaultProfileIcon: {
     border: "50%",
@@ -147,22 +143,10 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
         <div className={classes.chat}>
           <Box component={ButtonBase} className={classes.chatTopBar}>
             <div className={classes.chatTopBarTitle}>
-              <Box
-                border={1}
-                borderColor="primary.dark"
-                className={classes.pictureContainer}
-              >
-                {hasPicture ? (
-                  <img
-                    src={chat.pictureUrl}
-                    className={classes.profilePicture}
-                  />
-                ) : (
-                  <AccountCircleIcon
-                    className={classes.defaultProfileIcon}
-                  ></AccountCircleIcon>
-                )}
-              </Box>
+              <Avatar src={chat.pictureUrl} className={classes.profilePicture}>
+                {formatInitials(chat.name, chat.surname)}
+              </Avatar>
+
               <div className={classes.titleContainer}>
                 <Typography variant="h6">
                   {chat.name} {chat.surname}

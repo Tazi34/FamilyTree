@@ -3,7 +3,9 @@ import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { useHistory } from "react-router";
+import { useThunkDispatch } from "../..";
 import { BLOG_PAGE_URI, LOGIN_PAGE_URI } from "../../applicationRouting";
+import { closeAllChats } from "../chat/reducer/closeAllChats";
 import { getUser } from "../loginPage/authenticationReducer";
 import "./homePage.css";
 
@@ -72,6 +74,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 const HomePage = (props: any) => {
   const classes = useStyles();
   const transition = props.backgroundLoaded;
+  const dispatch = useThunkDispatch();
+  dispatch(closeAllChats());
 
   const history = useHistory();
   const user = useSelector(getUser);

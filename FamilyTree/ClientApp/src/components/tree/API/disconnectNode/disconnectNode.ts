@@ -10,6 +10,6 @@ export type DisconnectNodeRequestData = {
 
 export type DisconnectNodeResponse = TreeNodeAPI;
 
-export const disconnectTreeNode = (data: DisconnectNodeRequestData) => {
-  return axios.post<DisconnectNodeResponse>(`${DISCONNECT_NODE_API_URL}`);
+export const disconnectNodeRequest = (data: DisconnectNodeRequestData) => {
+  return axios.post<DisconnectNodeResponse>(`${DISCONNECT_NODE_API_URL}`, data);
 };

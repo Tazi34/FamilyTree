@@ -418,7 +418,9 @@ class TreeRenderer extends React.Component<Props, State, any> {
     return (
       <Fade in={true} timeout={3000}>
         <div>
+          {/* <div> */}
           <NodesList
+            onDisconnectNode={this.props.onDisconnectNode}
             // positionX={this.props.positionX}
             // positionY={this.props.positionY}
             // canvasWidth={this.props.canvasWidth}

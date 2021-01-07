@@ -12,6 +12,7 @@ import { sendInvitation } from "../invitation/reducer/invitationsReducer";
 import { ConnectNodesRequestData } from "./API/connectNodes/connectNodesRequest";
 import { ConnectPartnersRequestData } from "./API/connectNodes/connectPartnerRequest";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
+
 import {
   addEmptyNode,
   changeTreeName,
@@ -24,6 +25,7 @@ import { addPartner } from "./reducer/updateNodes/addPartner";
 import { addSiblingRequest } from "./reducer/updateNodes/addSibling";
 import { connectNodes } from "./reducer/updateNodes/connectChildWithNodes";
 import { hideBranch } from "./reducer/updateNodes/hideBranch";
+import { requestDisconnectNode } from "./reducer/updateNodes/disconnectNodes";
 
 import { connectPartners } from "./reducer/updateNodes/connectPartners";
 import TreeInformationPanel from "./TreeInformationPanel";
@@ -35,7 +37,9 @@ import { withAlertMessage } from "../alerts/withAlert";
 import { HOME_PAGE_URI } from "../../applicationRouting";
 import { FamilyNode } from "./model/FamilyNode";
 import { PersonNode } from "./model/PersonNode";
-
+import { Point } from "./Point";
+import { ThreeSixtyTwoTone } from "@material-ui/icons";
+const PanZoom = require("react-easy-panzoom").default;
 type TreeContainerState = {
   addDialog: boolean;
   scale: number;
@@ -43,6 +47,11 @@ type TreeContainerState = {
   canvasHeight: number;
   positionX: number;
   positionY: number;
+  maxScale: number;
+  maxX: number;
+  maxY: number;
+  minX: number;
+  minY: number;
 };
 const styles = (theme: Theme) => ({
   treeInformationPanel: {
@@ -55,7 +64,7 @@ const styles = (theme: Theme) => ({
   treeBackground: {
     width: "100%",
     height: "100%",
-    background: "radial-gradient(#e0e0e0,grey)",
+    background: "radial-gradient(#fce9ec,#fce9ec)",
     display: "flex",
     flexDirection: "column",
   } as any,
@@ -71,7 +80,7 @@ const styles = (theme: Theme) => ({
 
 class Tree extends React.Component<any, TreeContainerState> {
   private svgRef: React.RefObject<any>;
-
+  private panRef: React.RefObject<any>;
   constructor(props: any) {
     super(props);
 
@@ -82,8 +91,14 @@ class Tree extends React.Component<any, TreeContainerState> {
       canvasHeight: 0,
       positionX: 0,
       positionY: 0,
+      maxScale: 5,
+      maxX: 3000,
+      maxY: 3000,
+      minX: -3000,
+      minY: -3000,
     };
     this.svgRef = React.createRef();
+    this.panRef = React.createRef();
   }
 
   getSvg = () => {
@@ -99,21 +114,33 @@ class Tree extends React.Component<any, TreeContainerState> {
     //TODO rozwiazanie kwesti goscia - jak wejdzie gosc rzuca blad i elo
     this.props.getTree(treeId).then((resp: any) => {
       if (resp.error) {
-        this.props.history.goBack();
+        this.props.history.push(HOME_PAGE_URI);
       } else {
         const nodes: PersonNode[] = resp.payload.data.nodes;
         const maxX = Math.max(...nodes.map((n) => n.x));
         const maxY = Math.max(...nodes.map((n) => n.y));
         const minX = Math.min(...nodes.map((n) => n.x));
         const minY = Math.min(...nodes.map((n) => n.y));
-        const width = maxX - minX + 400;
-        const height = maxY - minY + 400;
+        const width = maxX - minX;
+        const height = maxY - minY;
         const widthScale = this.state.canvasWidth / width;
         const heightScale = this.state.canvasHeight / height;
+
         this.setState({
-          positionX: minX,
-          positionY: minY,
+          positionX: minX + width / 2,
+          positionY: minY + height / 2,
+          scale: Math.max(widthScale, heightScale),
         });
+
+        let scale = Math.min(widthScale, heightScale);
+        scale = scale < 1 ? scale : 1;
+
+        this.panRef?.current.setState({
+          x: -scale * (minX + width / 2) + this.state.canvasWidth / 2,
+          y: -scale * (minY + height / 2) + this.state.canvasHeight / 2,
+          scale: scale,
+        });
+        this.setState({ maxScale: scale + 1 < 5 ? 5 : scale + 1 });
       }
     });
 
@@ -126,8 +153,8 @@ class Tree extends React.Component<any, TreeContainerState> {
     var canvasContainer = document.getElementById("tree-canvas");
     if (canvasContainer) {
       this.setState({
-        canvasWidth: canvasContainer.clientWidth,
-        canvasHeight: canvasContainer.clientHeight,
+        canvasWidth: canvasContainer.offsetWidth,
+        canvasHeight: canvasContainer.offsetHeight,
       });
     }
   };
@@ -140,7 +167,15 @@ class Tree extends React.Component<any, TreeContainerState> {
       this.props.getTree(treeId);
     }
   }
-
+  getScreenCenter = (): Point => {
+    return {
+      x:
+        -this.state.positionX + (this.state.canvasWidth / 2) * this.state.scale,
+      y:
+        -this.state.positionY +
+        (this.state.canvasHeight / 2) * this.state.scale,
+    };
+  };
   componentWillUnmount() {
     document.removeEventListener("mousedown", this.handleCloseMenu);
     window.removeEventListener("resize", this.resetDimensions);
@@ -165,6 +200,7 @@ class Tree extends React.Component<any, TreeContainerState> {
     this.props.changeTreeVisibility(treeInformation);
   };
   handleAddNode = (formData: CreateNodeFormData) => {
+    const screenCenter = this.getScreenCenter();
     var createNodeData: CreateNodeRequestData = {
       ...formData,
       userId: 0,
@@ -172,8 +208,8 @@ class Tree extends React.Component<any, TreeContainerState> {
       motherId: 0,
       children: [],
       partners: [],
-      x: 0,
-      y: 0,
+      x: screenCenter.x,
+      y: screenCenter.y,
       picture: formData.picture,
       treeId: parseFloat(this.props.computedMatch.params.treeId),
     };
@@ -186,7 +222,14 @@ class Tree extends React.Component<any, TreeContainerState> {
       }
     });
   };
+  handleMoveOnCanvas = (x: number, y: number, scale?: number) => {
+    if (this.panRef) {
+      this.panRef.current.moveByRatio(100, 1, 0.0009775);
+    }
+  };
   handleDefaultAddNode = () => {
+    const screenCenter = this.getScreenCenter();
+
     const createNodeData: CreateNodeRequestData = {
       userId: 0,
       treeId: this.props.treeInformation.treeId,
@@ -197,8 +240,12 @@ class Tree extends React.Component<any, TreeContainerState> {
       description: "Very fascinating description :0",
       name: "Adam",
       sex: "Male",
-      x: 0,
-      y: 0,
+      x:
+        -this.state.positionX / this.state.scale +
+        this.state.canvasWidth / 2 / this.state.scale,
+      y:
+        -this.state.positionY / this.state.scale +
+        this.state.canvasHeight / 2 / this.state.scale,
       surname: "Kowalski",
       birthday: "2020-12-16T20:29:42.677Z",
       partners: [],
@@ -228,6 +275,9 @@ class Tree extends React.Component<any, TreeContainerState> {
         this.props.alertSuccess("User invited");
       }
     });
+  };
+  handleDisconnectNode = (node: PersonNode) => {
+    this.props.requestDisconnectNode([node.id]);
   };
   handleConnectAsChild = (
     childNode: number,
@@ -263,9 +313,26 @@ class Tree extends React.Component<any, TreeContainerState> {
       show: family.hidden,
       treeId: family.treeId,
     });
-  };
 
-  moveCanvas = (x: number, y: number) => {};
+    const pan = this.panRef?.current;
+    if (pan) {
+      const scale = pan.state.scale;
+      console.log(
+        `Wymiary canvasu: ${this.state.canvasWidth} ${this.state.canvasHeight}`
+      );
+      pan.setState({
+        x: -family.x * scale + this.state.canvasWidth / 2,
+        y: -family.y * scale + this.state.canvasHeight / 2,
+        scale: scale,
+      });
+    }
+
+    // this.panRef?.current?.moveByRatio(
+    //   -family.x - this.state.positionX + this.state.canvasWidth / 2,
+    //   -family.y - this.state.positionY + this.state.canvasHeight / 2 - 100,
+    //   0.0009775
+    //);
+  };
 
   render() {
     const { classes, treeInformation } = this.props;
@@ -277,7 +344,6 @@ class Tree extends React.Component<any, TreeContainerState> {
       return <Redirect to={HOME_PAGE_URI} />;
     }
 
-    console.log("RENDER TREE.tsx");
     return (
       <Paper className={classes.root}>
         <div className={classes.treeBackground}>
@@ -299,60 +365,41 @@ class Tree extends React.Component<any, TreeContainerState> {
             ref={this.svgRef}
             className={classes.treeCanvas}
           >
-            <TransformWrapper
-              options={{
-                limitToBounds: false,
-
-                minScale: 0.5,
-                maxScale: 1.4,
+            <PanZoom
+              ref={this.panRef}
+              maxZoom={this.state.maxScale}
+              minZoom={0.3}
+              style={{ width: "100%", height: "100%", overflow: "hidden" }}
+              onStateChange={(e: any) => {
+                console.log(e);
+                this.setTransform(e.x, e.y, e.scale);
               }}
-              // onZoomChange={(e: any) => {
-              //   console.log(e);
-              //   //this.setTransform(e.positionX, e.positionY, e.scale);
+              boundaryRatioVertical={1}
+              // preventPan={(event: any, x: number, y: number) => {
+              //   const { minX, maxX, minY, maxY } = this.state;
+              //   return x < minX || x > maxX || y < minY || y > maxY;
               // }}
-              // onPanning={(e: any) => {
-              //   this.setTransform(e.positionX, e.positionY,1);
-              // }}
-              // onPinching={(e: any) => {
-              //   this.setTransform(e.positionX, e.positionY, 1);
-              // }}
-              defaultPositionX={this.state.positionX}
-              defaultPositionY={this.state.positionY}
+              boundaryRatioHorizontal={1}
             >
-              {({
-                zoomIn,
-                zoomOut,
-                resetTransform,
-                scale,
-                positionX,
-                positionY,
-                setPositionX,
-                setPositionY,
-                setScale,
-                setTransform,
-                ...rest
-              }: any) => (
-                <TransformComponent>
-                  <TreeRenderer
-                    onHideBranch={this.handleHideBranch}
-                    canvasRef={this.svgRef}
-                    scale={this.state.scale}
-                    onParentAdd={this.handleParentAdd}
-                    onPartnerAdd={this.handlePartnerAdd}
-                    onChildAdd={this.handleChildAdd}
-                    onSiblingAdd={this.handleSiblingAdd}
-                    onConnectAsChild={this.handleConnectAsChild}
-                    onConnectAsPartner={this.handleConnectAsPartner}
-                    rectHeight={RECT_HEIGHT}
-                    rectWidth={RECT_WIDTH}
-                    positionX={positionX}
-                    positionY={positionY}
-                    onSuccess={this.props.alertSuccess}
-                    onError={this.props.alertError}
-                  />
-                </TransformComponent>
-              )}
-            </TransformWrapper>
+              <TreeRenderer
+                onDisconnectNode={this.handleDisconnectNode}
+                onHideBranch={this.handleHideBranch}
+                canvasRef={this.svgRef}
+                scale={this.state.scale}
+                onParentAdd={this.handleParentAdd}
+                onPartnerAdd={this.handlePartnerAdd}
+                onChildAdd={this.handleChildAdd}
+                onSiblingAdd={this.handleSiblingAdd}
+                onConnectAsChild={this.handleConnectAsChild}
+                onConnectAsPartner={this.handleConnectAsPartner}
+                rectHeight={RECT_HEIGHT}
+                rectWidth={RECT_WIDTH}
+                positionX={this.state.positionX}
+                positionY={this.state.positionY}
+                onSuccess={this.props.alertSuccess}
+                onError={this.props.alertError}
+              />
+            </PanZoom>
           </div>
         </div>
         <CreateNodeDialog
@@ -378,6 +425,7 @@ const mapDispatch = {
   connectNodes,
   connectPartners,
   hideBranch,
+  requestDisconnectNode,
 };
 const mapState = (state: ApplicationState) => ({
   isLoading: state.tree.isLoading,

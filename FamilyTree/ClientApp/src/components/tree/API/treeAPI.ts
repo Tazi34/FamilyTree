@@ -9,6 +9,7 @@ import { moveTreeNode } from "./moveNode/moveNodeRequest";
 import { updateTreeNode } from "./updateNode/updateNodeRequest";
 import { createTreeNode } from "./createNode/createNodeRequest";
 import { deleteTreeNode } from "./deleteNode/deleteNodeRequest";
+import { disconnectNodeRequest } from "./disconnectNode/disconnectNode";
 export const treeAPI = {
   createTreeNode,
   updateTreeNode,
@@ -21,4 +22,5 @@ export const treeAPI = {
   connectNodesRequest,
   connectPartnersRequest,
   hideBranchRequest,
+  disconnectNodeRequest,
 };

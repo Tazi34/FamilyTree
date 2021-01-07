@@ -34,7 +34,7 @@ const EditPostFormContainer = (props: any) => {
   }, []);
 
   if (!post) {
-    return null;
+    return <div className={classes.container} />;
   }
 
   const handleEditPost = (content: string, title: string) => {

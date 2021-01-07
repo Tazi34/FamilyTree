@@ -14,7 +14,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import LinkIcon from "@material-ui/icons/Link";
 import * as React from "react";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
-import { formatDate } from "../../helpers/formatters";
+import { formatDate, formatInitials } from "../../helpers/formatters";
 import { areEqualShallow } from "../../helpers/helpers";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import HiddenPersonNode from "./HiddenPersonNode";
@@ -190,6 +190,8 @@ type Props = {
   onNodeSelect: (node: PersonNode) => void;
   onConnectStart: (node: PersonNode, mode: ConnectionMode) => void;
   onAddActionMenuClick: (node: PersonNode) => void;
+  onDisconnectNode: (node: PersonNode) => void;
+
   person: PersonNode;
   disabled: boolean;
   canConnectTo?: boolean;
@@ -199,11 +201,9 @@ const PersonNodeCard = ({
   person,
 
   onNodeDelete,
-
   onNodeSelect,
-
   onConnectStart,
-
+  onDisconnectNode,
   canConnectTo,
   disabled,
 }: Props) => {
@@ -237,7 +237,7 @@ const PersonNodeCard = ({
     e.stopPropagation();
   };
 
-  const initials = `${details.name[0].toUpperCase()}${details.surname[0].toUpperCase()}`;
+  const initials = formatInitials(details.name, details.surname);
   const hidden = person.hidden;
 
   const canEdit = person.canEdit;
@@ -354,6 +354,16 @@ const PersonNodeCard = ({
                   <IconButton
                     disabled={disabled}
                     onClick={() => handleStartConnect("AsParent")}
+                    onMouseUp={preventMouseUp}
+                  >
+                    <LinkIcon className={classes.addIconSvg} />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Disconnect">
+                  <IconButton
+                    disabled={disabled}
+                    onClick={() => onDisconnectNode(person)}
                     onMouseUp={preventMouseUp}
                   >
                     <LinkIcon className={classes.addIconSvg} />

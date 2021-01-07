@@ -3,7 +3,10 @@ import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { useHistory } from "react-router";
-import { EDIT_POST_FORM_PAGE_URI } from "../../applicationRouting";
+import {
+  EDIT_POST_FORM_PAGE_URI,
+  POST_PAGE_URI,
+} from "../../applicationRouting";
 import { ADMIN_ROLE } from "../../helpers/roles";
 import { Post } from "../../model/Post";
 import { getUser } from "../loginPage/authenticationReducer";
@@ -23,8 +26,12 @@ const PostCardContainer = ({ onPostDelete, post }: Props) => {
   const navigateToEdit = () => {
     history.push(`${EDIT_POST_FORM_PAGE_URI}/${post.postId}`);
   };
+  const navigateToPost = () => {
+    history.push(`${POST_PAGE_URI}/${post.postId}`);
+  };
   return (
     <PostCard
+      onReadMore={navigateToPost}
       post={post}
       onPostDelete={onPostDelete}
       navigateToEdit={navigateToEdit}
