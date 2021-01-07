@@ -16,6 +16,7 @@ namespace FamilyTree.Gedcom
         public string Sex { get; private set; }
         public string Note { get; private set; }
         public Node Node { get; private set; }
+        public DateTime birth { get; private set; }
 
         private Family famc;
         private List<Family> fams = new List<Family>();
@@ -27,6 +28,7 @@ namespace FamilyTree.Gedcom
             Surname = node.Surname.ToUpper();
             Sex = node.Sex.Equals(Entities.Sex.Male) ? "M" : "F";
             Note = node.Description;
+            birth = node.Birthday;
             Node = node;
         }
         public void AddChildFamily (Family family)
@@ -45,6 +47,8 @@ namespace FamilyTree.Gedcom
             gedcom.AppendLine("2 SURN " + Surname.ToUpper());
             gedcom.AppendLine("1 SEX " + Sex);
             gedcom.AppendLine("1 NOTE " + Note);
+            gedcom.AppendLine("1 BIRT");
+            gedcom.AppendLine("2 DATE " + birth.ToString("dd MMM yyyy").ToUpper());
             if (famc != null)
                 gedcom.AppendLine("1 FAMC @" + famc.Id + "@");
             foreach (Family f in fams)
