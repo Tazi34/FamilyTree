@@ -4,11 +4,13 @@ import {
   makeStyles,
   Paper,
   TextField,
+  Tooltip,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import SettingsIcon from "@material-ui/icons/Settings";
 import * as React from "react";
 import { User } from "../loginPage/authenticationReducer";
+import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -26,10 +28,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     justifyContent: "center",
     marginRight: 10,
     marginLeft: 10,
+    padding: 5,
   },
   profilePicture: {
-    height: 50,
-    width: 50,
+    width: 60,
+    height: 60,
+    border: "1px solid rgba(0, 0, 0, 0.42)",
   },
   buttonContainer: {
     padding: 0,
@@ -48,10 +52,25 @@ const BlogOwnerSection = ({
 }: Props) => {
   const classes = useStyles();
 
+  const picture = Boolean(user?.pictureUrl?.endsWith("person_icon.png"))
+    ? ""
+    : user.pictureUrl;
   return (
     <div className={classes.root}>
       <div className={classes.profilePictureContainer}>
-        <Avatar src={user.pictureUrl} className={classes.profilePicture} />
+        <TooltipMouseFollow
+          title={`${user.name} ${user.surname}`}
+          placement="top"
+        >
+          <Avatar
+            variant="circular"
+            src={picture}
+            className={classes.profilePicture}
+          >
+            {user.name[0]}
+            {user.surname[0]}
+          </Avatar>
+        </TooltipMouseFollow>
       </div>
       <TextField
         className={classes.column}

@@ -3,11 +3,12 @@ import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect, useHistory } from "react-router";
-import { BLOG_PAGE_URI } from "../../../applicationRouting";
+import { BLOG_PAGE_URI, REGISTER_PAGE_URI } from "../../../applicationRouting";
 import { LoginUserRequestData } from "../API/loginUser";
 import {
   authenticateFacebookToken,
   authenticateGmailToken,
+  getUser,
   isLoggedIn,
   loginUser,
 } from "../authenticationReducer";
@@ -92,11 +93,14 @@ const useStyles = makeStyles((theme: Theme) => ({
 const LoginPage = (props: any) => {
   const classes = useStyles();
   const dispatch: any = useDispatch();
-  const loggedIn = useSelector(isLoggedIn);
+  const user = useSelector(getUser);
   const history = useHistory();
-  const location = props.location;
+
+  if (user) {
+    return <Redirect to={`${BLOG_PAGE_URI}/${user.id}`} />;
+  }
+
   const handleAuthenticationResponse = (response: any) => {
-    console.log(response);
     if (response.error) {
       props.onError("Could not verify your identity. ");
     } else {
@@ -123,12 +127,6 @@ const LoginPage = (props: any) => {
       }
     );
   };
-  const previousPage = location.state;
-  const redirectLink = previousPage ? previousPage.from : "/";
-
-  if (loggedIn) {
-    return <Redirect to={redirectLink} />;
-  }
 
   return (
     <Box
@@ -172,7 +170,11 @@ const LoginPage = (props: any) => {
             <div className={classes.registerSection}>
               <Typography align="center">
                 No account? <span> </span>
-                <Link href="#" onClick={() => {}}>
+                <Link
+                  onClick={() => {
+                    history.push(REGISTER_PAGE_URI);
+                  }}
+                >
                   {"Sing up now"}
                 </Link>
               </Typography>

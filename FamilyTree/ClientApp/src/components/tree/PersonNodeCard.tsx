@@ -1,25 +1,27 @@
 import {
   Avatar,
+  Fade,
   IconButton,
   makeStyles,
   Paper,
   Tooltip,
   Typography,
+  Zoom,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import { format } from "date-fns";
+import DeleteIcon from "@material-ui/icons/Delete";
+import EditIcon from "@material-ui/icons/Edit";
+import LinkIcon from "@material-ui/icons/Link";
 import * as React from "react";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+import { formatDate } from "../../helpers/formatters";
+import { areEqualShallow } from "../../helpers/helpers";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
+import HiddenPersonNode from "./HiddenPersonNode";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { formatDate } from "../../helpers/formatters";
-import LinkIcon from "@material-ui/icons/Link";
 import { ConnectionMode } from "./TreeRenderer";
-import { areEqualShallow } from "../../helpers/helpers";
+
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 30;
@@ -61,8 +63,8 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
     height: "100%",
   },
   picture: {
-    position: "absolute",
-    top: dividerScale * RECT_HEIGHT - imageSize / 2,
+    // position: "absolute",
+    // top: dividerScale * RECT_HEIGHT - imageSize / 2,
     width: imageSize,
     height: imageSize,
     alignSelf: "center",
@@ -73,6 +75,14 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
     },
   },
 
+  actionsBar: {
+    display: "flex",
+    height: 40,
+    justifyContent: "flex-end",
+  },
+  actionsButton: {
+    width: 40,
+  },
   addButtonContainer: {
     position: "absolute",
     top: 0,
@@ -160,6 +170,9 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
   hidden: {
     visibility: "hidden",
   },
+  editButton: {
+    alignSelf: "flex-end",
+  },
 }));
 
 type Props = {
@@ -180,62 +193,34 @@ type Props = {
   person: PersonNode;
   disabled: boolean;
   canConnectTo?: boolean;
-  hidden?: boolean;
 };
 
 const PersonNodeCard = ({
   person,
-  onParentAdd,
+
   onNodeDelete,
-  onNodeMove,
-  onMoveNodeOnCanvas,
+
   onNodeSelect,
-  onPartnerAdd,
-  onChildAdd,
-  onSiblingAdd,
+
   onConnectStart,
-  onAddActionMenuClick,
+
   canConnectTo,
   disabled,
-  hidden,
 }: Props) => {
   const elementId = "n" + person.id;
+  const [animate, setAnimate] = React.useState(false);
+  React.useEffect(() => {
+    setAnimate(!animate);
+  }, [person.hidden]);
   const classes = useStyles({
     isConnecting: disabled,
     canConnectTo,
     hasUser: person.userId !== 0,
   });
-  const newPerson: CreateNodeRequestData = {
-    treeId: person.treeId,
-    name: "New",
-    surname: "Node",
-    birthday: "2020-12-16T20:29:42.677Z",
-    description: "Cool description",
-    picture: "",
-    userId: 0,
-    fatherId: 0,
-    sex: "Male",
-    motherId: 0,
-    children: [],
-    partners: [],
-    x: 0,
-    y: 0,
-  };
-  const handleParentAdd = (e: React.MouseEvent) => {
-    onParentAdd(person.id as number, newPerson);
-  };
-  const handlePartnerAdd = (e: React.MouseEvent) => {
-    onPartnerAdd(person.id as number, newPerson);
-  };
-  const handleSiblingAdd = (e: React.MouseEvent) => {
-    onSiblingAdd(person.id as number, newPerson);
-  };
   const handleNodeDelete = () => {
     onNodeDelete(person.id as number);
   };
-  const handleChildAdd = () => {
-    onChildAdd(newPerson, person.id as number);
-  };
+
   const handleNodeSelect = (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
@@ -244,26 +229,43 @@ const PersonNodeCard = ({
   const handleStartConnect = (mode: ConnectionMode) => {
     onConnectStart(person, mode);
   };
-  const details = Object.assign({}, person.personDetails);
+  const details = person.personDetails;
 
   let displayDate = formatDate(details.birthday);
 
   const preventMouseUp = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
-  const canAddParent = !(person.motherId && person.fatherId);
-  // console.log("NODEE");
-  const hasBothParent = person.fatherId && person.motherId;
+
+  const initials = `${details.name[0].toUpperCase()}${details.surname[0].toUpperCase()}`;
+  const hidden = person.hidden;
+
+  const canEdit = person.canEdit;
   return (
-    <Paper
-      id={elementId}
-      component={"span"}
-      className={`${classes.personRoot}`}
-      onMouseUp={handleNodeSelect}
-      hidden={hidden}
-    >
-      <div className={classes.addButtonContainer}>
-        {/* {canAddParent && (
+    <div>
+      <HiddenPersonNode
+        picture={details.pictureUrl}
+        initials={initials}
+        hidden={!hidden}
+      />
+
+      <Zoom
+        timeout={1000}
+        in={!hidden}
+        onExit={() => {
+          console.log("exit");
+        }}
+        style={{ transitionDelay: "100ms" }}
+      >
+        <div style={hidden ? hiddenStyle : visibleStyle}>
+          <Paper
+            id={elementId}
+            component={"span"}
+            className={`${classes.personRoot}`}
+            onMouseUp={handleNodeSelect}
+          >
+            <div className={classes.addButtonContainer}>
+              {/* {canAddParent && (
           <Tooltip title="Add parent" placement="top">
             <IconButton
               disabled={disabled}
@@ -277,107 +279,92 @@ const PersonNodeCard = ({
             </IconButton>
           </Tooltip>
         )} */}
-      </div>
-      <div className={classes.overflowHidden}>
-        <div className={classes.background}>
-          <div className={classes.backgroundColorTheme}></div>
+            </div>
+            <div className={classes.overflowHidden}>
+              <div className={classes.background}>
+                <div className={classes.backgroundColorTheme}></div>
+              </div>
+              <div className={classes.contentContainer}>
+                <div className={classes.actionsBar}>
+                  {canEdit && (
+                    <IconButton
+                      className={`${classes.actionButton} ${classes.editButton}`}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                </div>
+
+                <Avatar
+                  title={details.name}
+                  src={details.pictureUrl}
+                  className={classes.picture}
+                >
+                  {initials}
+                </Avatar>
+
+                <Typography
+                  align="center"
+                  variant="subtitle1"
+                  className={classes.nameSection}
+                >
+                  {person.id} {details.name} {details.surname}
+                </Typography>
+                <Typography
+                  align="center"
+                  variant="subtitle2"
+                  className={classes.dateSection}
+                >
+                  {displayDate}
+                </Typography>
+              </div>
+            </div>
+            <div className={classes.filler} />
+            {canEdit && (
+              <div className={classes.actions}>
+                <Tooltip title="Delete node">
+                  <IconButton
+                    disabled={disabled}
+                    onClick={handleNodeDelete}
+                    onMouseUp={preventMouseUp}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Connect as child">
+                  <IconButton
+                    disabled={disabled}
+                    onClick={() => handleStartConnect("AsChild")}
+                    onMouseUp={preventMouseUp}
+                  >
+                    <LinkIcon className={classes.addIconSvg} />
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Connect as partner">
+                  <IconButton
+                    disabled={disabled}
+                    onClick={() => handleStartConnect("AsPartner")}
+                    onMouseUp={preventMouseUp}
+                  >
+                    <LinkIcon className={classes.addIconSvg} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Connect as parent">
+                  <IconButton
+                    disabled={disabled}
+                    onClick={() => handleStartConnect("AsParent")}
+                    onMouseUp={preventMouseUp}
+                  >
+                    <LinkIcon className={classes.addIconSvg} />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )}
+          </Paper>
         </div>
-        <div className={classes.contentContainer}>
-          <Avatar
-            title={details.name}
-            src={details.pictureUrl}
-            className={classes.picture}
-          >
-            {details.name[0].toUpperCase()}
-            {details.surname[0].toUpperCase()}
-          </Avatar>
-
-          <div className={classes.topFiller}></div>
-          <Typography
-            align="center"
-            variant="subtitle1"
-            className={classes.nameSection}
-          >
-            {person.id} {details.name} {details.surname}
-          </Typography>
-          <Typography
-            align="center"
-            variant="subtitle2"
-            className={classes.dateSection}
-          >
-            {displayDate}
-          </Typography>
-        </div>
-      </div>
-      <div className={classes.filler} />
-      <div className={classes.actions}>
-        <Tooltip title="Delete node">
-          <IconButton
-            disabled={disabled}
-            onClick={handleNodeDelete}
-            onMouseUp={preventMouseUp}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-
-        {/* 
-        <IconButton
-          disabled={disabled}
-          onClick={handlePartnerAdd}
-          onMouseUp={preventMouseUp}
-        >
-          <AddCircleIcon className={classes.addIconSvg} />
-        </IconButton>
-        <Tooltip title="Add child">
-          <IconButton
-            disabled={disabled}
-            onClick={handleChildAdd}
-            onMouseUp={preventMouseUp}
-          >
-            <AddCircleIcon className={classes.addIconSvg} />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Add Sibling">
-          <IconButton
-            disabled={disabled}
-            onClick={handleSiblingAdd}
-            onMouseUp={preventMouseUp}
-          >
-            <AddCircleIcon className={classes.addIconSvg} />
-          </IconButton>
-        </Tooltip> */}
-        <Tooltip title="Connect as child">
-          <IconButton
-            disabled={disabled}
-            onClick={() => handleStartConnect("AsChild")}
-            onMouseUp={preventMouseUp}
-          >
-            <LinkIcon className={classes.addIconSvg} />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Connect as partner">
-          <IconButton
-            disabled={disabled}
-            onClick={() => handleStartConnect("AsPartner")}
-            onMouseUp={preventMouseUp}
-          >
-            <LinkIcon className={classes.addIconSvg} />
-          </IconButton>
-        </Tooltip>
-
-        <Tooltip title="Connect as parent">
-          <IconButton
-            disabled={disabled}
-            onClick={() => handleStartConnect("AsParent")}
-            onMouseUp={preventMouseUp}
-          >
-            <LinkIcon className={classes.addIconSvg} />
-          </IconButton>
-        </Tooltip>
-      </div>
-    </Paper>
+      </Zoom>
+    </div>
   );
 };
 const areEqual = (prev: Props, next: Props) => {
@@ -390,6 +377,7 @@ const areEqual = (prev: Props, next: Props) => {
     prev.person.canEdit != next.person.canEdit ||
     prev.person.x != next.person.x ||
     prev.person.y != next.person.y ||
+    prev.person.hidden != next.person.hidden ||
     !areEqualShallow(prev.person.personDetails, next.person.personDetails)
   ) {
     console.log("NOT EQUAL");
@@ -398,5 +386,6 @@ const areEqual = (prev: Props, next: Props) => {
 
   return true;
 };
-
+const visibleStyle: any = {}; //{ visibility: "visible" };
+const hiddenStyle: any = {}; //{ visibility: "hidden" };
 export default React.memo(PersonNodeCard, areEqual);

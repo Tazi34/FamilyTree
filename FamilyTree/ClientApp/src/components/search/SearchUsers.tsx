@@ -12,9 +12,6 @@ import Search from "./Search";
 import SearchUsersResults from "./SearchUsersResults";
 
 const useStyles = makeStyles((theme: Theme) => ({
-  searchContainer: {
-    position: "relative",
-  },
   searchResults: {
     zIndex: 1000000,
     width: "100%",
@@ -65,7 +62,7 @@ const SearchUsersContainer = (props: Props) => {
   };
 
   return (
-    <div className={classes.searchContainer}>
+    <div>
       <div ref={anchor}>
         <Search onChange={handleSearchChange} query={query}></Search>
       </div>

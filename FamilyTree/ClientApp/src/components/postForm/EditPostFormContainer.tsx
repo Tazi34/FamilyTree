@@ -37,20 +37,6 @@ const EditPostFormContainer = (props: any) => {
     return null;
   }
 
-  const handlePicureUpload = (file: any) => {
-    const form = new FormData();
-    form.append("picture", file);
-    return axios.post(baseURL + "/blog/picture", form).then((resp) => {
-      if (resp.status == 200) {
-        return {
-          data: {
-            link: resp.data.pictureUrl,
-          },
-        };
-      }
-    });
-  };
-
   const handleEditPost = (content: string, title: string) => {
     const data: EditPostRequestData = {
       text: content,
@@ -70,11 +56,7 @@ const EditPostFormContainer = (props: any) => {
 
   return (
     <div className={classes.container}>
-      <PostForm
-        onPictureUpload={handlePicureUpload}
-        onSubmit={handleEditPost}
-        post={post}
-      />
+      <PostForm onSubmit={handleEditPost} post={post} />
     </div>
   );
 };

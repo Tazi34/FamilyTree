@@ -1,11 +1,10 @@
-import { makeStyles } from "@material-ui/core";
+import { Fade, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import Draggable from "react-draggable";
-import PersonNodeCard from "./PersonNodeCard";
-import VisibilitySensor from "react-visibility-sensor";
-import { InView, useInView } from "react-intersection-observer";
+import { useInView } from "react-intersection-observer";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+import PersonNodeCard from "./PersonNodeCard";
 
 const useStyles = makeStyles((theme: Theme) => ({
   translation: {
@@ -22,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const DraggablePersonNode = (props: any) => {
   const classes = useStyles();
   const node = props.person;
+  const [animate, setAnimate] = React.useState(false);
 
   const { ref, inView, entry } = useInView({
     /* Optional options */
@@ -29,7 +29,7 @@ const DraggablePersonNode = (props: any) => {
     root: props.viewRef.current,
     rootMargin: RECT_HEIGHT + "px",
   });
-  console.log("DRAGGABLE");
+
   return (
     <Draggable
       defaultPosition={{
@@ -75,6 +75,14 @@ const DraggablePersonNode = (props: any) => {
       </div>
     </Draggable>
   );
+};
+
+const areEqual = (prev: any, next: any) => {
+  if (prev.person.x != next.person.x || prev.person.y != next.person.y) {
+    return false;
+  }
+
+  return true;
 };
 
 export default React.memo(DraggablePersonNode);

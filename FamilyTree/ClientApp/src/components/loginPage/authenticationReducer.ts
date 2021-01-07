@@ -1,3 +1,7 @@
+import {
+  EditProfileRequestData,
+  EditProfileResponse,
+} from "./../userProfile/API/editProfile";
 import { AuthenticateGmailResponse } from "./API/authenticateGmail";
 import {
   createAction,
@@ -6,7 +10,10 @@ import {
   createReducer,
 } from "@reduxjs/toolkit";
 import Axios, { AxiosResponse } from "axios";
-import { addThunkWithStatusHandlers } from "../../helpers/helpers";
+import {
+  addThunkWithStatusHandlers,
+  createActionWithPayload,
+} from "../../helpers/helpers";
 import { ApplicationState } from "../../helpers/index";
 import {
   AUTHENTICATION_API_URL,
@@ -51,9 +58,18 @@ export const createUser = createAsyncThunk(
   "users/createUser",
   async (
     registrationData: CreateUserRequestData,
-    tunkAPI
-  ): Promise<AxiosResponse> => {
-    return await Axios.post(AUTHENTICATION_API_URL, registrationData);
+    { rejectWithValue }
+  ): Promise<any> => {
+    try {
+      const response = await Axios.post(
+        AUTHENTICATION_API_URL,
+        registrationData
+      );
+
+      return response;
+    } catch (err) {
+      return rejectWithValue(err.response);
+    }
   }
 );
 
@@ -80,6 +96,10 @@ export const authenticateGmailToken = createAsyncThunk<
   return await authenticationAPI.requestAuthenticateGmail({ idToken: token });
 });
 
+export const editUser = createActionWithPayload<EditProfileResponse>(
+  `${userActionsPrefix}/editProfile`
+);
+
 export const authenticateFacebookToken = createAsyncThunk<
   AxiosResponse<AuthenticateGmailResponse>,
   string
@@ -103,12 +123,23 @@ export const authenticationReducer = createReducer(
   authenticationInitialState,
   (builder) => {
     builder
-      .addCase(createUser.pending, (state: AuthenticationState, action) => {
+      .addCase(createUser.pending, (state, action) => {
         state.isLoggedIn = false;
         state.user = null;
         removeAuthorizationToken();
       })
-      .addCase(createUser.fulfilled, (state: AuthenticationState, action) => {
+      .addCase(editUser, (state, action) => {
+        const personalData = action.payload;
+
+        const currentData = state.user;
+        if (currentData) {
+          state.user = {
+            ...currentData,
+            ...personalData,
+          };
+        }
+      })
+      .addCase(createUser.fulfilled, (state, action) => {
         const userData: CreateUserSuccessResponse = action.payload.data;
         state.isLoggedIn = true;
         state.user = {

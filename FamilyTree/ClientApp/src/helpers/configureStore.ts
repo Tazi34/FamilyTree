@@ -17,8 +17,7 @@ export default function configureStore(
   const middleware = [thunk, routerMiddleware(history), signalRMiddleware];
 
   if (process.env.NODE_ENV === "development") {
-    middleware.push(logger);
-    console.log(process.env);
+    //middleware.push(logger);
   }
 
   for (const key in reducersToPersis) {

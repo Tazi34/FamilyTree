@@ -85,10 +85,14 @@ const App = (props: any) => {
   const history = useHistory();
   const dispatch = useThunkDispatch();
 
+  if (loggedUser) {
+    dispatch(getInvitations());
+  }
+
   React.useEffect(() => {
     history.listen(() => {
       if (loggedUser) {
-        //dispatch(getInvitations());
+        dispatch(getInvitations());
       }
     });
   }, [history]);

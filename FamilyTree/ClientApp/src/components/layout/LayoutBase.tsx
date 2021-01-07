@@ -3,6 +3,8 @@ import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { ApplicationState } from "../../helpers/index.js";
+import ChatsContainer from "../chat/ChatsContainer";
+import FriendsPanel from "../friendList/FriendsPanel";
 import useBackground from "../lazyBackground/useBackground";
 import { AuthenticationState } from "../loginPage/authenticationReducer.js";
 import Navbar from "../navbar/Navbar.jsx";
@@ -44,6 +46,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: "100%",
     marginTop: 64,
   },
+  bottomFixed: {
+    bottom: 0,
+    position: "fixed",
+    right: 0,
+  },
 }));
 
 export interface LayoutPanelProperties {
@@ -79,6 +86,10 @@ export default (props: { children?: React.ReactNode; background?: string }) => {
 
       {/* <div className={classes.filler}></div> */}
       {childrenWithProps}
+      <div className={classes.bottomFixed}>
+        {isLoggedIn && <FriendsPanel />}
+        {isLoggedIn && <ChatsContainer />}
+      </div>
     </div>
   );
 };

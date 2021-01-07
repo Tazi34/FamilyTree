@@ -106,7 +106,7 @@ const BlogPage = (props: any) => {
     return <Redirect to={HOME_PAGE_URI} />;
   }
 
-  const isUserOwnerOfBlog = false; // profile && profile.userId === user?.id;
+  const isUserOwnerOfBlog = profile && profile.userId === user?.id;
   const isLoading = fetchStatus.loading || !profile;
   return (
     <div className={classes.main}>

@@ -125,7 +125,7 @@ namespace FamilyTree.Models
                 {
                     var existingParent = firstParent ?? secondParent;
                     family.X = existingParent.X;
-                    family.Y = existingParent.Y;
+                    family.Y = existingParent.Y + 300;
                 }
 
                 //przypisz dzieciom rodziny 

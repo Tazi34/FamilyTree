@@ -1,6 +1,8 @@
+import { Fade } from "@material-ui/core";
 import { EntityId } from "@reduxjs/toolkit";
 import Axios from "axios";
 import React, { Profiler } from "react";
+import Draggable from "react-draggable";
 import { connect } from "react-redux";
 import { ApplicationState } from "../../helpers";
 import { baseURL } from "../../helpers/apiHelpers";
@@ -54,7 +56,9 @@ type OwnProps = {
   onParentAdd: (id: number, data: CreateNodeRequestData) => void;
   onPartnerAdd: (id: number, data: CreateNodeRequestData) => void;
   onSiblingAdd: (id: number, data: CreateNodeRequestData) => void;
-
+  onHideBranch: (family: FamilyNode) => void;
+  onSuccess: any;
+  onError: any;
   onChildAdd: (
     data: CreateNodeRequestData,
     firstParent: number,
@@ -90,6 +94,7 @@ type ConnectionProps = {
 type NodeDialogProps = {
   open: boolean;
   node: PersonNode | null;
+  startOnEdit?: boolean;
 };
 type AddActionDialogProps = {
   open: boolean;
@@ -309,7 +314,7 @@ class TreeRenderer extends React.Component<Props, State, any> {
       },
     });
   };
-  handleFamilySelect = (familyNode: FamilyNode) => {
+  handleFamilySelect = (familyNode: FamilyNode, event: any) => {
     const connectionMode = this.state.connection;
     if (connectionMode.isConnecting) {
       if (connectionMode.possibleConnections.families.includes(familyNode.id)) {
@@ -320,6 +325,8 @@ class TreeRenderer extends React.Component<Props, State, any> {
         );
         this.resetConnectingMode();
       }
+    } else {
+      this.props.onHideBranch(familyNode);
     }
   };
   handleNodeSelect = (personNode: PersonNode) => {
@@ -407,55 +414,64 @@ class TreeRenderer extends React.Component<Props, State, any> {
     const loadedLinks = this.props.links
       .map((link: Link) => linkLoader(this.props.treeState, link))
       .filter((a: any) => a) as LinkLoaded[];
-    return (
-      <div>
-        <NodesList
-          // positionX={this.props.positionX}
-          // positionY={this.props.positionY}
-          // canvasWidth={this.props.canvasWidth}
-          // canvasHeight={this.props.canvasHeight}
-          possibleConnections={this.state.connection.possibleConnections.nodes}
-          disabled={this.state.connection.isConnecting}
-          onConnectStart={this.handleConnectStart}
-          onSiblingAdd={this.props.onSiblingAdd}
-          onChildAdd={this.props.onChildAdd}
-          viewRef={this.props.canvasRef}
-          scale={this.props.scale}
-          nodes={this.props.nodes}
-          onNodeSelect={this.handleNodeSelect}
-          onNodeMove={this.handleNodeMove}
-          onParentAdd={this.handleParentAdd}
-          onPartnerAdd={this.handlePartnerAdd}
-          onNodeDelete={this.handleNodeDelete}
-          onMoveNodeOnCanvas={this.moveNodeOnCanvas}
-          onAddActionMenuClick={this.openAddActionDialog}
-        />
-        <Families
-          possibleConnections={
-            this.state.connection.possibleConnections.families
-          }
-          families={this.props.families}
-          onSelect={this.handleFamilySelect}
-        />
-        <Links links={loadedLinks}>
-          <FollowableLink
-            enabled={this.state.connection.isConnecting}
-            positionX={this.props.positionX}
-            positionY={this.props.positionY}
-            scale={this.props.scale}
-            source={this.state.connection.start ?? { x: 1, y: 1 }}
-          />
-        </Links>
 
+    return (
+      <Fade in={true} timeout={3000}>
         <div>
-          <TreeNodeDetailsDialog
-            //TODO na podstawie nodea
-            open={nodeDialog.open}
-            node={nodeDialog.node}
-            onClose={this.handleDialogClose}
+          <NodesList
+            // positionX={this.props.positionX}
+            // positionY={this.props.positionY}
+            // canvasWidth={this.props.canvasWidth}
+            // canvasHeight={this.props.canvasHeight}
+            possibleConnections={
+              this.state.connection.possibleConnections.nodes
+            }
+            disabled={this.state.connection.isConnecting}
+            onConnectStart={this.handleConnectStart}
+            onSiblingAdd={this.props.onSiblingAdd}
+            onChildAdd={this.props.onChildAdd}
+            viewRef={this.props.canvasRef}
+            scale={this.props.scale}
+            nodes={this.props.nodes}
+            onNodeSelect={this.handleNodeSelect}
+            onNodeMove={this.handleNodeMove}
+            onParentAdd={this.handleParentAdd}
+            onPartnerAdd={this.handlePartnerAdd}
+            onNodeDelete={this.handleNodeDelete}
+            onMoveNodeOnCanvas={this.moveNodeOnCanvas}
+            onAddActionMenuClick={this.openAddActionDialog}
           />
+          <Families
+            isConnecting={this.state.connection.isConnecting}
+            possibleConnections={
+              this.state.connection.possibleConnections.families
+            }
+            families={this.props.families}
+            onSelect={this.handleFamilySelect}
+          />
+          <Links links={loadedLinks}>
+            <FollowableLink
+              enabled={this.state.connection.isConnecting}
+              positionX={this.props.positionX}
+              positionY={this.props.positionY}
+              scale={this.props.scale}
+              source={this.state.connection.start ?? { x: 1, y: 1 }}
+            />
+          </Links>
+
+          <div>
+            <TreeNodeDetailsDialog
+              //TODO na podstawie nodea
+              startOnEdit={nodeDialog.startOnEdit}
+              open={nodeDialog.open}
+              node={nodeDialog.node}
+              onClose={this.handleDialogClose}
+              onSuccess={this.props.onSuccess}
+              onError={this.props.onError}
+            />
+          </div>
         </div>
-      </div>
+      </Fade>
     );
   };
 }
@@ -504,62 +520,4 @@ export const traverseRec = (
   childrens.forEach((child) => {
     traverseRec(child, callback, ++depth, nodesSelector);
   });
-};
-
-const checkIfCanConnectAsChild = (
-  nodes: Node[],
-  childId: EntityId,
-  parentId: EntityId
-) => {
-  var nodesCopy = JSON.parse(JSON.stringify(nodes)) as Node[];
-  const parentNode = nodesCopy.find((n) => n.id == parentId) as PersonNode;
-  const treeId = parentNode.treeId;
-  const familyNode = new FamilyNode(
-    randomFamilyId(),
-    treeId,
-    0,
-    0,
-    [childId],
-    parentId,
-    null
-  );
-
-  parentNode.families.push(familyNode.id);
-  parentNode.children.push(childId);
-
-  const childNode = nodesCopy.find((n) => n.id == childId) as PersonNode;
-  childNode.families.push(familyNode.id);
-  childNode.fatherId = parentId;
-
-  nodesCopy.push(familyNode);
-  var hasCycle = isGraphCyclic(nodesCopy);
-
-  return !hasCycle;
-};
-const checkIfCanConnectToFamily = (
-  nodes: Node[],
-  childId: EntityId,
-  familyId: EntityId
-) => {
-  var nodesCopy = JSON.parse(JSON.stringify(nodes)) as Node[];
-  const familyNode = nodesCopy.find((n) => n.id == familyId) as FamilyNode;
-
-  familyNode.children.push(childId);
-
-  const parentsIds = [familyNode.fatherId, familyNode.motherId].filter(
-    (a) => a
-  ) as EntityId[];
-
-  const parents = nodesCopy.filter((node) => parentsIds.includes(node.id));
-
-  parents.forEach((parent) => {
-    parent.children.push(childId);
-  });
-
-  const childNode = nodesCopy.find((node) => node.id == childId) as PersonNode;
-
-  childNode.fatherId = familyNode.fatherId;
-  childNode.motherId = familyNode.motherId;
-
-  return !isGraphCyclic(nodesCopy);
 };

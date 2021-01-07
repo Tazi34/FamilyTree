@@ -9,28 +9,28 @@ import { Theme } from "@material-ui/core/styles";
 import React, { useState } from "react";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
-import Search from "../search/Search";
 import SearchUsersContainer from "../search/SearchUsers";
 const useStyles = makeStyles((theme: Theme) => ({
   panel: {
-    background: "White",
-    maxWidth: 500,
+    paddingTop: 12,
+    paddingBottom: 10,
     display: "flex",
     alignItems: "center",
-    borderRadius: 10,
-    borderBottomLeftRadius: 0,
-    borderTopLeftRadius: 0,
+    paddingLeft: 10,
+    borderBottom: "1px solid " + theme.palette.primary.dark,
   },
   treeName: {
-    flexGrow: 1,
-    outline: "none",
-    border: 0,
-    "&:focus": {
-      outline: "none",
-    },
+    height: 40,
   },
   icon: {
     fontSize: 20,
+  },
+  search: {
+    display: "column",
+    justifyContent: "center",
+  },
+  button: {
+    marginRight: 5,
   },
 }));
 
@@ -39,6 +39,8 @@ const TreeInformationPanel = ({
   onTreeVisibilityChange,
   onTreeNameChange,
   onInviteUser,
+  onAddNode,
+  onAddMockNode,
 }: any) => {
   const classes = useStyles();
   const [treeName, setTreeName] = React.useState(
@@ -54,19 +56,37 @@ const TreeInformationPanel = ({
   const handleInviteUser = (id: number) => {
     onInviteUser(id);
   };
+  const canEdit = treeInformation.canEdit;
 
   return (
     <div className={classes.panel}>
-      <IconButton onClick={handleTreeVisibilityChange}>
-        {treeInformation.isPrivate ? (
-          <VisibilityOffIcon className={classes.icon} />
-        ) : (
-          <VisibilityIcon className={classes.icon} />
-        )}
-      </IconButton>
-
-      <input
+      {canEdit && (
+        <div>
+          <Button
+            variant="outlined"
+            className={classes.button}
+            onClick={() => onAddNode()}
+            color="primary"
+          >
+            Add Node
+          </Button>
+          <Button
+            variant="outlined"
+            className={classes.button}
+            onClick={() => onAddMockNode()}
+          >
+            Add mock Node
+          </Button>
+        </div>
+      )}
+      <TextField
+        label="Tree name"
+        variant="outlined"
         value={treeName}
+        margin="dense"
+        InputProps={{
+          readOnly: !canEdit,
+        }}
         onChange={(event) => {
           setTreeName(event.target.value);
         }}
@@ -76,9 +96,20 @@ const TreeInformationPanel = ({
           }
         }}
         className={classes.treeName}
-        defaultValue={treeInformation.name}
       />
-      <SearchUsersContainer onSelectUser={handleInviteUser} />
+      {canEdit && (
+        <>
+          <IconButton onClick={handleTreeVisibilityChange}>
+            {treeInformation.isPrivate ? (
+              <VisibilityOffIcon className={classes.icon} />
+            ) : (
+              <VisibilityIcon className={classes.icon} />
+            )}
+          </IconButton>
+
+          <SearchUsersContainer onSelectUser={handleInviteUser} />
+        </>
+      )}
     </div>
   );
 };

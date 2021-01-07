@@ -74,14 +74,6 @@ const UserTreePanel = ({
   return (
     <Box display="flex" flexDirection="column" className={classes.container}>
       {/* <div className={classes.flexGrow}></div> */}
-
-      <div className={classes.treeList}>
-        <TreesList
-          loading={loading}
-          onTreeSelect={onTreeSelect}
-          trees={userTrees}
-        ></TreesList>
-      </div>
       {!loading && isOwner && (
         <div>
           <Button
@@ -100,6 +92,13 @@ const UserTreePanel = ({
           />
         </div>
       )}
+      <div className={classes.treeList}>
+        <TreesList
+          loading={loading}
+          onTreeSelect={onTreeSelect}
+          trees={userTrees}
+        ></TreesList>
+      </div>
     </Box>
   );
 };

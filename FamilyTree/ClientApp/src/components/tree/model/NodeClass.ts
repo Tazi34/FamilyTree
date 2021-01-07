@@ -12,7 +12,7 @@ export class Node {
   fatherId: EntityId | null = null;
   motherId: EntityId | null = null;
   graph: number | undefined = undefined;
-
+  hidden: boolean;
   treeId: number;
 
   constructor(
@@ -23,7 +23,8 @@ export class Node {
     isFamily: boolean,
     children: EntityId[] = [],
     firstParent: EntityId | null = null,
-    secondParent: EntityId | null = null
+    secondParent: EntityId | null = null,
+    hidden: boolean = false
   ) {
     this.treeId = treeId;
     this.id = id;
@@ -33,6 +34,7 @@ export class Node {
     this.children = children;
     this.fatherId = firstParent;
     this.motherId = secondParent;
+    this.hidden = hidden;
     if (this.fatherId === 0) {
       this.fatherId = null;
     }

@@ -2,7 +2,9 @@ import { Fade, List, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Skeleton from "@material-ui/lab/Skeleton";
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { Post } from "../../model/Post";
+import { getUser } from "../loginPage/authenticationReducer";
 import PostCard from "./PostCard";
 import PostCardContainer from "./PostCardContainer";
 
@@ -24,6 +26,7 @@ type PostsListProps = {
 };
 const PostsList = ({ posts, onPostDelete, loaded }: PostsListProps) => {
   const classes = useStyles();
+
   return (
     <List component={"div"} className={classes.root}>
       {loaded &&
@@ -36,8 +39,8 @@ const PostsList = ({ posts, onPostDelete, loaded }: PostsListProps) => {
         ))}
 
       {!loaded &&
-        [...Array(4)].map(Math.random).map(() => (
-          <div className={classes.postCard}>
+        [...Array(4)].map(Math.random).map((a, index) => (
+          <div key={index} className={classes.postCard}>
             <div className={classes.skeletonContainer}>
               <Skeleton variant="rect" className={classes.skeleton} />
             </div>

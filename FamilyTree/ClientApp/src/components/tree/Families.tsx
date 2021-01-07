@@ -13,6 +13,7 @@ const Families = (props: any) => {
     <div>
       {props.families.map((family: FamilyNode) => (
         <FamilyNodeCard
+          isConnecting={props.isConnecting}
           canConnectTo={props.possibleConnections.includes(family.id)}
           key={family.id}
           family={family}

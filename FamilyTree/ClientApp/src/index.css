@@ -35,3 +35,7 @@ body {
   width: 100% !important;
   height: 100% !important;
 }
+
+.react-draggable {
+  position: absolute;
+}

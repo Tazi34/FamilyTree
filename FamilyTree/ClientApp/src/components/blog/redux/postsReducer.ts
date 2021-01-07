@@ -1,6 +1,7 @@
 import { BlogProfile } from "./../../../model/BlogProfile";
 import { GetBlogResponse } from "../API/getBlog";
 import {
+  createAction,
   createAsyncThunk,
   createEntityAdapter,
   createReducer,
@@ -11,6 +12,7 @@ import { AxiosResponse } from "axios";
 import { ApplicationState } from "../../../helpers";
 import {
   addThunkWithStatusHandlers,
+  createActionWithPayload,
   StatusState,
 } from "../../../helpers/helpers";
 import { Post } from "../../../model/Post";
@@ -18,6 +20,7 @@ import { CreatePostRequestData, CreatePostResponse } from "../API/createPost";
 import { postsAPI } from "../API/postsAPI";
 import { createStatusActions, Status } from "./genericStatusReducer";
 import { EditPostRequestData, EditPostResponse } from "../API/editPost";
+import { EditProfileResponse } from "../../userProfile/API/editProfile";
 const BLOG_API_URL = "posts/data";
 
 const postsAdapter = createEntityAdapter<Post>({
@@ -51,6 +54,10 @@ export const getBlog = createAsyncThunk(
   }
 );
 
+export const editProfileBlog = createActionWithPayload<EditProfileResponse>(
+  `${BLOG_API_URL}/editProfile`
+);
+
 //SELECTORS
 
 export const postsSelectors = postsAdapter.getSelectors<ApplicationState>(
@@ -82,6 +89,12 @@ export const postByIdSelector = (id: number) => {
 //REDUCER
 
 export const postsReducer = createReducer(postsInitialState, (builder) => {
+  builder.addCase(editProfileBlog, (state, action) => {
+    state.profile = {
+      pictureUrl: state.profile?.pictureUrl ?? "",
+      ...action.payload,
+    };
+  });
   addThunkWithStatusHandlers(
     builder,
     createPost,

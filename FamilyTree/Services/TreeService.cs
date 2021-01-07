@@ -28,7 +28,7 @@ namespace FamilyTree.Services
         public Task<TreeUserResponse> GetUserTreesAsync(int id, int claimId);
         public Task<MoveNodeResponse> MoveNodeAsync(int userId, MoveNodeRequest model);
         public Task<bool> DeleteTreeAsync(int userId, int TreeId);
-        public Task<DrawableTreeResponse> Hide(int userId, HideRequest model);
+        public Task<DrawableTreeResponse> Hide(int userId, ShowHideRequest model);
         public Task<DrawableTreeResponse> DetachNode(int userId, DetachRequest model);
 
     }
@@ -259,9 +259,9 @@ namespace FamilyTree.Services
             {
                 var firstParentId = child.Parents[0].ParentId;
                 //jesli jest tylko jeden rodzic i sie zgadza to okej 
-                if(secondParent == null)
+                if (secondParent == null)
                 {
-                    if(firstParentId == model.FirstParentId)
+                    if (firstParentId == model.FirstParentId)
                     {
                         return new DrawableTreeResponse(tree, user);
                     }
@@ -274,7 +274,7 @@ namespace FamilyTree.Services
                 //jesli jest dwoch i jeden sie zgadza to ok
                 if (firstParentId == model.FirstParentId || firstParentId == model.SecondParentId)
                 {
-                    if(model.FirstParentId == firstParentId)
+                    if (model.FirstParentId == firstParentId)
                     {
                         context.NodeNode.Add(new NodeNode()
                         {
@@ -292,7 +292,7 @@ namespace FamilyTree.Services
                             ParentId = firstParent.NodeId,
                             Child = child,
                             ChildId = child.NodeId
-                        });                       
+                        });
                     }
                     context.SaveChanges();
                     return new DrawableTreeResponse(tree, user);
@@ -562,23 +562,33 @@ namespace FamilyTree.Services
             await context.SaveChangesAsync();
             return true;
         }
-        public async Task<DrawableTreeResponse> Hide(int userId, HideRequest model)
+        public async Task<DrawableTreeResponse> Hide(int userId, ShowHideRequest model)
         {
             var user = await GetUserFromContextAsync(userId);
-            var node = await GetNodeFromContextAsync(model.Nodes[0]);
-            var tree = await GetTreeFromContextAsync(node == null ? -1 : node.TreeId);
-            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
+            var tree = await GetTreeFromContextAsync(model.TreeId);
+            var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
             if (!treeValidationService.ValidateHideRequest(model, tree))
                 return null;
             var fullTreeResponse = await GetTreeAsync(tree.TreeId, userId);
-            foreach(int hideNodeId in model.Nodes)
+
+            //ukryj te ktore sa juz ukryte
+            var alreadyHiddenFamilies = fullTreeResponse.Families.Where(f => model.HiddenFamilies.Contains(f.Id));
+            foreach(var alreadyHiddenFamily in alreadyHiddenFamilies)
             {
-                foreach(int childId in fullTreeResponse.Nodes.FirstOrDefault(n => n.NodeId == hideNodeId).Children)
-                {
-                    HideBranchReq(fullTreeResponse, childId);
-                }
+                alreadyHiddenFamily.Hidden = true;
+            }
+
+            var alreadyHiddenNodes = fullTreeResponse.Nodes.Where(n => model.HiddenNodes.Contains(n.NodeId));
+            foreach (var alreadyHiddenNode in alreadyHiddenNodes)
+            {
+                alreadyHiddenNode.Hidden = true;
+            }
+
+            foreach (var hideFamilyId in model.Families)
+            {
+                HideBranchReq(fullTreeResponse, hideFamilyId, model.Show);
             }
             return fullTreeResponse;
         }
@@ -592,7 +602,7 @@ namespace FamilyTree.Services
                 return null;
             if (!treeValidationService.ValidateDetachRequest(model, tree))
                 return null;
-            foreach(int detachNodeId in model.Nodes)
+            foreach (int detachNodeId in model.Nodes)
             {
                 var detachNode = tree.Nodes.FirstOrDefault(n => n.NodeId == detachNodeId);
                 detachNode.FatherId = 0;
@@ -606,16 +616,52 @@ namespace FamilyTree.Services
             await context.SaveChangesAsync();
             return await GetTreeAsync(tree.TreeId, userId);
         }
-        private void HideBranchReq(DrawableTreeResponse tree, int hideNodeId)
+        private void HideBranchReq(DrawableTreeResponse tree, string familyId, bool show)
         {
-            var node = tree.Nodes.FirstOrDefault(n => n.NodeId == hideNodeId);
-            node.Hidden = true;
-            foreach(int childId in node.Children)
+            var family = tree.Families.FirstOrDefault(f => f.Id == familyId);
+
+            family.Hidden = !show;
+            var children = family.Children.Select(child => tree.Nodes.FirstOrDefault(node => node.NodeId == child));
+
+            //jesli rodzina nie ma dzieci to sa to partnerzy - schowaj ich i ich rodziny
+            if (!children.Any())
             {
-                HideBranchReq(tree, childId);
+                HidePartnersFamily(tree, family, show);             
+            }
+           
+
+        
+            foreach(var child in children)
+            {
+                          child.Hidden = !show;
+                //wez rodziny dzieci, ktore nie sa juz schowana rodzina - czyli rodziny ktorych rodzicem jest aktualny wezel
+                var childFamilies = child.Families.Where(f => f != familyId);
+                foreach(var childFamily in childFamilies)
+                {
+                    HideBranchReq(tree, childFamily, show);
+                }
             }
         }
-        private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model, IFormFile picture=null)
+       private void HidePartnersFamily(DrawableTreeResponse tree, Family family, bool show)
+       {
+            var partners = tree.Nodes.FindAll(n => n.NodeId == family.FirstParentId || n.NodeId == family.SecondParentId);
+
+            //schowaj rodziny ktorych jest rodzicem 
+            foreach(var partner in partners)
+            {
+                partner.Hidden = !show;
+                var families = tree.Families.Where(family => partner.Families.Contains(family.Id)).ToList();
+                //wez tylko te gdzie nie jest dzieckiem i rozna od juz wzietej
+                families = families.Where(f => (f.FirstParentId == partner.NodeId ||  f.SecondParentId == partner.NodeId) && f.Id != family.Id).ToList();
+           
+                foreach (var partnerFamily in families)
+                {
+                    HideBranchReq(tree, partnerFamily.Id, show);
+                }
+            }
+
+        }
+        private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model, IFormFile picture = null)
         {
             string pictureUrl = defaultNodePictureUrl;
             var user = await GetUserFromContextAsync(model.UserId);
@@ -691,7 +737,7 @@ namespace FamilyTree.Services
             };
             tree.Nodes.Add(node);
             await context.SaveChangesAsync();
-            if(picture != null)
+            if (picture != null)
             {
                 var setPictureResponse = await pictureService.SetNodePicture(model.UserId, node.NodeId, picture);
             }
