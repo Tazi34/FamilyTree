@@ -23,5 +23,6 @@ namespace FamilyTree.Entities
         public List<Chat> Chats2 { get; set; }
         public List<Invitation> HostedInvitations { get; set; }
         public List<Invitation> AskedInvitations { get; set; }
+        public List<Comment> UserComments { get; set; }
     }
 }
