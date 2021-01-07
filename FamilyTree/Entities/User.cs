@@ -24,5 +24,6 @@ namespace FamilyTree.Entities
         public List<Invitation> HostedInvitations { get; set; }
         public List<Invitation> AskedInvitations { get; set; }
         public List<Comment> UserComments { get; set; }
+        public List<Post> Posts { get; set; }
     }
 }
