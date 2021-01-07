@@ -26,18 +26,15 @@ namespace FamilyTree.Services
         private DataContext context;
         private ITokenService tokenService;
         private IPasswordService passwordService;
-        private string defaultProfilePictureUrl;
 
         public UserService(
             DataContext dataContext, 
             ITokenService tokenService, 
-            IPasswordService passwordService, 
-            IOptions<AzureBlobSettings> azureBlobSettings)
+            IPasswordService passwordService)
         {
             context = dataContext;
             this.tokenService = tokenService;
             this.passwordService = passwordService;
-            defaultProfilePictureUrl = azureBlobSettings.Value.DefaultUserUrl;
         }
         public async Task<AuthenticateResponse> AuthenticateAsync(string email, string password)
         {
@@ -139,7 +136,7 @@ namespace FamilyTree.Services
                 Birthday = model.Birthday,
                 PrevSurnames = previousSurnames,
                 Sex = model.Sex,
-                PictureUrl = defaultProfilePictureUrl
+                PictureUrl = ""
             };
             context.Users.Add(user);
             await context.SaveChangesAsync();
