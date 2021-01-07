@@ -59,17 +59,13 @@ namespace FamilyTree.Services
                     Email = userInfo.Email,
                     Role = Role.User,
                     PrevSurnames = new List<PreviousSurname>(),
-                    PictureUrl = userInfo.Picture.Details.Url.ToString()
+                    PictureUrl = userInfo.Picture.Details.Url.ToString(),
+                    Sex = Sex.NotSure,
+                    Birthday = DateTime.Now
                 };
                 context.Users.Add(user);
                 await context.SaveChangesAsync();
-                return CreateResponse(user);
             }
-            user.PictureUrl = userInfo.Picture.Details.Url.ToString();
-            user.Name = userInfo.FirstName;
-            user.Surname = userInfo.LastName;
-            context.Users.Update(user);
-            await context.SaveChangesAsync();
             return CreateResponse(user);
         }
 
@@ -82,7 +78,11 @@ namespace FamilyTree.Services
                 {
                     Email = email,
                     Role = Role.User,
-                    PrevSurnames = new List<PreviousSurname>()
+                    PrevSurnames = new List<PreviousSurname>(),
+                    Name = "",
+                    Surname = "",
+                    Sex = Sex.NotSure,
+                    Birthday = DateTime.Now
                 };
                 context.Users.Add(user);
                 await context.SaveChangesAsync();
