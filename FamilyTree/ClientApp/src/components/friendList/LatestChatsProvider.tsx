@@ -22,7 +22,7 @@ const LatestChatsProvider = (props: any) => {
   const user = useSelector(getUser);
 
   const handleChatClick = (friend: Chat) => {
-    dispatch(tryOpenChat(friend.userId));
+    dispatch(tryOpenChat({ chatId: friend.userId, doOpen: true }));
   };
 
   useEffect(() => {

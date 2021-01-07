@@ -100,7 +100,7 @@ const BlogPage = (props: any) => {
     });
   };
   const handleContact = () => {
-    dispatch(tryOpenChat(blogId));
+    dispatch(tryOpenChat({ chatId: blogId, doOpen: true }));
   };
   if (!blogId) {
     return <Redirect to={HOME_PAGE_URI} />;

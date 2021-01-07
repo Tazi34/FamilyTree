@@ -50,23 +50,31 @@ export const chatsSelectorsLocal = chatsAdapter.getSelectors(
   (state: EntityState<Chat>) => state
 );
 
+type OpenChatRequest = {
+  chatId: number;
+  doOpen?: boolean;
+};
 export const tryOpenChat = createAsyncThunk(
   "openChat",
-  async (userId: number, { getState, dispatch }) => {
+  async ({ chatId, doOpen }: OpenChatRequest, { getState, dispatch }) => {
     const state = getState() as ApplicationState;
     const openedChats = state.chats.currentChats;
 
-    if (openedChats.find((chatId) => chatId == userId)) {
-      return dispatch(closeChat(userId));
+    if (doOpen && openedChats.find((chatId) => chatId == chatId)) {
+      return dispatch(closeChat(chatId));
     } else {
-      const chat = chatsSelectors.selectById(state, userId);
+      const chat = chatsSelectors.selectById(state, chatId);
       if (chat) {
-        dispatch(openChat(userId));
+        if (doOpen) {
+          dispatch(openChat(chatId));
+        }
         if (!chat.loadedMessages) {
           dispatch(getMessages(chat));
         }
       } else {
-        dispatch(getChat(userId)).then(() => dispatch(tryOpenChat(userId)));
+        dispatch(getChat(chatId)).then(() =>
+          dispatch(tryOpenChat({ chatId, doOpen }))
+        );
       }
     }
   }
@@ -82,6 +90,9 @@ export const getChat = createAsyncThunk<AxiosResponse<GetChatResponse>, number>(
   async (userId: number) => {
     return await chatAPI.requestChat({ id: userId });
   }
+);
+export const moveChatToTop = createAction<number>(
+  `${chatActionsPrefix}/chatMovedToTop`
 );
 
 export const closeChat = createAction<number>(
@@ -107,6 +118,15 @@ export const sendMessage = createAction(
     },
   })
 );
+export const onReceiveMessage = (
+  userId: number,
+  message: string,
+  receiverId: any
+) => (dispatch: any) => {
+  dispatch(receiveMessage(userId, message, receiverId));
+  dispatch(tryOpenChat({ chatId: userId, doOpen: false }));
+  dispatch(moveChatToTop(userId));
+};
 export const receiveMessage = createAction(
   `${chatActionsPrefix}/messageReceived`,
   (userId: number, message: string, receiverId) => ({
@@ -130,6 +150,13 @@ export const chatReducer = createReducer<ChatsState>(
         }
         chat.loadedMessages = true;
         chat.messages = action.payload.data.messageList.reverse();
+      })
+      .addCase(moveChatToTop, (state, action) => {
+        const id = action.payload;
+
+        const newOrder = state.latestChats.filter((chat) => chat != id);
+        newOrder.unshift(id);
+        state.latestChats = newOrder;
       })
       .addCase(getLatestChats.fulfilled, (state, action) => {
         const chats: Chat[] = action.payload.data.usersList;

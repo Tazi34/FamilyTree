@@ -171,6 +171,20 @@ export const authenticationReducer = createReducer(
     );
     addThunkWithStatusHandlers(
       builder,
+      authenticateFacebookToken,
+      (state: AuthenticationState, action: any) => {
+        const userData = action.payload.data;
+        setUserLoggedIn(userData, state);
+      },
+      undefined,
+      (state: AuthenticationState, action: any) => {
+        state.isLoggedIn = false;
+        state.user = null;
+        removeAuthorizationToken();
+      }
+    );
+    addThunkWithStatusHandlers(
+      builder,
       loginUser,
       (state: AuthenticationState, action: any) => {
         const userData: LoginUserResponseSuccessData = action.payload.data;

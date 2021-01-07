@@ -1,7 +1,14 @@
-import { ButtonBase, Icon, makeStyles, Typography } from "@material-ui/core";
+import {
+  Avatar,
+  ButtonBase,
+  Icon,
+  makeStyles,
+  Typography,
+} from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
-
+import AccountTreeOutlinedIcon from "@material-ui/icons/AccountTreeOutlined";
+import { AccountCircle } from "@material-ui/icons";
 const useStyles = makeStyles((theme: Theme) => ({
   card: {
     width: "100%",
@@ -13,19 +20,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderBottom: "1px solid",
     borderColor: theme.palette.primary.dark,
   },
-  imageContainer: {
-    borderRadius: "50%",
-    border: "1px solid " + theme.palette.primary.dark,
-
+  image: {
     marginRight: 8,
   },
-  icon: {
-    display: "table-cell",
-    verticalAlign: "middle",
-    textAlign: "center",
-    margin: 5,
-    color: theme.palette.primary.dark,
-  },
+
   textContainer: {
     display: "flex",
     flexDirection: "column",
@@ -53,15 +51,10 @@ const SearchResultCard = ({
         onSelect(entityId);
       }}
     >
-      <div className={classes.imageContainer}>
-        {pictureUrl ? (
-          <img src={pictureUrl} />
-        ) : user ? (
-          <Icon className={`fas fa-user ${classes.icon}`}></Icon>
-        ) : (
-          <Icon className={`fas fa-tree ${classes.icon}`}></Icon>
-        )}
-      </div>
+      <Avatar className={classes.image} src={pictureUrl ?? ""}>
+        {user ? <AccountCircle /> : <AccountTreeOutlinedIcon />}
+      </Avatar>
+
       <div className={classes.textContainer}>
         <Typography variant="body1">{text}</Typography>
         <Typography variant="body2" align="left">

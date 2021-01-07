@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Card,
   CardContent,
   CardHeader,
@@ -25,6 +26,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: "100%",
     minHeight: "100%",
     backgroundColor: theme.palette.background.paper,
+    paddingLeft: 10,
+    paddingRight: 10,
   },
   postTitle: {},
   postBody: {},
@@ -106,21 +109,6 @@ const BlogPost = ({
         <MoreVertIcon />
       </IconButton>
     ) : null;
-  //TODO uwspolnic z post CARD
-
-  // const comments = [...Array(4)].map(Math.random).map((a, index) => ({
-  //   user: {
-  //     name: "Pawel",
-  //     surname: "Kasjaniuk",
-  //     pictureUrl: "",
-  //     userId: 1,
-  //   },
-  //   commentId: index,
-  //   time: "2021-01-07T16:40:13.615Z",
-  //   text:
-  //     "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Magnam animi eligendi accusamus ducimus pariatur? Eaque autem debitis quibusdam incidunt tenetur explicabo fuga animi expedita fugiat. Nesciunt tempore optio fuga nisi? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Magnam animi eligendi accusamus ducimus pariatur? Eaque autem debitis quibusdam incidunt tenetur explicabo fuga animi expedita fugiat. Nesciunt tempore optio fuga nisi? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Magnam animi eligendi accusamus ducimus pariatur? Eaque autem debitis quibusdam incidunt tenetur explicabo fuga animi expedita fugiat. Nesciunt tempore optio fuga nisi? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Magnam animi eligendi accusamus ducimus pariatur? Eaque autem debitis quibusdam incidunt tenetur explicabo fuga animi expedita fugiat. Nesciunt tempore optio fuga nisi?",
-  // }));
-
   return (
     <div className={classes.postPage}>
       <Card className={classes.cardRoot}>
@@ -140,6 +128,7 @@ const BlogPost = ({
           title={post.title}
           subheader={displayDate}
           action={headerAction}
+          avatar={<Avatar src={post.pictureUrl} />}
         />
         <CardContent className={classes.postContent}>
           <Editor

@@ -2,7 +2,7 @@ const log = (text: any) => {
   console.log(text);
 };
 const error = (text: any) => {
-  console.error(error);
+  console.error(text);
 };
 
 const emptyLogger = {

@@ -5,6 +5,7 @@ import {
   ButtonBase,
   Divider,
   IconButton,
+  Input,
   makeStyles,
   Paper,
   TextField,
@@ -97,15 +98,14 @@ const useStyles = makeStyles((theme: Theme) => ({
   textInputContainer: {
     flexGrow: 1,
     marginRight: 8,
-    padding: 5,
+
     borderWidth: 2,
     borderRadius: 10,
+    maxHeight: 90,
+
+    overflowY: "auto",
   },
   textInput: {
-    width: "100%",
-    "&:focus": {
-      outline: "none",
-    },
     border: "none",
   },
   titleContainer: {
@@ -185,21 +185,29 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
             >
               {({ setFieldTouched, handleChange, handleSubmit, values }) => {
                 const change = (name: string, e: any) => {
+                  console.log(e);
+                  console.log(e.nativeEvent.keyCode);
                   e.persist();
                   handleChange(e);
                   setFieldTouched(name, true, false);
                 };
                 return (
-                  <form
-                    onSubmit={handleSubmit}
-                    className={classes.bottomChatBar}
-                  >
+                  <form className={classes.bottomChatBar}>
                     <Box
                       border={1}
                       borderColor="primary.light"
                       className={classes.textInputContainer}
                     >
-                      <input
+                      <Input
+                        disableUnderline
+                        fullWidth
+                        type="submit"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            handleSubmit();
+                          }
+                        }}
+                        multiline={true}
                         autoComplete={"off"}
                         name="message"
                         value={values.message}

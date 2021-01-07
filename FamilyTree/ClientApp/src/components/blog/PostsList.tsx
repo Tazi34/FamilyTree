@@ -31,8 +31,8 @@ const PostsList = ({ posts, onPostDelete, loaded }: PostsListProps) => {
     <List component={"div"} className={classes.root}>
       {loaded &&
         posts.map((p: Post) => (
-          <Fade in={loaded} timeout={1000}>
-            <div key={p.postId} className={classes.postCard}>
+          <Fade key={p.postId} in={loaded} timeout={1000}>
+            <div className={classes.postCard}>
               <PostCardContainer onPostDelete={onPostDelete} post={p} />
             </div>
           </Fade>

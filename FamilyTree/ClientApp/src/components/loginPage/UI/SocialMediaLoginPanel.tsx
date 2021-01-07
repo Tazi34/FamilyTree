@@ -57,7 +57,6 @@ const SocialMediaLoginPanel = ({ onGmailLogin, onFacebookLogin }: Props) => {
               ></i>
             </Button>
           )}
-          cookiePolicy={"single_host_origin"}
         />
       </Grid>
       <Grid item xs={6}>

@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, Typography } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { Message } from "./chatReducer";
@@ -8,10 +8,12 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: "8px 12px 8px 12px",
     marginBottom: 8,
     borderRadius: 10,
+    maxWidth: "70%",
+    wordBreak: "break-all",
   },
   outgoingMessage: {
     background: theme.palette.primary.dark,
-    textAlign: "right",
+    textAlign: "left",
 
     color: theme.palette.getContrastText(theme.palette.primary.dark),
   },
@@ -42,13 +44,13 @@ const ChatMessage = ({ receiverId, message }: Props) => {
         isOutgoing ? classes.outgoingContainer : classes.incomingContainer
       }`}
     >
-      <div
+      <Typography
         className={`${
           isOutgoing ? classes.outgoingMessage : classes.incomingMessage
         } ${classes.message}`}
       >
         {message.text}
-      </div>
+      </Typography>
     </div>
   );
 };
