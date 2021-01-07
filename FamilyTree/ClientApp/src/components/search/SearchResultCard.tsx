@@ -50,7 +50,6 @@ const SearchResultCard = ({
     <ButtonBase
       className={classes.card}
       onClick={() => {
-        alert("XD");
         onSelect(entityId);
       }}
     >

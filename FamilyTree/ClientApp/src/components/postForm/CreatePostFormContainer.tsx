@@ -1,10 +1,13 @@
 import { makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
-import { useDispatch } from "react-redux";
-import { Post } from "../../model/Post";
+import { useSelector } from "react-redux";
+import { useHistory } from "react-router";
+import { useThunkDispatch } from "../..";
+import { BLOG_PAGE_URI } from "../../applicationRouting";
 import { CreatePostRequestData } from "../blog/API/createPost";
 import { createPost } from "../blog/redux/postsReducer";
+import { getUser } from "../loginPage/authenticationReducer";
 import PostForm from "./PostForm";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -15,7 +18,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const CreatePostFormContainer = (props: any) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
+  const dispatch = useThunkDispatch();
+  const history = useHistory();
+  const user = useSelector(getUser);
 
   const handleCreatePost = (content: string, title: string) => {
     const data: CreatePostRequestData = {
@@ -23,7 +28,13 @@ const CreatePostFormContainer = (props: any) => {
       pictureUrl: "",
       title,
     };
-    dispatch(createPost(data));
+    dispatch(createPost(data)).then((resp: any) => {
+      if (!resp.error) {
+        history.push(`${BLOG_PAGE_URI}/${user!.id}`);
+      } else {
+        //TODO
+      }
+    });
   };
 
   return (

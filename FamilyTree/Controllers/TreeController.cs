@@ -261,7 +261,7 @@ namespace FamilyTree.Controllers
         [HttpPost]
         [Authorize]
         [Route("hide")]
-        public async Task<ActionResult<DrawableTreeResponse>> Hide(HideRequest model)
+        public async Task<ActionResult<DrawableTreeResponse>> Hide(ShowHideRequest model)
         {
             var userId = int.Parse(HttpContext.User.Claims.SingleOrDefault(claim => claim.Type == ClaimTypes.Name).Value);
             var result = await treeService.Hide(userId, model);

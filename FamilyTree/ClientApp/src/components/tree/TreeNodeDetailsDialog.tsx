@@ -14,6 +14,7 @@ import {
   TextField,
   Typography,
 } from "@material-ui/core";
+
 import { Theme } from "@material-ui/core/styles";
 import { format, parse } from "date-fns";
 import * as React from "react";
@@ -106,6 +107,9 @@ export type TreeNodeDialogProps = {
   open: boolean;
   node: PersonNode | null;
   onClose: () => void;
+  startOnEdit?: boolean;
+  onSuccess: any;
+  onError: any;
 };
 type FormProps = {
   name: string;
@@ -119,10 +123,13 @@ const TreeNodeDetailsDialog = ({
   open,
   onClose,
   node,
+  startOnEdit,
+  onSuccess,
+  onError,
 }: TreeNodeDialogProps) => {
   const classes = useStyles();
   const [pictureDialog, setPictureDialog] = React.useState(false);
-  const [editMode, setEditMode] = React.useState(false);
+  const [editMode, setEditMode] = React.useState(Boolean(startOnEdit));
   const [pictureUrl, setPictureUrl] = React.useState(
     node?.personDetails.pictureUrl
   );
@@ -216,7 +223,9 @@ const TreeNodeDetailsDialog = ({
           };
           dispatch(updateTreeNode(data)).then((resp: any) => {
             if (resp.error) {
+              onError("Could not modify node.");
             } else {
+              onSuccess("Tree node modified. ");
               onClose();
             }
           });

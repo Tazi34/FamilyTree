@@ -1,32 +1,23 @@
-import {
-  Box,
-  Button,
-  Divider,
-  Fade,
-  makeStyles,
-  Slide,
-  Typography,
-} from "@material-ui/core";
+import { Button, Fade, makeStyles, Slide, Typography } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { Redirect, useHistory } from "react-router";
+import { useHistory } from "react-router";
 import { BLOG_PAGE_URI, LOGIN_PAGE_URI } from "../../applicationRouting";
-import { LOGIN_API_URL } from "../../helpers/apiHelpers";
-import LazyBackground from "../lazyBackground/LazyBackground";
 import { getUser } from "../loginPage/authenticationReducer";
+import "./homePage.css";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     margin: "0 auto",
     width: "100%",
     height: "100%",
-    backgroundImage: `url(/background.jpg)`,
-    backgroundSize: "cover",
-    backgroundPosition: "35% center",
-    backgroundRepeat: "no-repeat",
-    opacity: 2,
-    backgroundAttachment: "fixed",
+    // backgroundImage:"url(/background.jpg)"
+    // backgroundSize: "cover",
+    // backgroundPosition: "35% center",
+    // backgroundRepeat: "no-repeat",
+    // opacity: 2,
+    // backgroundAttachment: "fixed",
   },
   bannerTitle: {
     fontSize: 65,
@@ -80,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const HomePage = (props: any) => {
   const classes = useStyles();
-  const [transition, setTransition] = React.useState(false);
+  const transition = props.backgroundLoaded;
 
   const history = useHistory();
   const user = useSelector(getUser);
@@ -94,11 +85,7 @@ const HomePage = (props: any) => {
     history.push(path);
   };
   return (
-    <LazyBackground
-      src="/background.jpg"
-      className={classes.root}
-      onLoad={() => setTransition(true)}
-    >
+    <div className={classes.root}>
       <div className={classes.main}>
         <div className={classes.familyIcon}></div>
         <Slide
@@ -136,7 +123,7 @@ const HomePage = (props: any) => {
           </Fade>
         </Slide>
       </div>
-    </LazyBackground>
+    </div>
   );
 };
 

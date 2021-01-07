@@ -12,9 +12,10 @@ export class FamilyNode extends Node {
     y: number,
     children: EntityId[] = [],
     fatherId: EntityId | null = null,
-    motherId: EntityId | null = null
+    motherId: EntityId | null = null,
+    hidden: boolean = false
   ) {
-    super(id, treeId, x, y, true, children, fatherId, motherId);
+    super(id, treeId, x, y, true, children, fatherId, motherId, hidden);
   }
 }
 
@@ -38,7 +39,7 @@ export const getFamilyLocation = (
     }
   } else {
     x = firstParent.x;
-    y = firstParent.y;
+    y = firstParent.y + 300;
   }
 
   return { x, y };

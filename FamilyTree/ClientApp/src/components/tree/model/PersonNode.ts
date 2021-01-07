@@ -7,7 +7,7 @@ export class PersonNode extends Node {
   families: EntityId[];
   userId: number | null;
   partners: EntityId[];
-  canEdit: boolean;
+  canEdit?: boolean;
 
   constructor(
     id: EntityId,

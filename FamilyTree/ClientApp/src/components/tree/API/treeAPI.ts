@@ -1,3 +1,4 @@
+import { hideBranchRequest } from "./hideBranch/hideBranchRequest";
 import { connectPartnersRequest } from "./connectNodes/connectPartnerRequest";
 import { connectNodesRequest } from "./connectNodes/connectNodesRequest";
 import { changeTreeNameRequest } from "./changeTreeName/changeTreeNameRequest";
@@ -19,4 +20,5 @@ export const treeAPI = {
   changeTreeNameRequest,
   connectNodesRequest,
   connectPartnersRequest,
+  hideBranchRequest,
 };

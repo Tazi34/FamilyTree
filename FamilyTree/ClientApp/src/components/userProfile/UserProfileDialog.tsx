@@ -19,6 +19,7 @@ import { parse } from "date-fns";
 import { Formik } from "formik";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useThunkDispatch } from "../..";
 import { formatDate } from "../../helpers/formatters";
 import { Sex } from "../../model/Sex";
 import {
@@ -27,6 +28,7 @@ import {
   User,
 } from "../loginPage/authenticationReducer";
 import PicturePickerDialog from "../UI/PicturePickerDialog";
+import { editProfile } from "./API/editProfile";
 import { requestUploadProfilePicture } from "./API/uploadProfilePicture";
 import userProfileAPI from "./API/userProfileAPI";
 
@@ -93,20 +95,19 @@ const UserProfileDialog = (props: any) => {
   const [picturePreview, setPicturePreview] = React.useState(user.pictureUrl);
   const classes = useStyles();
 
-  const dispatch = useDispatch();
+  const dispatch = useThunkDispatch();
 
   const handleProfileEdit = (data: FormData) => {
-    const userToken = user.token;
     const requestData = { ...data, userId: user.id };
-    userProfileAPI
-      .requestEditProfile(requestData)
-      .then(() => {
+
+    dispatch(editProfile(requestData)).then((resp: any) => {
+      if (!resp.error) {
         props.onSuccess("Profile edited");
-        dispatch(authenticateToken(userToken));
-      })
-      .catch((err: any) => {
+        props.onClose();
+      } else {
         props.onError("Error editing your profile. Try again later");
-      });
+      }
+    });
   };
 
   const closePictureDialog = () => {

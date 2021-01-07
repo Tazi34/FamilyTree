@@ -4,6 +4,7 @@ import Paper from "@material-ui/core/Paper";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Typography from "@material-ui/core/Typography";
 import { KeyboardDatePicker } from "@material-ui/pickers";
+import { parse } from "date-fns";
 import { Formik } from "formik";
 import React from "react";
 import { Sex } from "../../model/Sex";
@@ -109,17 +110,20 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
                 label="Email"
                 onChange={change.bind(null, "email")}
               />
+
               <KeyboardDatePicker
+                label="Birthday"
+                name="birthday"
                 fullWidth
                 disableToolbar
+                autoOk
                 variant="inline"
-                format="MM/dd/yyyy"
-                margin="normal"
-                name="birthday"
-                label="Birthday"
+                format="dd.MM.yyyy"
                 value={values.birthday}
                 onChange={(_, value) => {
-                  setFieldValue("birthday", value);
+                  var date = parse(value as string, "dd.MM.yyyy", new Date());
+
+                  setFieldValue("birthday", date);
                 }}
                 KeyboardButtonProps={{
                   "aria-label": "change date",

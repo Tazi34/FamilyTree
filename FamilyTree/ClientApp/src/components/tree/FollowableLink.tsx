@@ -3,8 +3,6 @@ import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import DrawableLink from "./DrawableLink";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
-
 const FollowableLink = (props: any) => {
   const [target, setTarget] = React.useState({ x: 0, y: 0 });
   React.useEffect(() => {

@@ -3,6 +3,9 @@ import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { ApplicationState } from "../../helpers/index.js";
+import ChatsContainer from "../chat/ChatsContainer";
+import FriendsPanel from "../friendList/FriendsPanel";
+import useBackground from "../lazyBackground/useBackground";
 import { AuthenticationState } from "../loginPage/authenticationReducer.js";
 import Navbar from "../navbar/Navbar.jsx";
 
@@ -23,6 +26,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   container: {
     height: "100%",
+    backgroundSize: "cover",
+    backgroundPosition: "35% center",
+    backgroundRepeat: "no-repeat",
+    opacity: 2,
+    backgroundAttachment: "fixed",
+    display: "flex",
+    flexDirection: "column",
   },
   grid: { height: "100%" },
   column: {
@@ -36,6 +46,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: "100%",
     marginTop: 64,
   },
+  bottomFixed: {
+    bottom: 0,
+    position: "fixed",
+    right: 0,
+  },
 }));
 
 export interface LayoutPanelProperties {
@@ -43,25 +58,38 @@ export interface LayoutPanelProperties {
   flex: number;
 }
 
-export default (props: { children?: React.ReactNode }) => {
+export default (props: { children?: React.ReactNode; background?: string }) => {
   const classes = useStyles();
   const authenticationState = useSelector<
     ApplicationState,
     AuthenticationState
   >((state) => state.authentication);
 
+  useBackground({
+    background: "/background.jpg",
+    onLoad: () => setBackgroundLoaded(true),
+  });
+  const [backgroundLoaded, setBackgroundLoaded] = React.useState(false);
   const isLoggedIn = authenticationState.user != null;
+
+  const childrenWithProps = React.Children.map(props.children, (child) => {
+    // checking isValidElement is the safe way and avoids a typescript error too
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, { backgroundLoaded });
+    }
+    return child;
+  });
+
   return (
-    <Box
-      display="flex"
-      className={classes.container}
-      flexDirection="column"
-      alignItems="stretch"
-    >
+    <div className={classes.container}>
       <Navbar isLoggedIn={isLoggedIn} user={authenticationState.user}></Navbar>
 
       {/* <div className={classes.filler}></div> */}
-      {props.children}
-    </Box>
+      {childrenWithProps}
+      <div className={classes.bottomFixed}>
+        {isLoggedIn && <FriendsPanel />}
+        {isLoggedIn && <ChatsContainer />}
+      </div>
+    </div>
   );
 };

@@ -1,25 +1,21 @@
-import {
-  Box,
-  Grid,
-  Hidden,
-  makeStyles,
-  Paper,
-  Typography,
-} from "@material-ui/core";
+import { Box, Link, makeStyles, Typography } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Redirect } from "react-router";
+import { Redirect, useHistory } from "react-router";
+import { BLOG_PAGE_URI, REGISTER_PAGE_URI } from "../../../applicationRouting";
 import { LoginUserRequestData } from "../API/loginUser";
 import {
+  authenticateFacebookToken,
   authenticateGmailToken,
   getUser,
   isLoggedIn,
   loginUser,
 } from "../authenticationReducer";
-import SocialMediaLoginPanel from "./SocialMediaLoginPanel";
 import LoginForm from "./LoginForm";
+import SocialMediaLoginPanel from "./SocialMediaLoginPanel";
 
+const backColor = "#BCBCBC";
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     height: 700,
@@ -27,18 +23,43 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   container: {
     height: "100%",
-    width: "80%",
+    width: "100%",
     margin: "0 auto",
+    // backgroundImage: `url(/background.jpg)`,
+    // backgroundSize: "cover",
+    // backgroundPosition: "35% center",
+    // backgroundRepeat: "no-repeat",
+    // opacity: 2,
+    // backgroundAttachment: "fixed",
+  },
+  content: {
+    background: "#f4f4f4",
+
+    fontSize: "0.9375rem",
+    width: 400,
+    position: "relative",
+    margin: "0 auto",
+    lineHeight: 1.5,
+    boxShadow: "0 0.5882rem 2.353rem 0 #202020",
   },
   column: {
     border: "1px solid black",
   },
-  grid: {
-    height: "100%",
-  },
 
+  contentHeaderContainer: {
+    padding: "0.71rem 1.15rem",
+    width: "100%",
+    background: theme.palette.primary.light,
+  },
+  contentHeader: {
+    fontSize: "1.4rem",
+    fontWeight: 400,
+    lineHeight: 1.5,
+    color: "#f4f4f4",
+  },
   panelsContainer: {
-    height: "100%",
+    width: "80%",
+    margin: "40px auto",
   },
   image: {
     width: "100%",
@@ -49,39 +70,63 @@ const useStyles = makeStyles((theme: Theme) => ({
       display: "none",
     },
   },
+  panelBreak: {
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  familyTreeLoginHeader: {
+    marginLeft: 10,
+    fontSize: 17,
+  },
+  familyTreeLoginSection: {
+    border: "1px solid rgba(0, 0, 0, 0.23)",
+    padding: 5,
+  },
+  registerSection: {
+    marginTop: 10,
+    padding: 5,
+    border: "1px solid rgba(0, 0, 0, 0.23)",
+    marginBottom: 12,
+  },
 }));
 
 const LoginPage = (props: any) => {
   const classes = useStyles();
   const dispatch: any = useDispatch();
-  const loggedIn = useSelector(isLoggedIn);
+  const user = useSelector(getUser);
+  const history = useHistory();
 
-  const location = props.location;
+  if (user) {
+    return <Redirect to={`${BLOG_PAGE_URI}/${user.id}`} />;
+  }
+
+  const handleAuthenticationResponse = (response: any) => {
+    if (response.error) {
+      props.onError("Could not verify your identity. ");
+    } else {
+      props.onSuccess("Logged in.");
+      console.log(response);
+      history.push(`${BLOG_PAGE_URI}/${response.payload.data.userId}`);
+    }
+  };
+
   const handleLoginUser = (userData: LoginUserRequestData) => {
     dispatch(loginUser(userData)).then((data: any) => {
-      if (data.error) {
-        props.onError("Could not verify your identity. ");
-      } else {
-        props.onSuccess("Logged in.");
-      }
+      handleAuthenticationResponse(data);
     });
   };
   const handleGmailAuthentication = (userData: any) => {
     dispatch(authenticateGmailToken(userData.tokenId)).then((data: any) => {
-      if (data.error) {
-        props.onError("Could not verify your identity. ");
-      } else {
-        props.onSuccess("Logged in.");
-      }
+      handleAuthenticationResponse(data);
     });
   };
-
-  const previousPage = location.state;
-  const redirectLink = previousPage ? previousPage.from : "/";
-
-  if (loggedIn) {
-    return <Redirect to={redirectLink} />;
-  }
+  const handleFacebookAuthentication = (userData: any) => {
+    dispatch(authenticateFacebookToken(userData.accessToken)).then(
+      (data: any) => {
+        handleAuthenticationResponse(data);
+      }
+    );
+  };
 
   return (
     <Box
@@ -91,40 +136,52 @@ const LoginPage = (props: any) => {
       id="loginContainer"
       className={classes.container}
     >
-      <Paper className={classes.root}>
-        <Grid container alignItems="stretch" className={classes.grid}>
-          <Grid item sm={12} lg={6}>
-            <Box
-              display="flex"
-              justifyContent="center"
-              className={classes.panelsContainer}
-            >
-              <Box
-                display="inline-flex"
-                justifyContent="center"
-                alignItems="center"
-                flexDirection="column"
-              >
-                <LoginForm onLoginUser={handleLoginUser}></LoginForm>
-                <Typography align="center">Or</Typography>
-                <SocialMediaLoginPanel
-                  onGmailLogin={handleGmailAuthentication}
-                />
-              </Box>
-            </Box>
-          </Grid>
+      <div className={classes.content}>
+        <div className={classes.contentHeaderContainer}>
+          <Typography className={classes.contentHeader}>
+            Sign in with
+          </Typography>
+        </div>
 
-          <Grid item sm={6} className={classes.imageContainer}>
-            <Box display="flex" alignItems="center" style={{ height: "100%" }}>
-              <img
-                src="/wip.jpg"
-                alt="work in progress placeholder"
-                className={classes.image}
-              ></img>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
+        <Box
+          display="flex"
+          flexDirection="column"
+          className={classes.panelsContainer}
+        >
+          <Box display="inline-flex" flexDirection="column">
+            <div className={classes.familyTreeLoginSection}>
+              <Typography className={classes.familyTreeLoginHeader}>
+                Family Tree account
+              </Typography>
+              <div>
+                <LoginForm onLoginUser={handleLoginUser}></LoginForm>
+              </div>
+            </div>
+
+            <Typography align="center" className={classes.panelBreak}>
+              Or
+            </Typography>
+            <div>
+              <SocialMediaLoginPanel
+                onGmailLogin={handleGmailAuthentication}
+                onFacebookLogin={handleFacebookAuthentication}
+              />
+            </div>
+            <div className={classes.registerSection}>
+              <Typography align="center">
+                No account? <span> </span>
+                <Link
+                  onClick={() => {
+                    history.push(REGISTER_PAGE_URI);
+                  }}
+                >
+                  {"Sing up now"}
+                </Link>
+              </Typography>
+            </div>
+          </Box>
+        </Box>
+      </div>
     </Box>
   );
 };

@@ -494,7 +494,8 @@ function createTree(tree: TreeAPI, state: TreeState) {
         familyAPI.y,
         familyAPI.children,
         familyAPI.firstParentId,
-        familyAPI.secondParentId
+        familyAPI.secondParentId,
+        familyAPI.hidden
       )
   );
   const nodes: PersonNode[] = tree.nodes.map((node) =>

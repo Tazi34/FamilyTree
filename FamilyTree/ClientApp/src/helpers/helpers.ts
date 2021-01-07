@@ -20,7 +20,14 @@ export interface StatusState {
   loading: boolean;
   error: any;
 }
-
+export function areEqualShallow(a: any, b: any) {
+  for (var key in a) {
+    if (a[key] !== b[key]) {
+      return false;
+    }
+  }
+  return true;
+}
 export const addThunkWithStatusHandlers = <R, A, S>(
   builder: ActionReducerMapBuilder<any>,
   asyncThunkAction: AsyncThunk<R, A, any>,

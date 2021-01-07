@@ -8,7 +8,7 @@ import { UpdateNodeRequestData } from "./../../API/updateNode/updateNodeRequest"
 export const updateTreeNode = (data: UpdateNodeRequestData) => (
   dispatch: any
 ) => {
-  dispatch(updateTreeNodeRequest(data)).then((resp: any) => {
+  return dispatch(updateTreeNodeRequest(data)).then((resp: any) => {
     if (resp.type === updateTreeNodeRequest.fulfilled.toString()) {
       return dispatch(setTree(resp.payload.data));
     }

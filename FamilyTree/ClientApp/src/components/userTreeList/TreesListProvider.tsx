@@ -47,17 +47,14 @@ const UserTreeListProvider = (props: any) => {
     dispatch(getUserTrees(props.userId));
   }, []);
 
-  if (userTreesState.status.loading) {
-    return null;
-  }
-
   return (
     <UserTreePanel
+      loading={userTreesState.status.loading}
       userTrees={userTrees}
       onTreeSelect={handleTreeSelect}
       onTreeCreate={handleTreeCreate}
       isOwner={props.isOwner}
-    ></UserTreePanel>
+    />
   );
 };
 

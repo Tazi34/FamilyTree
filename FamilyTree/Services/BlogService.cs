@@ -75,7 +75,8 @@ namespace FamilyTree.Services
                     UserId = user.UserId,
                     Name = user.Name,
                     Surname = user.Surname,
-                    PictureUrl =user.PictureUrl
+                    PictureUrl =user.PictureUrl,
+                    Birthday = user.Birthday,
                 },
                 Posts = new List<PostResponse>()
             };

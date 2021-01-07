@@ -50,6 +50,7 @@ import { useThunkDispatch } from ".";
 import { getInvitations } from "./components/invitation/reducer/invitationsReducer";
 import CreateNodeDialog from "./components/addNodeActionDialog/CreateNodeDialog";
 import LayoutBase from "./components/layout/LayoutBase";
+import useBackground from "./components/lazyBackground/useBackground";
 
 export const theme = createMuiTheme({
   palette: {
@@ -83,7 +84,10 @@ const App = (props: any) => {
   const loggedUser = useSelector(getUser);
   const history = useHistory();
   const dispatch = useThunkDispatch();
-  dispatch(getInvitations());
+
+  if (loggedUser) {
+    dispatch(getInvitations());
+  }
 
   React.useEffect(() => {
     history.listen(() => {
@@ -116,7 +120,7 @@ const App = (props: any) => {
             exact
             path={`${BLOG_PAGE_URI}/:blogId`}
             component={BlogPage}
-            layout={EmptyLayout}
+            layout={LayoutBase}
             user={loggedUser}
           />
           <AuthorizedPrivateRoute
@@ -152,10 +156,11 @@ const App = (props: any) => {
           <LayoutRoute
             path={LOGIN_PAGE_URI}
             component={LoginPage}
-            layout={EmptyLayout}
+            layout={LayoutBase}
             onSuccess={alertSuccess}
             onError={alertError}
             user={loggedUser}
+            background={"/background.jpg"}
           />
           <GuestRoute
             path={REGISTER_PAGE_URI}
@@ -175,6 +180,7 @@ const App = (props: any) => {
             path="/"
             component={HomePage}
             layout={LayoutBase}
+            background={"/background.jpg"}
           />
           <LayoutRoute
             exact

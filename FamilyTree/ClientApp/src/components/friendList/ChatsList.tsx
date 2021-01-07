@@ -26,7 +26,7 @@ const ChatsList = ({ chats, chatsLimit, onChatClick }: Props) => {
       className={classes.root}
     >
       {friendsToShow.map((chat: Chat) => (
-        <div>
+        <div key={chat.userId}>
           <ChatListEntry
             key={chat.userId}
             onChatClick={onChatClick}

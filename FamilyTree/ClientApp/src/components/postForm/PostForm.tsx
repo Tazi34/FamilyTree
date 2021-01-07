@@ -13,6 +13,8 @@ import { Editor } from "react-draft-wysiwyg";
 import "../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { Post } from "../../model/Post";
 import { Formik } from "formik";
+import axios from "axios";
+import { baseURL } from "../../helpers/apiHelpers";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -34,6 +36,7 @@ const PostForm = ({ post, onSubmit }: Props) => {
   const classes = useStyles();
 
   const [editorState, setEditorState] = React.useState(() => {
+    console.log("init state");
     if (post) {
       try {
         const raw = JSON.parse(post.text);
@@ -46,6 +49,19 @@ const PostForm = ({ post, onSubmit }: Props) => {
       return EditorState.createEmpty();
     }
   });
+  const onPictureUpload = (file: any) => {
+    const form = new FormData();
+    form.append("picture", file);
+    return axios.post(baseURL + "/blog/picture", form).then((resp: any) => {
+      if (resp.status == 200) {
+        return {
+          data: {
+            link: resp.data.pictureUrl,
+          },
+        };
+      }
+    });
+  };
 
   return (
     <div className={classes.root}>
@@ -76,6 +92,14 @@ const PostForm = ({ post, onSubmit }: Props) => {
 
               <Divider />
               <Editor
+                toolbar={{
+                  image: {
+                    uploadEnabled: true,
+                    alignmentEnabled: true,
+                    previewImage: true,
+                    uploadCallback: onPictureUpload,
+                  },
+                }}
                 editorState={editorState}
                 wrapperClassName="postFormTextEditorWrapper"
                 editorClassName="postFormTextEditor"

@@ -9,6 +9,7 @@ import {
 import { Theme } from "@material-ui/core/styles";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
 import * as React from "react";
+import { areEqualShallow } from "../../helpers/helpers";
 import { TreeInformation } from "../../model/TreeInformation";
 
 interface TreeCardProps {
@@ -17,7 +18,7 @@ interface TreeCardProps {
 }
 const useStyles = makeStyles((theme: Theme) => ({
   card: {
-    height: 70,
+    height: 150,
     padding: 5,
     marginTop: 5,
     width: "100%",
@@ -37,6 +38,7 @@ const TreeCard = ({ tree, onTreeSelect }: TreeCardProps) => {
   const classes = useStyles();
   const isPrivate = tree.isPrivate;
   const treeVisibilityText = isPrivate ? "private" : "public";
+  console.log("TREE CARD");
   const handleCardSelect = () => {
     onTreeSelect(tree);
   };
@@ -73,4 +75,7 @@ const TreeCard = ({ tree, onTreeSelect }: TreeCardProps) => {
   );
 };
 
-export default TreeCard;
+const areEqual = (prev: TreeCardProps, next: TreeCardProps) => {
+  return areEqualShallow(prev.tree, next.tree);
+};
+export default React.memo(TreeCard, areEqual);

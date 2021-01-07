@@ -15,7 +15,11 @@ const Registration = (props: any) => {
   const handleRegister = (registrationData: UserRegistrationData) => {
     dispatch(createUser(registrationData)).then((data: any) => {
       if (data.error) {
-        props.onError("Error occured during account creation. ");
+        if (data.payload.status === 409) {
+          props.onError("Email already taken");
+        } else {
+          props.onError("Error occured during account creation. ");
+        }
       } else {
         props.onSuccess("Account created.");
       }

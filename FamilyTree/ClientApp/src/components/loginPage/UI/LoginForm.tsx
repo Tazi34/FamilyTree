@@ -29,12 +29,18 @@ interface Props {
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: { padding: "5px 10px" },
+  root: {
+    padding: "5px 10px",
+    width: "100%",
+  },
   emailInput: {
     flex: 1,
   },
   inputRow: {
     marginBottom: 10,
+  },
+  loginButton: {
+    borderRadius: 0,
   },
 }));
 
@@ -74,15 +80,8 @@ const LoginForm = ({ onLoginUser }: Props) => {
         };
 
         return (
-          <form onSubmit={handleSubmit}>
-            <Box
-              display="flex"
-              flexDirection="column"
-              className={classes.root}
-              border={1}
-              borderColor={"primary.main"}
-              borderRadius={7}
-            >
+          <form onSubmit={handleSubmit} className={classes.root}>
+            <Box display="flex" flexDirection="column">
               <Grid
                 container
                 spacing={1}
@@ -123,36 +122,33 @@ const LoginForm = ({ onLoginUser }: Props) => {
                 </Grid>
               </Grid>
               <Grid container alignItems="center">
-                <Grid item xs={8}>
-                  <Box display="flex" flexDirection="column">
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          color="default"
-                          checked={formState.rememberUser}
-                          icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-                          checkedIcon={<CheckBoxIcon fontSize="small" />}
-                          onChange={() => {
-                            setFormState({
-                              ...formState,
-                              rememberUser: !formState.rememberUser,
-                            });
-                          }}
-                        />
-                      }
-                      label="Remember me"
-                    />
-                    <TypographyLink to={REGISTER_PAGE_URI} color="primary">
-                      Register
-                    </TypographyLink>
-                  </Box>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        color="default"
+                        checked={formState.rememberUser}
+                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                        checkedIcon={<CheckBoxIcon fontSize="small" />}
+                        onChange={() => {
+                          setFormState({
+                            ...formState,
+                            rememberUser: !formState.rememberUser,
+                          });
+                        }}
+                      />
+                    }
+                    label="Remember me"
+                  />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={12}>
                   <Button
                     disabled={isSubmitting}
                     variant="contained"
                     color="primary"
                     type="submit"
+                    fullWidth
+                    className={classes.loginButton}
                   >
                     LOGIN
                   </Button>

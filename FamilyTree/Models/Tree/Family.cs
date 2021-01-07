@@ -11,6 +11,7 @@ namespace FamilyTree.Models
         public List<int> Children { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
+        public bool Hidden { get; set; } 
 
     }
 }

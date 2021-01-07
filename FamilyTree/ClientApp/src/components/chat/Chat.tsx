@@ -182,8 +182,12 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
           <Divider />
           <div className={classes.chatBody}>
             <div className={classes.chatTextArea} ref={scrollRef}>
-              {chat.messages.map((message) => (
-                <ChatMessage message={message} receiverId={chat.userId} />
+              {chat.messages.map((message, index) => (
+                <ChatMessage
+                  key={index}
+                  message={message}
+                  receiverId={chat.userId}
+                />
               ))}
             </div>
             <Divider />
