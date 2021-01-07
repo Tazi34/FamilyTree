@@ -38,21 +38,16 @@ namespace FamilyTree.Services
         private ITreeAuthService treeAuthService;
         private ITreeValidationService treeValidationService;
         private IPictureService pictureService;
-        private string defaultNodePictureUrl;
-        private string defaultUserPictureUrl;
         public TreeService(
             DataContext dataContext,
             ITreeAuthService treeAuthService,
             ITreeValidationService treeValidationService,
-            IPictureService pictureService,
-            IOptions<AzureBlobSettings> azureBlobSettings)
+            IPictureService pictureService)
         {
             context = dataContext;
             this.treeAuthService = treeAuthService;
             this.treeValidationService = treeValidationService;
             this.pictureService = pictureService;
-            defaultNodePictureUrl = azureBlobSettings.Value.DefaultNodeUrl;
-            defaultUserPictureUrl = azureBlobSettings.Value.DefaultUserUrl;
         }
 
         public async Task<DrawableTreeResponse> CreateNodeAsync(int userId, CreateNodeRequest model, IFormFile picture)
@@ -150,20 +145,13 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.Everybody, authLevel))
                 return null;
-
-            string pictureUrl = defaultNodePictureUrl;
-            if (user != null && user.UserId != 0)
-            {
-                if (user.PictureUrl != null && !user.PictureUrl.Equals("") && !user.PictureUrl.Equals(defaultUserPictureUrl))
-                    pictureUrl = user.PictureUrl;
-            }
             Node node = new Node
             {
                 Birthday = user.Birthday,
                 Name = user.Name,
                 Surname = user.Surname,
                 UserId = user.UserId,
-                PictureUrl = pictureUrl,
+                PictureUrl = user.PictureUrl,
                 Children = new List<NodeNode>(),
                 Parents = new List<NodeNode>(),
                 Partners1 = new List<NodeNodeMarriage>(),
@@ -664,13 +652,7 @@ namespace FamilyTree.Services
         }
         private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model, IFormFile picture = null)
         {
-            string pictureUrl = defaultNodePictureUrl;
             var user = await GetUserFromContextAsync(model.UserId);
-            if (user != null && user.UserId != 0)
-            {
-                if (user.PictureUrl != null && !user.PictureUrl.Equals("") && !user.PictureUrl.Equals(defaultUserPictureUrl))
-                    pictureUrl = user.PictureUrl;
-            }
             var children = new List<NodeNode>();
             foreach (int child in model.Children)
             {
@@ -726,7 +708,7 @@ namespace FamilyTree.Services
                 Name = model.Name,
                 Surname = model.Surname,
                 UserId = model.UserId,
-                PictureUrl = pictureUrl,
+                PictureUrl = user.UserId != 0 ? user.PictureUrl : "",
                 Children = children,
                 Parents = parents,
                 Partners1 = partners1,
