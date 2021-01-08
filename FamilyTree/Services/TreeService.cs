@@ -486,8 +486,8 @@ namespace FamilyTree.Services
                 }
             }
             node.UserId = model.UserId;
-            if (!string.IsNullOrWhiteSpace(model.Sex))
-                node.Sex = model.Sex;
+            node.Sex = model.Sex;
+            context.Nodes.Update(node);
             await context.SaveChangesAsync();
             return await GetTreeAsync(model.TreeId, userId);
         }

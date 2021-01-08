@@ -43,7 +43,7 @@ namespace FamilyTree.Models
             MotherId = parentsTuple.Item2;
             X = node.X;
             Y = node.Y;
-            Sex = user.Sex;
+            Sex = node.Sex;
             CanEdit = user.Role.Equals(Role.Admin) || (node.UserId == 0 && userInTree) || (node.UserId == user.UserId && user.UserId != 0) ? true : false; 
             Children = new List<int>();
             foreach(var child in node.Children)
