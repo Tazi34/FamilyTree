@@ -16,7 +16,7 @@ namespace FamilyTree.Models
         public int TreeId { get; set; }
         [Required]
         public DateTime Birthday { get; set; }
-        [Required]
+        [Required(AllowEmptyStrings = true)]
         public string Description { get; set; }
         [Required]
         public string Name { get; set; }

@@ -429,14 +429,10 @@ namespace FamilyTree.Services
             if (!treeValidationService.ValidateModifiedNode(model, tree))
                 return null;
 
-            if (model.Birthday != null)
-                node.Birthday = model.Birthday;
-            if (!string.IsNullOrWhiteSpace(model.Description))
-                node.Description = model.Description;
-            if (!string.IsNullOrWhiteSpace(model.Name))
-                node.Name = model.Name;
-            if (!string.IsNullOrWhiteSpace(model.Surname))
-                node.Surname = model.Surname;
+            node.Birthday = model.Birthday;            
+            node.Description = model.Description;
+            node.Name = model.Name;
+            node.Surname = model.Surname;
             foreach (int child in model.Children)
             {
                 var currentChild = node.Children.SingleOrDefault(c => c.ChildId == child);
