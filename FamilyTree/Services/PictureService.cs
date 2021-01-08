@@ -26,10 +26,16 @@ namespace FamilyTree.Services
     {
         private DataContext context;
         private BlobServiceClient blobService;
+        private string blogContainerName;
+        private string nodeContainerName;
+        private string profileContainerName;
         public PictureService(DataContext dataContext, IOptions<AzureBlobSettings> azureBlobSettings)
         {
             context = dataContext;
             blobService = new BlobServiceClient(azureBlobSettings.Value.ConnectionString);
+            blogContainerName = azureBlobSettings.Value.BlogContainer;
+            nodeContainerName = azureBlobSettings.Value.NodeContainer;
+            profileContainerName = azureBlobSettings.Value.ProfileContainer;
         }
 
         public async Task<SetPictureResponse> SetBlogPictureAsync(IFormFile picture)
@@ -37,7 +43,7 @@ namespace FamilyTree.Services
             if (!ValidateInput(picture))
                 return null;
             string fileName = GetUniqueFilename(picture.FileName);
-            BlobContainerClient container = blobService.GetBlobContainerClient("blog");
+            BlobContainerClient container = blobService.GetBlobContainerClient(blogContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
             await blob.UploadAsync(uploadFileStream, true);
@@ -58,7 +64,7 @@ namespace FamilyTree.Services
             if (node.PictureUrl != null && node.PictureUrl != "")
                 await DeletePicture(node);
             string fileName = GetUniqueFilename(nodeId, picture.FileName);
-            BlobContainerClient container = blobService.GetBlobContainerClient("node");
+            BlobContainerClient container = blobService.GetBlobContainerClient(nodeContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
             await blob.UploadAsync(uploadFileStream, true);
@@ -105,7 +111,7 @@ namespace FamilyTree.Services
             if (user.PictureUrl != null && user.PictureUrl != "")
                 await DeletePicture(user);
             string fileName = GetUniqueFilename(userId, picture.FileName);
-            BlobContainerClient container = blobService.GetBlobContainerClient("profile");
+            BlobContainerClient container = blobService.GetBlobContainerClient(profileContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
             await blob.UploadAsync(uploadFileStream, true);
@@ -133,7 +139,7 @@ namespace FamilyTree.Services
 
         private async Task DeletePicture(User user)
         {
-            var container = blobService.GetBlobContainerClient("profile");
+            var container = blobService.GetBlobContainerClient(profileContainerName);
             var blob = container.GetBlobClient(user.PictureUrl.Substring(container.Uri.ToString().Length + 1));
             await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
             user.PictureUrl = "";
@@ -142,7 +148,7 @@ namespace FamilyTree.Services
         }
         private async Task DeletePicture(Node node)
         {
-            var container = blobService.GetBlobContainerClient("node");
+            var container = blobService.GetBlobContainerClient(nodeContainerName);
             var blob = container.GetBlobClient(node.PictureUrl.Substring(container.Uri.ToString().Length + 1));
             await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
             node.PictureUrl = "";
