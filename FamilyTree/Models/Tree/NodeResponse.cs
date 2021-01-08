@@ -24,6 +24,7 @@ namespace FamilyTree.Models
         public List<int> Partners { get; set; }
         public bool CanEdit { get; set; }
         public bool Hidden { get; set; } = false;
+        public string Sex { get; set; }
         
         //do drawable tree response : TODO co z tym zrobic
         public List<string> Families { get; set; }
@@ -42,6 +43,7 @@ namespace FamilyTree.Models
             MotherId = parentsTuple.Item2;
             X = node.X;
             Y = node.Y;
+            Sex = user.Sex;
             CanEdit = user.Role.Equals(Role.Admin) || (node.UserId == 0 && userInTree) || (node.UserId == user.UserId && user.UserId != 0) ? true : false; 
             Children = new List<int>();
             foreach(var child in node.Children)
@@ -66,14 +68,14 @@ namespace FamilyTree.Models
                 return (0, 0);
             else if (node.Parents.Count == 1)
             {
-                if (node.Parents[0].Parent.Sex.Equals(Sex.Female))
+                if (node.Parents[0].Parent.Sex.Equals(Entities.Sex.Female))
                     return (0, node.Parents[0].ParentId);
                 else
                     return (node.Parents[0].ParentId, 0);
             }
             else
             {
-                if (node.Parents[0].Parent.Sex.Equals(Sex.Female))
+                if (node.Parents[0].Parent.Sex.Equals(Entities.Sex.Female))
                     return (node.Parents[1].ParentId, node.Parents[0].ParentId);
                 else
                     return (node.Parents[0].ParentId, node.Parents[1].ParentId);

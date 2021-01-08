@@ -207,8 +207,8 @@ namespace FamilyTree.Services
                 Role = user.Role,
                 PreviousSurnames = user.PrevSurnames?.Select(x => x.Surname).ToList(),
                 PictureUrl = user.PictureUrl,
-                Birthday = user.Birthday
-                
+                Birthday = user.Birthday,
+                Sex = user.Sex
             };
         }
     }
