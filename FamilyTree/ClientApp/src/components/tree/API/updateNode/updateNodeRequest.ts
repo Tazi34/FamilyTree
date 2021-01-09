@@ -1,6 +1,7 @@
 import { TreeAPI } from "./../utils/TreeModel";
 import axios from "axios";
 import { baseURL, TREE_API_URL } from "../../../../helpers/apiHelpers";
+import { Sex } from "../../../../model/Sex";
 
 export const UPDATE_NODE_API_URL = `${TREE_API_URL}/node`;
 
@@ -16,6 +17,7 @@ export type UpdateNodeRequestData = {
   motherId: number;
   children: number[];
   partners: number[];
+  sex: Sex;
 };
 
 export type UpdateNodeResponse = TreeAPI;

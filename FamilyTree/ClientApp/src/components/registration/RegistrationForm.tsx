@@ -10,6 +10,8 @@ import React from "react";
 import { Sex } from "../../model/Sex";
 import { WithAlert, withAlertMessage } from "../alerts/withAlert";
 import PasswordField from "../loginPage/UI/PasswordField";
+import ErrorValidationWrapper from "../UI/ErrorValidationWrapper";
+import registrationValidationSchema from "./validation/registrationValidationSchema.ts";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -39,6 +41,7 @@ const initialData = {
   surname: "",
   email: "",
   password: "",
+  confirmPassword: "",
   birthday: new Date(),
   previousSurnames: [],
 };
@@ -64,6 +67,7 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
             setSubmitting(false);
           }, 400);
         }}
+        validationSchema={registrationValidationSchema}
         initialValues={initialData}
       >
         {({
@@ -88,62 +92,92 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
               <Typography align={"center"} variant={"h5"} color={"primary"}>
                 SIGN UP
               </Typography>
-              <TextField
-                autoComplete={"given-name"}
-                fullWidth
-                label="Name"
-                name={"name"}
-                onChange={change.bind(null, "name")}
-              />
-              <TextField
-                autoComplete={"family-name"}
-                fullWidth
-                label="Surname"
-                name={"surname"}
-                onChange={change.bind(null, "surname")}
-              />
-              <TextField
-                name="email"
-                type="email"
-                autoComplete={"username"}
-                fullWidth
-                label="Email"
-                onChange={change.bind(null, "email")}
-              />
+              <ErrorValidationWrapper
+                error={errors.name}
+                touched={touched.name}
+              >
+                <TextField
+                  autoComplete={"given-name"}
+                  fullWidth
+                  label="Name"
+                  name={"name"}
+                  onChange={change.bind(null, "name")}
+                />
+              </ErrorValidationWrapper>
+              <ErrorValidationWrapper
+                error={errors.surname}
+                touched={touched.surname}
+              >
+                <TextField
+                  autoComplete={"family-name"}
+                  fullWidth
+                  label="Surname"
+                  name={"surname"}
+                  onChange={change.bind(null, "surname")}
+                />
+              </ErrorValidationWrapper>
+              <ErrorValidationWrapper
+                error={errors.email}
+                touched={touched.email}
+              >
+                <TextField
+                  name="email"
+                  type="email"
+                  autoComplete={"username"}
+                  fullWidth
+                  label="Email"
+                  onChange={change.bind(null, "email")}
+                />
+              </ErrorValidationWrapper>
 
-              <KeyboardDatePicker
-                label="Birthday"
-                name="birthday"
-                fullWidth
-                disableToolbar
-                autoOk
-                variant="inline"
-                format="dd.MM.yyyy"
-                value={values.birthday}
-                onChange={(_, value) => {
-                  var date = parse(value as string, "dd.MM.yyyy", new Date());
+              <ErrorValidationWrapper
+                error={errors.birthday}
+                touched={touched.birthday}
+              >
+                <KeyboardDatePicker
+                  label="Birthday"
+                  name="birthday"
+                  fullWidth
+                  disableToolbar
+                  autoOk
+                  maxDate={new Date()}
+                  variant="inline"
+                  format="dd.MM.yyyy"
+                  value={values.birthday}
+                  onChange={(_, value) => {
+                    var date = parse(value as string, "dd.MM.yyyy", new Date());
 
-                  setFieldValue("birthday", date);
-                }}
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                }}
-              />
-              <PasswordField
-                onChange={change.bind(null, "password")}
-                autoComplete="new-password"
-                fullWidth
-                label="Password"
-                name={"password"}
-              />
-
-              <PasswordField
-                onChange={change.bind(null, "confirmPassword")}
-                autoComplete={"new-password"}
-                fullWidth
-                label="Confirm password"
-                name={"confirmPassword"}
-              />
+                    setFieldValue("birthday", date);
+                  }}
+                  KeyboardButtonProps={{
+                    "aria-label": "change date",
+                  }}
+                />
+              </ErrorValidationWrapper>
+              <ErrorValidationWrapper
+                error={errors.password}
+                touched={touched.password}
+              >
+                <PasswordField
+                  onChange={change.bind(null, "password")}
+                  autoComplete="new-password"
+                  fullWidth
+                  label="Password"
+                  name={"password"}
+                />
+              </ErrorValidationWrapper>
+              <ErrorValidationWrapper
+                error={errors.confirmPassword}
+                touched={touched.confirmPassword}
+              >
+                <PasswordField
+                  onChange={change.bind(null, "confirmPassword")}
+                  autoComplete={"new-password"}
+                  fullWidth
+                  label="Confirm password"
+                  name={"confirmPassword"}
+                />
+              </ErrorValidationWrapper>
               <Button
                 variant={"contained"}
                 color={"primary"}

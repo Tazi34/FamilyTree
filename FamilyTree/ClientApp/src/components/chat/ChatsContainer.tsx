@@ -32,7 +32,7 @@ const ChatsContainer = (props: any) => {
   const dispatch = useDispatch();
 
   const handleChatClose = (id: number) => {
-    dispatch(closeChat(id));
+    setTimeout(() => dispatch(closeChat(id)), 1000);
   };
 
   const handleMessageSend = (userId: number, text: string) => {

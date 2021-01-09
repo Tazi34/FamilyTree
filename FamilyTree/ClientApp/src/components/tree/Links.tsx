@@ -15,26 +15,6 @@ class Links extends React.Component<any> {
           overflow: "visible",
         }}
       >
-        <marker
-          id="arrowEnd"
-          fill="blue"
-          stroke-linejoin="bevel"
-          viewBox="0 0 8000 8000"
-          refX="280"
-          refY="150"
-          markerUnits="strokeWidth"
-          markerWidth="300"
-          markerHeight="300"
-          orient="auto"
-        >
-          <path
-            id="arrowEndPath"
-            stroke="rgb(0, 0, 0)"
-            stroke-width="5"
-            d="M 2 59 L 293 148 L 1 243 L 121 151 Z"
-          />
-        </marker>
-
         {this.props.links.map((loadedLink: LinkLoaded) => (
           <LinkComponent
             familyToChild={loadedLink.source.isFamily}

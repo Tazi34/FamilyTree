@@ -60,7 +60,7 @@ export const tryOpenChat = createAsyncThunk(
     const state = getState() as ApplicationState;
     const openedChats = state.chats.currentChats;
 
-    if (doOpen && openedChats.find((chatId) => chatId == chatId)) {
+    if (doOpen && openedChats.find((c) => c == chatId)) {
       return dispatch(closeChat(chatId));
     } else {
       const chat = chatsSelectors.selectById(state, chatId);

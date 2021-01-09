@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: "relative",
   },
   searchResults: {
-    width: "100%",
+    minWidth: "100%",
     position: "absolute",
   },
 }));

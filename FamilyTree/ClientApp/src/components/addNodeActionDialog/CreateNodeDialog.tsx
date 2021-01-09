@@ -37,7 +37,6 @@ const CreateNodeDialog = ({ open, onClose, onSubmit }: Props) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <Paper>
-        <Typography>Create new node</Typography>
         <div>
           <Formik
             initialValues={{
@@ -74,8 +73,12 @@ const CreateNodeDialog = ({ open, onClose, onSubmit }: Props) => {
                     }}
                     setFieldValue={setFieldValue}
                   />
-                  <Button type="submit">Submit</Button>
-                  <Button onClick={onClose}>Back</Button>
+                  <Button variant="contained" color="primary" type="submit">
+                    Submit
+                  </Button>
+                  <Button variant="outlined" onClick={onClose}>
+                    Back
+                  </Button>
                 </form>
               );
             }}

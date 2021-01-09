@@ -12,10 +12,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderRadius: "50%",
     border: "2px solid" + theme.palette.primary.light,
     backgroundColor: theme.palette.background.paper,
+    color: theme.palette.primary.dark,
   },
 }));
 
-const HiddenPersonNode = ({ hidden, picture, initials }: any) => {
+const HiddenPersonNode = ({ hidden, picture, initials, onClick }: any) => {
   const classes = useStyles();
 
   return (
@@ -24,6 +25,7 @@ const HiddenPersonNode = ({ hidden, picture, initials }: any) => {
         <Avatar
           src={picture}
           className={classes.root}
+          onClick={onClick}
           //style={{ visibility: hidden ? "hidden" : "visible" }}
         >
           {initials ?? ""}

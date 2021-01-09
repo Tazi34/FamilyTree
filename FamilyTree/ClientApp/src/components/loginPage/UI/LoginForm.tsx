@@ -16,7 +16,9 @@ import { Formik } from "formik";
 import * as React from "react";
 import { REGISTER_PAGE_URI } from "../../../applicationRouting";
 import { TypographyLink } from "../../navigation/TypographyLink";
+import ErrorValidationWrapper from "../../UI/ErrorValidationWrapper";
 import PasswordField from "./PasswordField";
+import loginValidationSchema from "./validation/loginValidationSchema";
 
 interface State {
   password: string;
@@ -60,6 +62,7 @@ const LoginForm = ({ onLoginUser }: Props) => {
           setSubmitting(false);
         }, 1000);
       }}
+      validationSchema={loginValidationSchema}
       initialValues={{ email: "", password: "" }}
     >
       {({
@@ -92,14 +95,19 @@ const LoginForm = ({ onLoginUser }: Props) => {
                   <AccountCircle />
                 </Grid>
                 <Grid item className={classes.emailInput}>
-                  <TextField
-                    autoComplete="email"
-                    name="email"
-                    label="Email"
-                    value={values.email}
-                    fullWidth
-                    onChange={change.bind(null, "email")}
-                  />
+                  <ErrorValidationWrapper
+                    error={errors.email}
+                    touched={touched.email}
+                  >
+                    <TextField
+                      autoComplete="email"
+                      name="email"
+                      label="Email"
+                      value={values.email}
+                      fullWidth
+                      onChange={change.bind(null, "email")}
+                    />
+                  </ErrorValidationWrapper>
                 </Grid>
               </Grid>
               <Grid
@@ -112,13 +120,18 @@ const LoginForm = ({ onLoginUser }: Props) => {
                   <LockOpenIcon />
                 </Grid>
                 <Grid item>
-                  <PasswordField
-                    autoComplete="current-password"
-                    name="password"
-                    value={values.password}
-                    label="Password"
-                    onChange={change.bind(null, "password")}
-                  />
+                  <ErrorValidationWrapper
+                    error={errors.password}
+                    touched={touched.password}
+                  >
+                    <PasswordField
+                      autoComplete="current-password"
+                      name="password"
+                      value={values.password}
+                      label="Password"
+                      onChange={change.bind(null, "password")}
+                    />
+                  </ErrorValidationWrapper>
                 </Grid>
               </Grid>
               <Grid container alignItems="center">

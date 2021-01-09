@@ -39,7 +39,7 @@ const SocialMediaLoginPanel = ({ onGmailLogin, onFacebookLogin }: Props) => {
     <Grid className={classes.root} container>
       <Grid item xs={6}>
         <GoogleLogin
-          clientId="941927718703-sabevb4hdfuit5aca0egk363d1lth7m8.apps.googleusercontent.com"
+          clientId={`${process.env.REACT_APP_GMAIL_CLIENT_ID}`}
           buttonText="Login"
           onSuccess={onGmailLogin}
           onFailure={(err: any) => {
@@ -57,6 +57,7 @@ const SocialMediaLoginPanel = ({ onGmailLogin, onFacebookLogin }: Props) => {
               ></i>
             </Button>
           )}
+          cookiePolicy={"single_host_origin"}
         />
       </Grid>
       <Grid item xs={6}>
@@ -75,7 +76,7 @@ const SocialMediaLoginPanel = ({ onGmailLogin, onFacebookLogin }: Props) => {
           )}
           icon={FacebookIcon}
           cssClass={classes.button}
-          appId="397727788098228"
+          appId={`${process.env.REACT_APP_FACEBOOK_APP_ID}`}
           callback={onFacebookLogin}
         />
       </Grid>

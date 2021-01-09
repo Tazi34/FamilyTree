@@ -67,7 +67,6 @@ const BlogPost = ({
 }: Props) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [editMode, setEditMode] = React.useState(false);
 
   if (!post) {
     return (
@@ -128,7 +127,7 @@ const BlogPost = ({
           title={post.title}
           subheader={displayDate}
           action={headerAction}
-          avatar={<Avatar src={post.pictureUrl} />}
+          avatar={<Avatar src={post.user.pictureUrl} />}
         />
         <CardContent className={classes.postContent}>
           <Editor

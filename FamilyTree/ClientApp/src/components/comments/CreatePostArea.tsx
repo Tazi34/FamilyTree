@@ -8,6 +8,7 @@ import { Formik } from "formik";
 import React from "react";
 import { formatInitials } from "../../helpers/formatters";
 import { User } from "../loginPage/authenticationReducer";
+import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
 const useStyles = makeStyles((theme: Theme) => ({
   textInput: {},
@@ -53,10 +54,12 @@ const CreatePostArea = ({ user, onSubmit }: Props) => {
             <form onSubmit={handleSubmit}>
               <ListItem alignItems="flex-start">
                 <ListItemAvatar>
-                  <Avatar
-                    alt={formatInitials(user.name, user.surname)}
-                    src={user.pictureUrl}
-                  />
+                  <TooltipMouseFollow>
+                    <Avatar
+                      alt={formatInitials(user.name, user.surname)}
+                      src={user.pictureUrl}
+                    />
+                  </TooltipMouseFollow>
                 </ListItemAvatar>
                 <TextField
                   label="Create comment"

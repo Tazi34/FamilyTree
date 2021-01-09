@@ -11,8 +11,12 @@ import { getUser } from "../loginPage/authenticationReducer";
 import PostForm from "./PostForm";
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    width: "",
+  createPostRoot: {
+    display: "flex",
+    flexDirection: "column",
+
+    minHeight: "100%",
+    width: "100%",
   },
 }));
 
@@ -38,9 +42,9 @@ const CreatePostFormContainer = (props: any) => {
   };
 
   return (
-    <Paper className={classes.root}>
+    <div className={classes.createPostRoot}>
       <PostForm onSubmit={handleCreatePost} />
-    </Paper>
+    </div>
   );
 };
 

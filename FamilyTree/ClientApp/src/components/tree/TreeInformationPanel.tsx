@@ -42,6 +42,7 @@ const TreeInformationPanel = ({
   onInviteUser,
   onAddNode,
   onAddMockNode,
+  onExportTree,
 }: any) => {
   const classes = useStyles();
   const [treeName, setTreeName] = React.useState(
@@ -57,6 +58,10 @@ const TreeInformationPanel = ({
   const handleInviteUser = (id: number) => {
     onInviteUser(id);
   };
+
+  const handleExportTree = () => {
+    onExportTree(treeInformation.treeId);
+  };
   const canEdit = treeInformation.canEdit;
 
   return (
@@ -69,14 +74,21 @@ const TreeInformationPanel = ({
             onClick={() => onAddNode()}
             color="primary"
           >
-            Add Node
+            Add Family member
           </Button>
-          <Button
+          {/* <Button
             variant="outlined"
             className={classes.button}
             onClick={() => onAddMockNode()}
           >
             Add mock Node
+          </Button> */}
+          <Button
+            variant="outlined"
+            className={classes.button}
+            onClick={handleExportTree}
+          >
+            Export
           </Button>
         </div>
       )}

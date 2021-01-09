@@ -116,7 +116,7 @@ const PostCard = ({
         title={post.title}
         subheader={displayDate}
         action={headerAction}
-        avatar={<Avatar src={post.pictureUrl} />}
+        avatar={<Avatar src={post.user.pictureUrl} />}
       />
       <CardContent className={classes.postContent}>
         <Editor

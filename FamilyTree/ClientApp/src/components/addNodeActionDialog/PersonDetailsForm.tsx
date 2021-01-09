@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Button,
   Divider,
   FormControl,
@@ -32,13 +33,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   descriptionSection: {
     padding: 5,
-    display: "flex",
-    flexDirection: "column",
+    marginTop: 10,
     minHeight: 200,
+    height: 1,
   },
   description: {
-    maxHeight: 300,
-    overflowY: "auto",
+    width: "100%",
+    minHeight: "100%",
   },
   contentSection: { display: "flex" },
   information: {
@@ -51,8 +52,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: imgSize,
     height: imgSize,
     //cursor: "pointer ",
-    border: "solid #2f2f2f 1px",
     marginRight: 10,
+    marginTop: 16,
     position: "relative",
   },
   editPictureIconContainer: {
@@ -60,6 +61,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     right: 5,
     bottom: 5,
     padding: 7,
+    zIndex: 1000,
   },
   editPictureIcon: {
     fontSize: 17,
@@ -128,28 +130,7 @@ const PersonDetailsForm = ({ change, values, setFieldValue }: Props) => {
         onClose={handlePictureDialog}
         onPickPicture={handleSetPicture}
       />
-      {/* <Formik
-        initialValues={{
-          name: "",
-          surname: "",
-          birthday: new Date().toString(),
-          description: "",
-          sex: "Male" as Sex,
-        }}
-        onSubmit={(values: FormProps, { resetForm }) => {
-          alert(JSON.stringify(values));
-        }}
-      >
-        {({
-          setFieldTouched,
-          handleChange,
-          handleSubmit,
-          values,
-          setFieldValue,
-        }) => {
 
-          return (
-            <form onSubmit={handleSubmit}> */}
       <div className={classes.personDialog}>
         <div className={classes.contentSection}>
           <div className={classes.pictureContainer}>
@@ -159,7 +140,12 @@ const PersonDetailsForm = ({ change, values, setFieldValue }: Props) => {
             >
               <i className={`fas fa-camera ${classes.editPictureIcon}`} />
             </IconButton>
-            <img src={picturePreview ?? ""} className={classes.picture} />
+            <Avatar
+              src={picturePreview ?? ""}
+              variant="square"
+              alt="JJ"
+              className={classes.picture}
+            />
           </div>
           <div className={classes.information}>
             <TextField
@@ -207,17 +193,19 @@ const PersonDetailsForm = ({ change, values, setFieldValue }: Props) => {
                     </IconButton> */}
           </div>
         </div>
-        <Divider className={classes.divider} />
         <div className={classes.descriptionSection}>
           <TextField
+            InputProps={{
+              style: { width: "100%", minHeight: "100%", position: "static" },
+            }}
             multiline
+            rowsMax={8}
+            variant="outlined"
             name="description"
             onChange={change.bind(null, "description")}
             value={values.description}
             className={classes.description}
           />
-
-          <Divider className={classes.bottomDivider} />
         </div>
       </div>
       {/* </form>

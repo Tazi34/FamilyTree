@@ -24,9 +24,14 @@ const useStyles = makeStyles((theme) =>
     },
     navbarButton: {
       width: 80,
+      marginLeft: 8,
     },
     inputRoot: {
       color: "inherit",
+    },
+    logoIcon: {
+      fontSize: 23,
+      marginRight: 5,
     },
     inputInput: {
       padding: theme.spacing(1, 1, 1, 0),
@@ -50,7 +55,7 @@ const useStyles = makeStyles((theme) =>
       position: "sticky",
       top: 0,
     },
-    logo: {},
+    logo: { marginRight: 8 },
   })
 );
 export default function PrimarySearchAppBar({ isLoggedIn, user }) {
@@ -71,13 +76,12 @@ export default function PrimarySearchAppBar({ isLoggedIn, user }) {
     <AppBar position="sticky" className={classes.barContainer}>
       <Toolbar component={Paper} className={classes.toolbar}>
         <RedirectButton className={classes.logo} color="primary" to={"/"}>
-          <Icon className="fas fa-tree"></Icon>
+          <i className={"fas fa-leaf " + classes.logoIcon}></i>
           <Typography className={classes.title} variant="h6" noWrap>
             {ApplicationName}
           </Typography>
         </RedirectButton>
         <MainSearchContainer />
-        {/* <div className={classes.grow} /> */}
         {isLoggedIn && (
           <div className={classes.sectionDesktop}>
             <RedirectButton

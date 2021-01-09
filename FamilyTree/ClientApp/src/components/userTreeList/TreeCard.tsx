@@ -2,9 +2,11 @@ import {
   Box,
   Card,
   CardActionArea,
+  ListItem,
   makeStyles,
   Paper,
   Typography,
+  ListItemText,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import { CSSProperties } from "@material-ui/core/styles/withStyles";
@@ -21,6 +23,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: 150,
     padding: 5,
     marginTop: 5,
+    paddingLeft: 15,
     width: "100%",
     "&:focus": {
       outline: "none",
@@ -43,35 +46,12 @@ const TreeCard = ({ tree, onTreeSelect }: TreeCardProps) => {
     onTreeSelect(tree);
   };
   return (
-    <Box
-      border={1}
-      borderRadius="borderRadius"
-      borderColor="primary.main"
-      bgcolor="background.paper"
-      className={classes.card}
-      component={CardActionArea}
-      display="flex"
-      flexDirection="column"
-      justifyContent="space-between"
-      alignItems="stretch"
-      onClick={handleCardSelect}
-    >
-      <Typography
-        variant={"subtitle1"}
-        align="left"
-        className={classes.treeName}
-      >
-        {tree.name}
-      </Typography>
-      <div className={classes.grow}></div>
-      <Typography
-        variant={"subtitle2"}
-        align="right"
-        className={classes.treeInfo}
-      >
-        {treeVisibilityText}
-      </Typography>
-    </Box>
+    <ListItem button className={classes.card} onClick={handleCardSelect}>
+      <ListItemText
+        primary={tree.name}
+        secondary={treeVisibilityText}
+      ></ListItemText>
+    </ListItem>
   );
 };
 

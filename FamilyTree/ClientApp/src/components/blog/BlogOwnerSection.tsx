@@ -72,6 +72,7 @@ const BlogOwnerSection = ({
           </Avatar>
         </TooltipMouseFollow>
       </div>
+
       <TextField
         className={classes.column}
         multiline

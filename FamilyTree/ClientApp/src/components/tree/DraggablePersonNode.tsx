@@ -58,6 +58,7 @@ const DraggablePersonNode = (props: any) => {
     >
       <div ref={ref}>
         <PersonNodeCard
+          onNodeVisiblityChange={props.onNodeVisiblityChange}
           onDisconnectNode={props.onDisconnectNode}
           onAddActionMenuClick={props.onAddActionMenuClick}
           canConnectTo={props.canConnectTo}

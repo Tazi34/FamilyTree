@@ -70,6 +70,7 @@ const PicturePickerDialog = ({ open, onClose, onPickPicture }: Props) => {
           <img src={picturePreview ?? ""} className={classes.preview} />
         </div>
         <DropzoneArea
+          maxFileSize={5 * 1024 * 1024}
           acceptedFiles={["image/*"]}
           dropzoneText={"Drag and drop or click"}
           filesLimit={1}

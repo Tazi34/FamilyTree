@@ -1,4 +1,4 @@
-import { List, makeStyles } from "@material-ui/core";
+import { Divider, List, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Skeleton from "@material-ui/lab/Skeleton";
 import * as React from "react";
@@ -28,7 +28,14 @@ const TreesList = ({ trees, onTreeSelect, loading }: TreeListProps) => {
     <List className={classes.root}>
       {!loading &&
         trees.map((tree) => (
-          <TreeCard key={tree.treeId} onTreeSelect={onTreeSelect} tree={tree} />
+          <div>
+            <TreeCard
+              key={tree.treeId}
+              onTreeSelect={onTreeSelect}
+              tree={tree}
+            />
+            <Divider />
+          </div>
         ))}
       {loading &&
         [...Array(6)]

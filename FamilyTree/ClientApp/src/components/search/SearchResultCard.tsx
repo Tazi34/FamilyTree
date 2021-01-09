@@ -1,24 +1,23 @@
 import {
   Avatar,
-  ButtonBase,
-  Icon,
+  Divider,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
   makeStyles,
-  Typography,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import * as React from "react";
-import AccountTreeOutlinedIcon from "@material-ui/icons/AccountTreeOutlined";
 import { AccountCircle } from "@material-ui/icons";
+import AccountTreeOutlinedIcon from "@material-ui/icons/AccountTreeOutlined";
+import * as React from "react";
 const useStyles = makeStyles((theme: Theme) => ({
   card: {
     width: "100%",
     padding: 15,
-    marginBottom: 5,
+
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-start",
-    borderBottom: "1px solid",
-    borderColor: theme.palette.primary.dark,
   },
   image: {
     marginRight: 8,
@@ -44,24 +43,26 @@ const SearchResultCard = ({
   entityId,
 }: Props) => {
   const classes = useStyles();
+
   return (
-    <ButtonBase
+    <ListItem
+      button
       className={classes.card}
       onClick={() => {
         onSelect(entityId);
       }}
     >
-      <Avatar className={classes.image} src={pictureUrl ?? ""}>
-        {user ? <AccountCircle /> : <AccountTreeOutlinedIcon />}
-      </Avatar>
+      <ListItemAvatar>
+        <Avatar className={classes.image} src={pictureUrl ?? ""}>
+          {user ? <AccountCircle /> : <AccountTreeOutlinedIcon />}
+        </Avatar>
+      </ListItemAvatar>
 
-      <div className={classes.textContainer}>
-        <Typography variant="body1">{text}</Typography>
-        <Typography variant="body2" align="left">
-          {user ? "User" : "Tree"}
-        </Typography>
-      </div>
-    </ButtonBase>
+      <ListItemText
+        primary={text}
+        secondary={user ? "User" : "Tree"}
+      ></ListItemText>
+    </ListItem>
   );
 };
 

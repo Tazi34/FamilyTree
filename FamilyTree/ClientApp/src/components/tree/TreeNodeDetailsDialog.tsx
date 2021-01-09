@@ -30,6 +30,7 @@ import { useThunkDispatch } from "../..";
 import { uploadTreeNodePictureRequest } from "./reducer/updateNodes/setNodePicture";
 import { updateTreeNode } from "./reducer/updateNodes/updateNode";
 import { UpdateNodeRequestData } from "./API/updateNode/updateNodeRequest";
+import ErrorValidationWrapper from "../UI/ErrorValidationWrapper";
 const imgSize = 128;
 const useStyles = makeStyles((theme: Theme) => ({
   personDialog: {
@@ -43,13 +44,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   descriptionSection: {
     padding: 5,
-    display: "flex",
-    flexDirection: "column",
+    marginTop: 10,
     minHeight: 200,
+    height: 1,
   },
   description: {
-    maxHeight: 300,
-    overflowY: "auto",
+    width: "100%",
+    minHeight: "100%",
   },
   contentSection: { display: "flex" },
   information: {
@@ -160,6 +161,7 @@ const TreeNodeDetailsDialog = ({
         if (response.error) {
           //TODO ERROR
         } else {
+          console.log(response);
           setPictureUrl(response.payload.data.pictureUrl);
           setPictureDialog(false);
         }
@@ -173,34 +175,16 @@ const TreeNodeDetailsDialog = ({
   const initialDate = format(new Date(details.birthday), "d.MM.yyyy");
 
   //TODO brak gender
+  console.log(details);
 
-  const isMale = false;
-  const genderIcon = isMale ? "fas fa-mars" : "fas fa-venus";
-  const description = `Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo,
-            ex voluptatum! Vitae expedita, iste cum, consequuntur repellendus
-            facilis sequi quo pariatur quae distinctio soluta modi eum amet.
-            Deserunt, quas doloremque.`;
+  const genderIcon =
+    details.sex === "Male"
+      ? "fas fa-mars"
+      : details.sex === "Female"
+      ? "fas fa-venus"
+      : null;
+  console.log(details);
+  const description = details.description;
   return (
     <Dialog open={open} onClose={onClose}>
       <PicturePickerDialog
@@ -211,6 +195,10 @@ const TreeNodeDetailsDialog = ({
       <Formik
         initialValues={details}
         onSubmit={(values: FormProps, { resetForm }) => {
+          console.log(values.birthday);
+          var date = new Date(values.birthday);
+          date.setHours(5);
+
           const data: UpdateNodeRequestData = {
             ...values,
             nodeId: node.id as number,
@@ -220,6 +208,8 @@ const TreeNodeDetailsDialog = ({
             partners: node.partners as number[],
             userId: node.userId as any,
             treeId: node.treeId,
+            sex: values.sex,
+            birthday: date.toISOString(),
           };
           dispatch(updateTreeNode(data)).then((resp: any) => {
             if (resp.error) {
@@ -236,6 +226,8 @@ const TreeNodeDetailsDialog = ({
           handleChange,
           handleSubmit,
           values,
+          errors,
+          touched,
           setFieldValue,
         }) => {
           const change = (name: string, e: any) => {
@@ -268,12 +260,17 @@ const TreeNodeDetailsDialog = ({
                   </div>
                   <div className={classes.information}>
                     {editMode && (
-                      <TextField
-                        name="name"
-                        label="Name"
-                        value={values.name}
-                        onChange={change.bind(null, "name")}
-                      ></TextField>
+                      <ErrorValidationWrapper
+                        error={errors.name}
+                        touched={touched.name}
+                      >
+                        <TextField
+                          name="name"
+                          label="Name"
+                          value={values.name}
+                          onChange={change.bind(null, "name")}
+                        ></TextField>
+                      </ErrorValidationWrapper>
                     )}
                     {editMode ? (
                       <TextField
@@ -296,12 +293,12 @@ const TreeNodeDetailsDialog = ({
                         format="dd.MM.yyyy"
                         value={values.birthday}
                         onChange={(_, value) => {
+                          console.log(value);
                           var date = parse(
                             value as string,
                             "dd.MM.yyyy",
                             new Date()
                           );
-
                           setFieldValue("birthday", date);
                         }}
                       />
@@ -324,7 +321,9 @@ const TreeNodeDetailsDialog = ({
                         </Select>
                       </FormControl>
                     ) : (
-                      <i className={`${genderIcon} ${classes.genderIcon}`} />
+                      genderIcon && (
+                        <i className={`${genderIcon} ${classes.genderIcon}`} />
+                      )
                     )}
                   </div>
                   <div className={classes.actionsSection}>
@@ -337,19 +336,14 @@ const TreeNodeDetailsDialog = ({
                 </div>
                 <Divider className={classes.divider} />
                 <div className={classes.descriptionSection}>
-                  {editMode ? (
-                    <TextField
-                      multiline
-                      name="description"
-                      onChange={change.bind(null, "description")}
-                      value={values.description}
-                      className={classes.description}
-                    ></TextField>
-                  ) : (
-                    <Typography className={classes.description}>
-                      {description}
-                    </Typography>
-                  )}
+                  <TextField
+                    InputProps={{ readOnly: !editMode }}
+                    multiline
+                    name="description"
+                    onChange={change.bind(null, "description")}
+                    value={values.description}
+                    className={classes.description}
+                  />
 
                   <Divider className={classes.bottomDivider} />
                 </div>

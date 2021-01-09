@@ -1,8 +1,15 @@
-import { Button, ListItem, makeStyles } from "@material-ui/core";
+import {
+  Button,
+  IconButton,
+  ListItem,
+  ListItemText,
+  makeStyles,
+} from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { Invitation } from "../../model/Invitation";
-
+import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
+import HighlightOffRoundedIcon from "@material-ui/icons/HighlightOffRounded";
 const useStyles = makeStyles((theme: Theme) => ({}));
 type Props = {
   invitation: Invitation;
@@ -18,10 +25,15 @@ const InvitationCard = ({ invitation, onAccept, onReject }: Props) => {
     onReject(invitation.invitationId);
   };
   return (
-    <ListItem>
-      {invitation.treeName}
-      <Button onClick={handleAccept}>Accept</Button>
-      <Button onClick={handleReject}>Reject</Button>
+    <ListItem dense>
+      <ListItemText>{invitation.treeName}</ListItemText>
+
+      <IconButton>
+        <CheckCircleOutlineIcon color="primary" onClick={handleAccept} />
+      </IconButton>
+      <IconButton>
+        <HighlightOffRoundedIcon color="error" onClick={handleReject} />
+      </IconButton>
     </ListItem>
   );
 };

@@ -16,15 +16,17 @@ import * as React from "react";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
 import { formatDate, formatInitials } from "../../helpers/formatters";
 import { areEqualShallow } from "../../helpers/helpers";
+import NodeActionsMenu from "../nodeActionsMenu/NodeActionsMenu";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import HiddenPersonNode from "./HiddenPersonNode";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import { ConnectionMode } from "./TreeRenderer";
-
+import ChildFriendlyIcon from "@material-ui/icons/ChildFriendly";
+import FaceIcon from "@material-ui/icons/Face";
 const imageSize = 57;
 const dividerScale = 0.25;
-const addIconSize = 30;
+const addIconSize = 25;
 const useStyles = makeStyles<any, any>((theme: Theme) => ({
   personRoot: {
     position: "absolute",
@@ -52,6 +54,9 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
           : theme.palette.background.paper;
       }
     },
+  },
+  iconContainer: {
+    padding: 4,
   },
   buttonBase: {
     padding: 8,
@@ -98,9 +103,16 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
     background: "white",
     transform: `translateY(-${addIconSize / 2}px)`,
   },
+  menu: {
+    position: "absolute",
+    background: "red",
+    height: 40,
+    width: 50,
+    bottom: "100%",
+  },
   addIconSvg: {
     fontSize: addIconSize,
-    color: theme.palette.primary.light,
+    color: ({ hasUser }) => (hasUser ? "#f4f4f4" : theme.palette.primary.light),
 
     padding: 0,
   },
@@ -162,7 +174,9 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
     alignSelf: "flex-end",
     width: "100%",
     display: "flex",
-    flexWrap: "wrap",
+    justifyContent: "space-around",
+    padding: 10,
+    marginTop: 50,
   },
   visible: {
     visibility: "visible",
@@ -191,6 +205,7 @@ type Props = {
   onConnectStart: (node: PersonNode, mode: ConnectionMode) => void;
   onAddActionMenuClick: (node: PersonNode) => void;
   onDisconnectNode: (node: PersonNode) => void;
+  onNodeVisiblityChange: (nodeId: number) => void;
 
   person: PersonNode;
   disabled: boolean;
@@ -199,7 +214,7 @@ type Props = {
 
 const PersonNodeCard = ({
   person,
-
+  onNodeVisiblityChange,
   onNodeDelete,
   onNodeSelect,
   onConnectStart,
@@ -209,6 +224,7 @@ const PersonNodeCard = ({
 }: Props) => {
   const elementId = "n" + person.id;
   const [animate, setAnimate] = React.useState(false);
+
   React.useEffect(() => {
     setAnimate(!animate);
   }, [person.hidden]);
@@ -229,6 +245,9 @@ const PersonNodeCard = ({
   const handleStartConnect = (mode: ConnectionMode) => {
     onConnectStart(person, mode);
   };
+  const handleNodeVisibilityChange = () => {
+    onNodeVisiblityChange(person.id as number);
+  };
   const details = person.personDetails;
 
   let displayDate = formatDate(details.birthday);
@@ -247,39 +266,17 @@ const PersonNodeCard = ({
         picture={details.pictureUrl}
         initials={initials}
         hidden={!hidden}
+        onClick={handleNodeVisibilityChange}
       />
 
-      <Zoom
-        timeout={1000}
-        in={!hidden}
-        onExit={() => {
-          console.log("exit");
-        }}
-        style={{ transitionDelay: "100ms" }}
-      >
-        <div style={hidden ? hiddenStyle : visibleStyle}>
+      <Zoom timeout={1000} in={!hidden} style={{ transitionDelay: "100ms" }}>
+        <div>
           <Paper
             id={elementId}
             component={"span"}
             className={`${classes.personRoot}`}
             onMouseUp={handleNodeSelect}
           >
-            <div className={classes.addButtonContainer}>
-              {/* {canAddParent && (
-          <Tooltip title="Add parent" placement="top">
-            <IconButton
-              disabled={disabled}
-              id="add-icon"
-              className={`${classes.addIcon}`}
-              onClick={handleParentAdd}
-              //onClick={() => onAddActionMenuClick(person)}
-              onMouseUp={preventMouseUp}
-            >
-              <AddCircleIcon className={classes.addIconSvg} />
-            </IconButton>
-          </Tooltip>
-        )} */}
-            </div>
             <div className={classes.overflowHidden}>
               <div className={classes.background}>
                 <div className={classes.backgroundColorTheme}></div>
@@ -299,16 +296,15 @@ const PersonNodeCard = ({
                   title={details.name}
                   src={details.pictureUrl}
                   className={classes.picture}
-                >
-                  {initials}
-                </Avatar>
+                  alt={initials}
+                ></Avatar>
 
                 <Typography
                   align="center"
                   variant="subtitle1"
                   className={classes.nameSection}
                 >
-                  {person.id} {details.name} {details.surname}
+                  {details.name} {details.surname}
                 </Typography>
                 <Typography
                   align="center"
@@ -322,51 +318,61 @@ const PersonNodeCard = ({
             <div className={classes.filler} />
             {canEdit && (
               <div className={classes.actions}>
-                <Tooltip title="Delete node">
-                  <IconButton
-                    disabled={disabled}
-                    onClick={handleNodeDelete}
-                    onMouseUp={preventMouseUp}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
                 <Tooltip title="Connect as child">
                   <IconButton
+                    style={{ padding: 4 }}
+                    className={classes.actionContainer}
                     disabled={disabled}
                     onClick={() => handleStartConnect("AsChild")}
                     onMouseUp={preventMouseUp}
                   >
-                    <LinkIcon className={classes.addIconSvg} />
+                    <ChildFriendlyIcon className={classes.addIconSvg} />
                   </IconButton>
                 </Tooltip>
 
                 <Tooltip title="Connect as partner">
                   <IconButton
+                    style={{ padding: 4 }}
+                    className={classes.actionContainer}
                     disabled={disabled}
                     onClick={() => handleStartConnect("AsPartner")}
                     onMouseUp={preventMouseUp}
                   >
-                    <LinkIcon className={classes.addIconSvg} />
+                    <i className={classes.addIconSvg + " fas fa-heart"}></i>
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Connect as parent">
                   <IconButton
+                    style={{ padding: 4 }}
+                    className={classes.actionContainer}
                     disabled={disabled}
                     onClick={() => handleStartConnect("AsParent")}
                     onMouseUp={preventMouseUp}
                   >
-                    <LinkIcon className={classes.addIconSvg} />
+                    <FaceIcon className={classes.addIconSvg} />
                   </IconButton>
                 </Tooltip>
 
-                <Tooltip title="Disconnect">
+                <Tooltip title="Remove links">
                   <IconButton
+                    style={{ padding: 4 }}
+                    className={classes.actionContainer}
                     disabled={disabled}
                     onClick={() => onDisconnectNode(person)}
                     onMouseUp={preventMouseUp}
                   >
-                    <LinkIcon className={classes.addIconSvg} />
+                    <i className={classes.addIconSvg + " fas fa-unlink"}></i>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete node">
+                  <IconButton
+                    style={{ padding: 4 }}
+                    className={classes.actionContainer}
+                    disabled={disabled}
+                    onClick={handleNodeDelete}
+                    onMouseUp={preventMouseUp}
+                  >
+                    <DeleteIcon />
                   </IconButton>
                 </Tooltip>
               </div>

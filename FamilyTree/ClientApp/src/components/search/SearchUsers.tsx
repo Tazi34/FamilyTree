@@ -18,7 +18,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     position: "absolute",
   },
 }));
-const WAIT_INTERVAL = 1000;
+const WAIT_INTERVAL = 500;
 type Props = {
   onSelectUser: (id: number) => any;
 };

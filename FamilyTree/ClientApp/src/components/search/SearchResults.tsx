@@ -1,4 +1,4 @@
-import { makeStyles, Paper } from "@material-ui/core";
+import { Divider, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import EmptyResults from "./EmptyResults";
@@ -23,24 +23,30 @@ const SearchResults = ({ results, onUserSelect, onTreeSelect }: Props) => {
   return (
     <Paper>
       {results.trees.slice(0, firstNResults).map((tree) => (
-        <SearchResultCard
-          key={tree.treeId}
-          entityId={tree.treeId}
-          text={tree.name}
-          pictureUrl={null}
-          user={false}
-          onSelect={onTreeSelect}
-        />
+        <div>
+          <Divider />
+          <SearchResultCard
+            key={tree.treeId}
+            entityId={tree.treeId}
+            text={tree.name}
+            pictureUrl={null}
+            user={false}
+            onSelect={onTreeSelect}
+          />
+        </div>
       ))}
       {results.users.slice(0, firstNResults).map((user) => (
-        <SearchResultCard
-          key={user.userId}
-          entityId={user.userId}
-          onSelect={onUserSelect}
-          text={`${user.name} ${user.surname}`}
-          pictureUrl={null}
-          user={true}
-        />
+        <div>
+          <Divider />
+          <SearchResultCard
+            key={user.userId}
+            entityId={user.userId}
+            onSelect={onUserSelect}
+            text={`${user.name} ${user.surname}`}
+            pictureUrl={user.pictureUrl}
+            user={true}
+          />
+        </div>
       ))}
     </Paper>
   );

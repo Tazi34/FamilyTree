@@ -18,6 +18,7 @@ import {
   changeTreeName,
   changeTreeVisibility,
   getTree,
+  exportTree,
 } from "./reducer/treeReducer";
 import { addChild } from "./reducer/updateNodes/addChild";
 import { addParentAsync2 } from "./reducer/updateNodes/addParent";
@@ -64,7 +65,7 @@ const styles = (theme: Theme) => ({
   treeBackground: {
     width: "100%",
     height: "100%",
-    background: "radial-gradient(#fce9ec,#fce9ec)",
+    background: "#C7C7BB",
     display: "flex",
     flexDirection: "column",
   } as any,
@@ -294,6 +295,9 @@ class Tree extends React.Component<any, TreeContainerState> {
     };
     this.props.connectNodes(data);
   };
+  handleExportTree = (treeId: number) => {
+    this.props.exportTree({ treeId });
+  };
   handleConnectAsPartner = (firstPartner: number, secondPartner: number) => {
     const data: ConnectPartnersRequestData = {
       firstPartnerId: firstPartner,
@@ -317,14 +321,12 @@ class Tree extends React.Component<any, TreeContainerState> {
     const pan = this.panRef?.current;
     if (pan) {
       const scale = pan.state.scale;
-      console.log(
-        `Wymiary canvasu: ${this.state.canvasWidth} ${this.state.canvasHeight}`
-      );
-      pan.setState({
-        x: -family.x * scale + this.state.canvasWidth / 2,
-        y: -family.y * scale + this.state.canvasHeight / 2,
-        scale: scale,
-      });
+
+      // pan.setState({
+      //   x: -family.x * scale + this.state.canvasWidth / 2,
+      //   y: -family.y * scale + this.state.canvasHeight / 2,
+      //   scale: scale,
+      // });
     }
 
     // this.panRef?.current?.moveByRatio(
@@ -350,6 +352,7 @@ class Tree extends React.Component<any, TreeContainerState> {
           <div className={classes.relative}>
             <div className={classes.treeInformationPanel}>
               <TreeInformationPanel
+                onExportTree={this.handleExportTree}
                 treeInformation={treeInformation}
                 onTreeNameChange={this.handleTreeNameChange}
                 onTreeVisibilityChange={this.handleTreeVisibilityChange}
@@ -367,8 +370,6 @@ class Tree extends React.Component<any, TreeContainerState> {
           >
             <PanZoom
               ref={this.panRef}
-              maxZoom={this.state.maxScale}
-              minZoom={0.3}
               style={{ width: "100%", height: "100%", overflow: "hidden" }}
               onStateChange={(e: any) => {
                 console.log(e);
@@ -426,6 +427,7 @@ const mapDispatch = {
   connectPartners,
   hideBranch,
   requestDisconnectNode,
+  exportTree,
 };
 const mapState = (state: ApplicationState) => ({
   isLoading: state.tree.isLoading,

@@ -1,10 +1,12 @@
 export const localURL = "http://localhost:44377";
-export const backendURL = "https://familytree.azurewebsites.net";
+export const backendURL = process.env.REACT_APP_BACKEND_API_BASE_URL;
 export const baseURL = backendURL; //
 
 export const PROFILE_API_URL = `${baseURL}/editUsers`;
 export const TREE_API_URL = `${baseURL}/tree`;
 export const CHAT_API_URL = `${baseURL}/chat`;
+export const GEDCOME_API_URL = `${baseURL}/gedcom`;
+
 export const INVITATIONS_API_URL = `${baseURL}/invitations`;
 export const AUTHENTICATION_API_URL = `${baseURL}/users`;
 export const GOOGLE_AUTHENTICATION_API_URL = `${baseURL}/users/google`;

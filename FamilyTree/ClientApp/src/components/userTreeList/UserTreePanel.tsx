@@ -33,7 +33,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     flex: 0.2,
   },
   createButton: {
-    margin: 10,
     maxHeight: 40,
   },
   treeList: {
@@ -75,13 +74,13 @@ const UserTreePanel = ({
     <Box display="flex" flexDirection="column" className={classes.container}>
       {/* <div className={classes.flexGrow}></div> */}
       {!loading && isOwner && (
-        <div>
+        <div style={{ width: "100%" }}>
           <Button
             variant="contained"
             color="primary"
             className={classes.createButton}
-            size={"small"}
             onClick={handleClickOpen}
+            fullWidth
           >
             Create
           </Button>

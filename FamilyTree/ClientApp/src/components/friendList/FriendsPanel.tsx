@@ -9,6 +9,8 @@ import {
   Menu,
   Dialog,
   Badge,
+  Slide,
+  ClickAwayListener,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
@@ -27,6 +29,8 @@ import InvitationCard from "../invitation/InvitationCard";
 import { getUser } from "../loginPage/authenticationReducer";
 import { useHistory } from "react-router";
 import { TREE_PAGE_URI } from "../../applicationRouting";
+import InvitationsList from "../invitation/InvitationsList";
+import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -38,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     right: 10,
     bottom: 0,
     position: "fixed",
+    zIndex: 898888888888888,
   },
   spaceFiller: {
     flex: 0.5,
@@ -51,9 +56,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   invitationsAbsolute: {
     position: "absolute",
-    width: 500,
-    height: 300,
-    background: "red",
+    marginBottom: 10,
+    right: 0,
     bottom: "100%",
   },
 }));
@@ -68,7 +72,7 @@ const FriendsPanel = (props: any) => {
   const history = useHistory();
   const recordButtonPosition = (event: any) => {
     setAnchorEl(event.currentTarget);
-    setShowInvitations(true);
+    setShowInvitations(!showInvitations);
   };
   const invitations = useSelector((state: ApplicationState) =>
     selectInvitations(state.invitations.invitations)
@@ -95,34 +99,40 @@ const FriendsPanel = (props: any) => {
           justifyContent="center"
           className={classes.invitationIconContainer}
         >
-          <IconButton onClick={recordButtonPosition}>
-            <Badge
-              invisible={!invitations || invitations.length == 0}
-              badgeContent={invitations.length}
-              color="primary"
-            >
-              <InvitationIcon
-                className={classes.invitationIcon}
-              ></InvitationIcon>
-            </Badge>
-          </IconButton>
+          <TooltipMouseFollow title="Tree invitations">
+            <IconButton onClick={recordButtonPosition}>
+              <Badge
+                invisible={!invitations || invitations.length == 0}
+                badgeContent={invitations.length}
+                color="primary"
+              >
+                <InvitationIcon
+                  className={classes.invitationIcon}
+                ></InvitationIcon>
+              </Badge>
+            </IconButton>
+          </TooltipMouseFollow>
         </Box>
 
         <Divider></Divider>
         <LatestChatsProvider></LatestChatsProvider>
+
+        <Slide in={showInvitations} timeout={1000} direction={"left"}>
+          <div className={classes.invitationsAbsolute}>
+            <ClickAwayListener
+              onClickAway={() => {
+                if (showInvitations) setShowInvitations(false);
+              }}
+            >
+              <InvitationsList
+                invitations={invitations}
+                onAccept={handleAcceptInvitation}
+                onReject={handleRejectInvitation}
+              />
+            </ClickAwayListener>
+          </div>
+        </Slide>
       </Paper>
-      <Dialog open={showInvitations} onClose={() => setShowInvitations(false)}>
-        <div>
-          {invitations.map((inv) => (
-            <InvitationCard
-              onAccept={handleAcceptInvitation}
-              onReject={handleRejectInvitation}
-              key={inv.invitationId}
-              invitation={inv}
-            />
-          ))}
-        </div>
-      </Dialog>
     </Box>
   );
 };

@@ -1,16 +1,13 @@
 import { Fade } from "@material-ui/core";
 import { EntityId } from "@reduxjs/toolkit";
 import Axios from "axios";
-import React, { Profiler } from "react";
-import Draggable from "react-draggable";
+import React from "react";
 import { connect } from "react-redux";
 import { ApplicationState } from "../../helpers";
 import { baseURL } from "../../helpers/apiHelpers";
-import CreateNodeDialog from "../addNodeActionDialog/CreateNodeDialog";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import Families from "./Families";
 import FollowableLink from "./FollowableLink";
-import { isGraphCyclic } from "./graphAlgorithms/cycleDetection";
 import { createPath } from "./helpers/linkCreationHelpers";
 import { LinkLoaded } from "./LinkComponent";
 import Links from "./Links";
@@ -27,14 +24,14 @@ import {
   selectAllPersonNodes,
   TreeState,
 } from "./reducer/treeReducer";
-import { connectNodes } from "./reducer/updateNodes/connectChildWithNodes";
+import { changeNodeVisibility } from "./reducer/updateNodes/changeNodeVisibility";
+
 import { requestDeleteNode } from "./reducer/updateNodes/deleteNode";
 import { moveNode, moveNodeThunk } from "./reducer/updateNodes/moveNode";
 import {
   getIncomingLinks,
   getNodeById,
   getOutboundLinks,
-  randomFamilyId,
 } from "./reducer/utils/getOutboundLinks";
 import TreeNodeDetailsDialog from "./TreeNodeDetailsDialog";
 import "./treeRenderer.css";
@@ -305,6 +302,9 @@ class TreeRenderer extends React.Component<Props, State, any> {
   traverseTree = (node: Node, callback: Function) => {
     //traverseRec(node, callback, 0, (id: number) => getNodeById(treeState, id));
   };
+  handleNodeVisibilityChange = (node: PersonNode) => {
+    this.props.onNodeVisiblityChange(node);
+  };
 
   addFirstTargetToConnection = (node: PersonNode) => {
     this.setState({
@@ -408,9 +408,8 @@ class TreeRenderer extends React.Component<Props, State, any> {
     this.props.onChildAdd(data, firstParent, secondParent);
   };
   render = () => {
-    const { nodeDialog, addActionDialog } = this.state;
+    const { nodeDialog } = this.state;
 
-    console.log("RENDER TREE RENDERER ");
     const loadedLinks = this.props.links
       .map((link: Link) => linkLoader(this.props.treeState, link))
       .filter((a: any) => a) as LinkLoaded[];
@@ -420,6 +419,7 @@ class TreeRenderer extends React.Component<Props, State, any> {
         <div>
           {/* <div> */}
           <NodesList
+            onNodeVisiblityChange={this.props.changeNodeVisibility}
             onDisconnectNode={this.props.onDisconnectNode}
             // positionX={this.props.positionX}
             // positionY={this.props.positionY}
@@ -484,6 +484,7 @@ const mapDispatch = {
   // changeTreeVisibility,
   // addEmptyNode: addNode,
   // addParentAsync2,
+  changeNodeVisibility,
   requestDeleteNode,
   moveNodeThunk,
   moveNode,

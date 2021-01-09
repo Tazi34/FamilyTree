@@ -41,14 +41,14 @@ describe("delete-node", () => {
   });
 
   it("given already opened chat should close it", () => {
-    store.dispatch(tryOpenChat({ chatId: 1, open: true }));
+    store.dispatch(tryOpenChat({ chatId: 1, doOpen: true }));
 
     var actions = store.getActions();
 
     expect(actions[0].type).toBe(closeChat.type);
   });
   it("given not already opened chat should open it", () => {
-    store.dispatch(tryOpenChat({ chatId: 2, open: true }));
+    store.dispatch(tryOpenChat({ chatId: 2, doOpen: true }));
 
     var actions = store.getActions();
 

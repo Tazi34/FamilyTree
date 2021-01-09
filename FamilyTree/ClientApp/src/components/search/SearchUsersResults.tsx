@@ -33,7 +33,7 @@ const SearchUsersResults = ({ results, onUserSelect }: Props) => {
           entityId={user.userId}
           onSelect={onUserSelect}
           text={`${user.name} ${user.surname}`}
-          pictureUrl={null}
+          pictureUrl={user.pictureUrl}
           user={true}
         />
       ))}

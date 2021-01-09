@@ -17,14 +17,7 @@ type Props = {
   familyToChild: boolean;
 };
 const LinkComponent = ({ source, target, linkId, familyToChild }: Props) => {
-  return (
-    <DrawableLink
-      id={linkId}
-      markerMid={familyToChild ? "url(#arrowEnd)" : ""}
-      source={source}
-      target={target}
-    />
-  );
+  return <DrawableLink id={linkId} source={source} target={target} />;
 };
 
 const areEqual = (prev: Props, newProps: Props) => {

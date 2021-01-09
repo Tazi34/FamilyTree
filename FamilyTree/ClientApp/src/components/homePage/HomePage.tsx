@@ -14,12 +14,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: "0 auto",
     width: "100%",
     height: "100%",
-    // backgroundImage:"url(/background.jpg)"
-    // backgroundSize: "cover",
-    // backgroundPosition: "35% center",
-    // backgroundRepeat: "no-repeat",
-    // opacity: 2,
-    // backgroundAttachment: "fixed",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
   },
   bannerTitle: {
     fontSize: 65,
@@ -46,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100%",
   },
   main: {
-    marginTop: "30vh",
+    marginTop: "-5vh",
   },
   welcomePanel: {
     [theme.breakpoints.down("md")]: {

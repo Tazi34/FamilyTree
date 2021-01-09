@@ -1,3 +1,4 @@
+import { ExportTreeRequestData } from "./../API/exportTree/requestExportTree";
 import {
   createAction,
   createAsyncThunk,
@@ -22,6 +23,7 @@ import {
   CreateNodeRequestData,
   CreateNodeResponse,
 } from "../API/createNode/createNodeRequest";
+import { ExportTreeResponse } from "../API/exportTree/requestExportTree";
 import { GetTreeResponse } from "../API/getTree/getTreeRequest";
 import { treeAPI } from "../API/treeAPI";
 import { treeNodeMapper } from "../API/utils/NodeMapper";
@@ -52,6 +54,7 @@ import {
   getOutboundLinks,
   randomFamilyId,
 } from "./utils/getOutboundLinks";
+import { changeNodeVisibility } from "./updateNodes/changeNodeVisibility";
 
 const d3_base = require("d3");
 const d3_dag = require("d3-dag");
@@ -229,9 +232,26 @@ export const changeTreeVisibility = createAsyncThunk<
   return await treeAPI.changeTreeVisibilityRequest(modifiedTreeData);
 });
 
+export const exportTree = createAsyncThunk<
+  AxiosResponse<ExportTreeResponse>,
+  ExportTreeRequestData
+>(`tree/export`, async (data) => {
+  return await treeAPI.requestExportTree(data);
+});
+
 //REDUCER
 export const treeReducer = createReducer(treeInitialState, (builder) => {
   builder
+    .addCase(changeNodeVisibility, (state, action) => {
+      const node = selectPersonNodeLocal(state.nodes, action.payload);
+      const update: Update<PersonNode> = {
+        id: action.payload,
+        changes: {
+          hidden: !node?.hidden,
+        },
+      };
+      personNodesAdapter.updateOne(state.nodes, update);
+    })
     .addCase(removeNodeFromTree, (state, action) => {
       const nodeId = action.payload;
       const node = selectPersonNodeLocal(state.nodes, nodeId);

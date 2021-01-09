@@ -1,30 +1,38 @@
 import {
-  Box,
   Button,
+  CardHeader,
   Divider,
   makeStyles,
-  Paper,
   TextField,
+  Typography,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
+import axios from "axios";
 import { convertFromRaw, convertToRaw, EditorState } from "draft-js";
+import { Formik } from "formik";
 import * as React from "react";
 import { Editor } from "react-draft-wysiwyg";
 import "../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { Post } from "../../model/Post";
-import { Formik } from "formik";
-import axios from "axios";
 import { baseURL } from "../../helpers/apiHelpers";
+import { Post } from "../../model/Post";
+import createPostValidation from "../blog/validation/createPostValidation";
+import ErrorValidationWrapper from "../UI/ErrorValidationWrapper";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: "100%",
-    height: "100%",
     margin: "0 auto",
     padding: 30,
+    minHeight: "100%",
+
+    background: theme.palette.background.paper,
   },
   title: {
+    minWidth: 300,
     marginBottom: 10,
+  },
+  submitButton: {
+    marginTop: 5,
   },
 }));
 
@@ -67,12 +75,20 @@ const PostForm = ({ post, onSubmit }: Props) => {
     <div className={classes.root}>
       <Formik
         initialValues={{ title: post?.title ?? "" }}
+        validationSchema={createPostValidation}
         onSubmit={(values, { resetForm }) => {
           const raw = convertToRaw(editorState.getCurrentContent());
           onSubmit(JSON.stringify(raw), values.title);
         }}
       >
-        {({ setFieldTouched, handleChange, handleSubmit, values }) => {
+        {({
+          setFieldTouched,
+          handleChange,
+          handleSubmit,
+          errors,
+          touched,
+          values,
+        }) => {
           const change = (name: string, e: any) => {
             e.persist();
             handleChange(e);
@@ -80,18 +96,26 @@ const PostForm = ({ post, onSubmit }: Props) => {
           };
           return (
             <form onSubmit={handleSubmit}>
-              <TextField
-                className={classes.title}
-                placeholder="Post title"
-                variant="outlined"
-                label="Title"
-                name="title"
-                onChange={change.bind(null, "title")}
-                value={values.title}
-              />
+              <CardHeader variant="h6">Create post</CardHeader>
+              <ErrorValidationWrapper
+                error={errors.title}
+                touched={touched.title}
+              >
+                <TextField
+                  className={classes.title}
+                  placeholder="Post title"
+                  variant="outlined"
+                  label="Post title"
+                  name="title"
+                  onChange={change.bind(null, "title")}
+                  value={values.title}
+                />
+              </ErrorValidationWrapper>
 
               <Divider />
               <Editor
+                wrapperStyle={{ border: "1px solid #E8E8E8" }}
+                toolbarStyle={{ border: "1px solid #E8E8E8" }}
                 toolbar={{
                   image: {
                     uploadEnabled: true,
@@ -105,7 +129,14 @@ const PostForm = ({ post, onSubmit }: Props) => {
                 editorClassName="postFormTextEditor"
                 onEditorStateChange={setEditorState}
               />
-              <Button type="submit">Submit</Button>
+              <Button
+                className={classes.submitButton}
+                type="submit"
+                color="primary"
+                variant="contained"
+              >
+                Submit
+              </Button>
             </form>
           );
         }}

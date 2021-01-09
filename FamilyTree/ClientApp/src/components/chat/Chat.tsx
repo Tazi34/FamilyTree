@@ -3,11 +3,13 @@ import {
   Box,
   Button,
   ButtonBase,
+  CardActionArea,
   Divider,
   IconButton,
   Input,
   makeStyles,
   Paper,
+  Slide,
   TextField,
   Typography,
 } from "@material-ui/core";
@@ -22,6 +24,8 @@ import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import ChatMessage from "./ChatMessage";
 import { Formik } from "formik";
 import { formatInitials } from "../../helpers/formatters";
+import { useHistory } from "react-router";
+import { BLOG_PAGE_URI } from "../../applicationRouting";
 const useStyles = makeStyles((theme: Theme) => ({
   chatTab: {
     position: "relative",
@@ -120,8 +124,13 @@ type Props = {
 };
 const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
   const classes = useStyles();
+  const [open, setOpen] = React.useState(true);
 
-  const handleChatClose = () => {
+  const history = useHistory();
+  const handleChatClose = (e: any) => {
+    e.stopPropagation();
+    setOpen(false);
+
     onChatClose(chat.userId);
   };
   const scrollRef = useRef(null);
@@ -131,105 +140,116 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
     element.scrollTop = element.scrollHeight;
   }, [chat]);
 
-  const hasPicture = chat.pictureUrl && chat.pictureUrl.length > 0;
+  const redirectToUserProfile = () => {
+    history.push(`${BLOG_PAGE_URI}/${chat.userId}`);
+  };
   return (
-    <div className={classes.chatTab}>
-      <Box
-        border={1}
-        borderColor="primary.dark"
-        component={Paper}
-        className={classes.chatWindow}
-      >
-        <div className={classes.chat}>
-          <Box component={ButtonBase} className={classes.chatTopBar}>
-            <div className={classes.chatTopBarTitle}>
-              <Avatar src={chat.pictureUrl} className={classes.profilePicture}>
-                {formatInitials(chat.name, chat.surname)}
-              </Avatar>
-
-              <div className={classes.titleContainer}>
-                <Typography variant="h6">
-                  {chat.name} {chat.surname}
-                </Typography>
-              </div>
-            </div>
-            <div className={classes.chatTopBarButtons}>
-              <IconButton
-                size="small"
-                className={classes.iconButton}
-                onClick={handleChatClose}
-              >
-                <CloseIcon />
-              </IconButton>
-            </div>
-          </Box>
-          <Divider />
-          <div className={classes.chatBody}>
-            <div className={classes.chatTextArea} ref={scrollRef}>
-              {chat.messages.map((message, index) => (
-                <ChatMessage
-                  key={index}
-                  message={message}
-                  receiverId={chat.userId}
-                />
-              ))}
-            </div>
-            <Divider />
-
-            <Formik
-              initialValues={{ message: "" }}
-              onSubmit={(values, { resetForm }) => {
-                onMessageSend(chat.userId, values.message);
-                resetForm();
-              }}
+    <Slide in={open} direction="up" timeout={1000}>
+      <div className={classes.chatTab}>
+        <Box
+          border={1}
+          borderColor="primary.dark"
+          component={Paper}
+          className={classes.chatWindow}
+        >
+          <div className={classes.chat}>
+            <Box
+              component={CardActionArea}
+              className={classes.chatTopBar}
+              onClick={redirectToUserProfile}
             >
-              {({ setFieldTouched, handleChange, handleSubmit, values }) => {
-                const change = (name: string, e: any) => {
-                  console.log(e);
-                  console.log(e.nativeEvent.keyCode);
-                  e.persist();
-                  handleChange(e);
-                  setFieldTouched(name, true, false);
-                };
-                return (
-                  <form className={classes.bottomChatBar}>
-                    <Box
-                      border={1}
-                      borderColor="primary.light"
-                      className={classes.textInputContainer}
-                    >
-                      <Input
-                        disableUnderline
-                        fullWidth
+              <div className={classes.chatTopBarTitle}>
+                <Avatar
+                  src={chat.pictureUrl}
+                  className={classes.profilePicture}
+                >
+                  {formatInitials(chat.name, chat.surname)}
+                </Avatar>
+
+                <div className={classes.titleContainer}>
+                  <Typography variant="h6">
+                    {chat.name} {chat.surname}
+                  </Typography>
+                </div>
+              </div>
+              <div className={classes.chatTopBarButtons}>
+                <IconButton
+                  size="small"
+                  className={classes.iconButton}
+                  onClick={handleChatClose}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </div>
+            </Box>
+            <Divider />
+            <div className={classes.chatBody}>
+              <div className={classes.chatTextArea} ref={scrollRef}>
+                {chat.messages.map((message, index) => (
+                  <ChatMessage
+                    key={index}
+                    message={message}
+                    receiverId={chat.userId}
+                  />
+                ))}
+              </div>
+              <Divider />
+
+              <Formik
+                initialValues={{ message: "" }}
+                onSubmit={(values, { resetForm }) => {
+                  onMessageSend(chat.userId, values.message);
+                  resetForm();
+                }}
+              >
+                {({ setFieldTouched, handleChange, handleSubmit, values }) => {
+                  const change = (name: string, e: any) => {
+                    console.log(e);
+                    console.log(e.nativeEvent.keyCode);
+                    e.persist();
+                    handleChange(e);
+                    setFieldTouched(name, true, false);
+                  };
+                  return (
+                    <form className={classes.bottomChatBar}>
+                      <Box
+                        border={1}
+                        borderColor="primary.light"
+                        className={classes.textInputContainer}
+                      >
+                        <Input
+                          disableUnderline
+                          fullWidth
+                          type="submit"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              handleSubmit();
+                            }
+                          }}
+                          multiline={true}
+                          autoComplete={"off"}
+                          name="message"
+                          value={values.message}
+                          className={classes.textInput}
+                          onChange={change.bind(null, "message")}
+                        />
+                      </Box>
+                      <IconButton
+                        color="primary"
                         type="submit"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            handleSubmit();
-                          }
-                        }}
-                        multiline={true}
-                        autoComplete={"off"}
-                        name="message"
-                        value={values.message}
-                        className={classes.textInput}
-                        onChange={change.bind(null, "message")}
-                      />
-                    </Box>
-                    <IconButton
-                      color="primary"
-                      type="submit"
-                      className={classes.iconButton}
-                    >
-                      <SendIcon />
-                    </IconButton>
-                  </form>
-                );
-              }}
-            </Formik>
+                        className={classes.iconButton}
+                      >
+                        <SendIcon />
+                      </IconButton>
+                    </form>
+                  );
+                }}
+              </Formik>
+            </div>
           </div>
-        </div>
-      </Box>
-    </div>
+        </Box>
+      </div>
+    </Slide>
   );
 };
 
