@@ -26,14 +26,16 @@ namespace FamilyTree.Services
     {
         private DataContext context;
         private BlobServiceClient blobService;
-        private string defaultNodeUrl;
-        private string defaultUserUrl;
+        private string blogContainerName;
+        private string nodeContainerName;
+        private string profileContainerName;
         public PictureService(DataContext dataContext, IOptions<AzureBlobSettings> azureBlobSettings)
         {
             context = dataContext;
             blobService = new BlobServiceClient(azureBlobSettings.Value.ConnectionString);
-            defaultNodeUrl = azureBlobSettings.Value.DefaultNodeUrl;
-            defaultUserUrl = azureBlobSettings.Value.DefaultUserUrl;
+            blogContainerName = azureBlobSettings.Value.BlogContainer;
+            nodeContainerName = azureBlobSettings.Value.NodeContainer;
+            profileContainerName = azureBlobSettings.Value.ProfileContainer;
         }
 
         public async Task<SetPictureResponse> SetBlogPictureAsync(IFormFile picture)
@@ -41,7 +43,7 @@ namespace FamilyTree.Services
             if (!ValidateInput(picture))
                 return null;
             string fileName = GetUniqueFilename(picture.FileName);
-            BlobContainerClient container = blobService.GetBlobContainerClient("blog");
+            BlobContainerClient container = blobService.GetBlobContainerClient(blogContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
             await blob.UploadAsync(uploadFileStream, true);
@@ -54,15 +56,15 @@ namespace FamilyTree.Services
 
         public async Task<SetPictureResponse> SetNodePicture(int userId, int nodeId, IFormFile picture)
         {
-            var node = context.Nodes.SingleOrDefault(n => n.NodeId == nodeId);
-            var user = context.Users.SingleOrDefault(u => u.UserId == userId);
-            var tree = context.Trees.Include(x => x.Nodes).SingleOrDefault(t => t.TreeId == (node == null ? -1 : node.TreeId));
+            var node = await context.Nodes.FirstOrDefaultAsync(n => n.NodeId == nodeId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            var tree = await context.Trees.Include(x => x.Nodes).FirstOrDefaultAsync(t => t.TreeId == (node == null ? -1 : node.TreeId));
             if (!ValidateInput(userId, node, tree, picture))
                 return null;
             if (node.PictureUrl != null && node.PictureUrl != "")
                 await DeletePicture(node);
             string fileName = GetUniqueFilename(nodeId, picture.FileName);
-            BlobContainerClient container = blobService.GetBlobContainerClient("node");
+            BlobContainerClient container = blobService.GetBlobContainerClient(nodeContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
             await blob.UploadAsync(uploadFileStream, true);
@@ -109,7 +111,7 @@ namespace FamilyTree.Services
             if (user.PictureUrl != null && user.PictureUrl != "")
                 await DeletePicture(user);
             string fileName = GetUniqueFilename(userId, picture.FileName);
-            BlobContainerClient container = blobService.GetBlobContainerClient("profile");
+            BlobContainerClient container = blobService.GetBlobContainerClient(profileContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
             await blob.UploadAsync(uploadFileStream, true);
@@ -117,26 +119,19 @@ namespace FamilyTree.Services
             user.PictureUrl = blob.Uri.ToString();
             context.Users.Update(user);
             await context.SaveChangesAsync();
-            await UpdateNodesPictures(user, oldPictureUrl, false);
+            await UpdateNodesPictures(user, oldPictureUrl);
             return new SetPictureResponse
             {
                 PictureUrl = blob.Uri.ToString()
             };
         }
 
-        private async Task UpdateNodesPictures(User user, string oldPictureUrl, bool setDefaultPicture)
+        private async Task UpdateNodesPictures(User user, string oldPictureUrl)
         {
             var nodes = await context.Nodes.Where(n => n.UserId == user.UserId && n.PictureUrl.Equals(oldPictureUrl)).ToListAsync();
             foreach(Node n in nodes)
             {
-                if (setDefaultPicture)
-                {
-                    n.PictureUrl = defaultNodeUrl;
-                }
-                else
-                {
-                    n.PictureUrl = user.PictureUrl;
-                }
+                n.PictureUrl = user.PictureUrl;
                 context.Nodes.Update(n);
             }
             await context.SaveChangesAsync();
@@ -144,23 +139,21 @@ namespace FamilyTree.Services
 
         private async Task DeletePicture(User user)
         {
-            if(!user.PictureUrl.Equals(defaultUserUrl))
-            {
-                var container = blobService.GetBlobContainerClient("profile");
-                var blob = container.GetBlobClient(user.PictureUrl.Substring(container.Uri.ToString().Length + 1));
-                await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
-            }
-            user.PictureUrl = null;
+            var container = blobService.GetBlobContainerClient(profileContainerName);
+            var blob = container.GetBlobClient(user.PictureUrl.Substring(container.Uri.ToString().Length + 1));
+            await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            user.PictureUrl = "";
+            context.Users.Update(user);
+            await context.SaveChangesAsync();
         }
         private async Task DeletePicture(Node node)
         {
-            if (!node.PictureUrl.Equals(defaultNodeUrl))
-            {
-                var container = blobService.GetBlobContainerClient("node");
-                var blob = container.GetBlobClient(node.PictureUrl.Substring(container.Uri.ToString().Length + 1));
-                await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
-            }
-            node.PictureUrl = null;
+            var container = blobService.GetBlobContainerClient(nodeContainerName);
+            var blob = container.GetBlobClient(node.PictureUrl.Substring(container.Uri.ToString().Length + 1));
+            await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+            node.PictureUrl = "";
+            context.Nodes.Update(node);
+            await context.SaveChangesAsync();
         }
 
         private string GetUniqueFilename(int id, string userProvidedFileName)
@@ -187,23 +180,13 @@ namespace FamilyTree.Services
 
         public async Task<SetPictureResponse> DeleteProfilePicture(int userId)
         {
-            var user = context.Users.SingleOrDefault(u => u.UserId == userId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null)
                 return null;
-            if (user.PictureUrl != null && user.PictureUrl.Equals(defaultUserUrl))
-            {
-                return new SetPictureResponse
-                {
-                    PictureUrl = user.PictureUrl
-                };
-            }
             string oldPictureUrl = user.PictureUrl;
             if (user.PictureUrl != null && user.PictureUrl != "")
                 await DeletePicture(user);
-            user.PictureUrl = defaultUserUrl;
-            context.Users.Update(user);
-            await context.SaveChangesAsync();
-            await UpdateNodesPictures(user, oldPictureUrl, true);
+            await UpdateNodesPictures(user, oldPictureUrl);
             return new SetPictureResponse
             {
                 PictureUrl = user.PictureUrl
@@ -212,16 +195,13 @@ namespace FamilyTree.Services
 
         public async Task<SetPictureResponse> DeleteNodePicture(int userId, int nodeId)
         {
-            var node = context.Nodes.SingleOrDefault(n => n.NodeId == nodeId);
-            var user = context.Users.SingleOrDefault(u => u.UserId == userId);
-            var tree = context.Trees.Include(x => x.Nodes).SingleOrDefault(t => t.TreeId == (node == null ? -1 : node.TreeId));
+            var node = await context.Nodes.FirstOrDefaultAsync(n => n.NodeId == nodeId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            var tree = await context.Trees.Include(x => x.Nodes).FirstOrDefaultAsync(t => t.TreeId == (node == null ? -1 : node.TreeId));
             if (!ValidateInput(userId, node, tree))
                 return null;
             if (node.PictureUrl != null && node.PictureUrl != "")
                 await DeletePicture(node);
-            node.PictureUrl = defaultNodeUrl;
-            context.Nodes.Update(node);
-            await context.SaveChangesAsync();
             return new SetPictureResponse
             {
                 PictureUrl = node.PictureUrl

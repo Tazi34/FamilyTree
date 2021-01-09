@@ -26,18 +26,15 @@ namespace FamilyTree.Services
         private DataContext context;
         private ITokenService tokenService;
         private IPasswordService passwordService;
-        private string defaultProfilePictureUrl;
 
         public UserService(
             DataContext dataContext, 
             ITokenService tokenService, 
-            IPasswordService passwordService, 
-            IOptions<AzureBlobSettings> azureBlobSettings)
+            IPasswordService passwordService)
         {
             context = dataContext;
             this.tokenService = tokenService;
             this.passwordService = passwordService;
-            defaultProfilePictureUrl = azureBlobSettings.Value.DefaultUserUrl;
         }
         public async Task<AuthenticateResponse> AuthenticateAsync(string email, string password)
         {
@@ -59,17 +56,13 @@ namespace FamilyTree.Services
                     Email = userInfo.Email,
                     Role = Role.User,
                     PrevSurnames = new List<PreviousSurname>(),
-                    PictureUrl = userInfo.Picture.Details.Url.ToString()
+                    PictureUrl = userInfo.Picture.Details.Url.ToString(),
+                    Sex = Sex.NotSure,
+                    Birthday = DateTime.Now
                 };
                 context.Users.Add(user);
                 await context.SaveChangesAsync();
-                return CreateResponse(user);
             }
-            user.PictureUrl = userInfo.Picture.Details.Url.ToString();
-            user.Name = userInfo.FirstName;
-            user.Surname = userInfo.LastName;
-            context.Users.Update(user);
-            await context.SaveChangesAsync();
             return CreateResponse(user);
         }
 
@@ -82,7 +75,11 @@ namespace FamilyTree.Services
                 {
                     Email = email,
                     Role = Role.User,
-                    PrevSurnames = new List<PreviousSurname>()
+                    PrevSurnames = new List<PreviousSurname>(),
+                    Name = "",
+                    Surname = "",
+                    Sex = Sex.NotSure,
+                    Birthday = DateTime.Now
                 };
                 context.Users.Add(user);
                 await context.SaveChangesAsync();
@@ -139,7 +136,7 @@ namespace FamilyTree.Services
                 Birthday = model.Birthday,
                 PrevSurnames = previousSurnames,
                 Sex = model.Sex,
-                PictureUrl = defaultProfilePictureUrl
+                PictureUrl = ""
             };
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -210,8 +207,8 @@ namespace FamilyTree.Services
                 Role = user.Role,
                 PreviousSurnames = user.PrevSurnames?.Select(x => x.Surname).ToList(),
                 PictureUrl = user.PictureUrl,
-                Birthday = user.Birthday
-                
+                Birthday = user.Birthday,
+                Sex = user.Sex
             };
         }
     }

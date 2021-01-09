@@ -9,7 +9,8 @@ namespace FamilyTree.Helpers
     {
         public const string Position = "AzureBlobSettings";
         public string ConnectionString { get; set; }
-        public string DefaultUserUrl { get; set; }
-        public string DefaultNodeUrl { get; set; }
+        public string BlogContainer { get; set; }
+        public string NodeContainer { get; set; }
+        public string ProfileContainer { get; set; }
     }
 }

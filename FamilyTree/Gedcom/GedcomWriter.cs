@@ -89,6 +89,17 @@ namespace FamilyTree.Gedcom
                 if(i.Node.Parents.Count == 2)
                 {
                     var family = families.FirstOrDefault(f => f.HasParentsNodes(i.Node.Parents[0].ParentId, i.Node.Parents[1].ParentId));
+                    if (family == null)
+                    {
+                        Individual parent1 = people.FirstOrDefault(p => p.Node.NodeId == i.Node.Parents[0].ParentId);
+                        Individual parent2 = people.FirstOrDefault(p => p.Node.NodeId == i.Node.Parents[1].ParentId);
+                        family = new Family();
+                        family.AddParent(parent1);
+                        family.AddParent(parent2);
+                        parent1.AddSpouseFamily(family);
+                        parent2.AddSpouseFamily(family);
+                        families.Add(family);
+                    }
                     family.AddChild(i);
                     i.AddChildFamily(family);
                 }
