@@ -12,7 +12,6 @@ export const requestUploadProfilePicture = (
 ) => {
   const form = new FormData();
   form.append("picture", data.picture);
-  console.log(form);
   return axios.post<UploadProfilePictureResponse>(
     `${PROFILE_API_URL}/picture`,
     form

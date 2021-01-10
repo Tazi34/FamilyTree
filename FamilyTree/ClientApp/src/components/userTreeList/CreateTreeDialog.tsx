@@ -8,7 +8,6 @@ import { Theme } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import { Formik } from "formik";
 import React from "react";
-import { TreeInformation } from "../../model/TreeInformation";
 import ValidationErrorText from "../UI/ValidationErrorText";
 import createTreeValidationSchema from "./createTreeValidationSchema";
 
@@ -20,8 +19,6 @@ type Props = {
   onSubmit: (treeName: string) => void;
 };
 const CreateTreeDialog = ({ open, onClose, onSubmit }: Props) => {
-  const classes = useStyles();
-
   return (
     <div>
       <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">

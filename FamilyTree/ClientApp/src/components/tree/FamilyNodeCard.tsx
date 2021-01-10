@@ -31,7 +31,6 @@ type Props = {
   canConnectTo: boolean;
   isConnecting: boolean;
 };
-//TODO ujednolicic ruszanie z personnode
 const FamilyNodeCard = ({
   family,
   onSelect,
@@ -40,8 +39,6 @@ const FamilyNodeCard = ({
 }: Props) => {
   const classes = useStyles({ family, canConnectTo, isConnecting });
   const elementId = family.id.toString();
-
-  //console.log("RENDER FAMILY");
 
   return (
     <div

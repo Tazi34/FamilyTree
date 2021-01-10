@@ -41,7 +41,6 @@ const TreeCard = ({ tree, onTreeSelect }: TreeCardProps) => {
   const classes = useStyles();
   const isPrivate = tree.isPrivate;
   const treeVisibilityText = isPrivate ? "private" : "public";
-  console.log("TREE CARD");
   const handleCardSelect = () => {
     onTreeSelect(tree);
   };

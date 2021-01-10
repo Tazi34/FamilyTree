@@ -1,6 +1,5 @@
 import {
   Avatar,
-  Fade,
   IconButton,
   makeStyles,
   Paper,
@@ -9,21 +8,18 @@ import {
   Zoom,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
+import ChildFriendlyIcon from "@material-ui/icons/ChildFriendly";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
-import LinkIcon from "@material-ui/icons/Link";
+import FaceIcon from "@material-ui/icons/Face";
 import * as React from "react";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
 import { formatDate, formatInitials } from "../../helpers/formatters";
 import { areEqualShallow } from "../../helpers/helpers";
-import NodeActionsMenu from "../nodeActionsMenu/NodeActionsMenu";
-import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import HiddenPersonNode from "./HiddenPersonNode";
 import { Node } from "./model/NodeClass";
 import { PersonNode } from "./model/PersonNode";
 import { ConnectionMode } from "./TreeRenderer";
-import ChildFriendlyIcon from "@material-ui/icons/ChildFriendly";
-import FaceIcon from "@material-ui/icons/Face";
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 25;
@@ -191,19 +187,10 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
 
 type Props = {
   onNodeDelete: (id: number) => void;
-  onSiblingAdd: (id: number, data: CreateNodeRequestData) => void;
-  onParentAdd: (id: number, data: CreateNodeRequestData) => void;
-  onPartnerAdd: (id: number, data: CreateNodeRequestData) => void;
-  onChildAdd: (
-    data: CreateNodeRequestData,
-    firstParent: number,
-    secondParent?: number
-  ) => void;
   onNodeMove: (node: Node, x: number, y: number) => void;
   onMoveNodeOnCanvas: (e: DragEvent, node: Node) => void;
   onNodeSelect: (node: PersonNode) => void;
   onConnectStart: (node: PersonNode, mode: ConnectionMode) => void;
-  onAddActionMenuClick: (node: PersonNode) => void;
   onDisconnectNode: (node: PersonNode) => void;
   onNodeVisiblityChange: (nodeId: number) => void;
 

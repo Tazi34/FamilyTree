@@ -1,45 +1,36 @@
-import { Button, Paper, Theme, withStyles } from "@material-ui/core";
+import { Paper, Theme, withStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { Redirect, withRouter } from "react-router";
-import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { compose } from "recompose";
+import { HOME_PAGE_URI } from "../../applicationRouting";
 import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
 import { ApplicationState } from "../../helpers";
-import { TreeInformation } from "../../model/TreeInformation";
-import { SendInvitationRequestData } from "../invitation/API/sendInvitation/sendInvitationRequest";
-import { sendInvitation } from "../invitation/reducer/invitationsReducer";
-import { ConnectNodesRequestData } from "./API/connectNodes/connectNodesRequest";
-import { ConnectPartnersRequestData } from "./API/connectNodes/connectPartnerRequest";
-import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
-
-import {
-  addEmptyNode,
-  changeTreeName,
-  changeTreeVisibility,
-  getTree,
-  exportTree,
-} from "./reducer/treeReducer";
-import { addChild } from "./reducer/updateNodes/addChild";
-import { addParentAsync2 } from "./reducer/updateNodes/addParent";
-import { addPartner } from "./reducer/updateNodes/addPartner";
-import { addSiblingRequest } from "./reducer/updateNodes/addSibling";
-import { connectNodes } from "./reducer/updateNodes/connectChildWithNodes";
-import { hideBranch } from "./reducer/updateNodes/hideBranch";
-import { requestDisconnectNode } from "./reducer/updateNodes/disconnectNodes";
-
-import { connectPartners } from "./reducer/updateNodes/connectPartners";
-import TreeInformationPanel from "./TreeInformationPanel";
-import TreeRenderer from "./TreeRenderer";
 import CreateNodeDialog, {
   CreateNodeFormData,
 } from "../addNodeActionDialog/CreateNodeDialog";
 import { withAlertMessage } from "../alerts/withAlert";
-import { HOME_PAGE_URI } from "../../applicationRouting";
+import { sendInvitation } from "../invitation/reducer/invitationsReducer";
+import TreeInformationContainer from "../treeInformation/TreeInformationContainer";
+import { ConnectNodesRequestData } from "./API/connectNodes/connectNodesRequest";
+import { ConnectPartnersRequestData } from "./API/connectNodes/connectPartnerRequest";
+import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import { FamilyNode } from "./model/FamilyNode";
 import { PersonNode } from "./model/PersonNode";
 import { Point } from "./Point";
-import { ThreeSixtyTwoTone } from "@material-ui/icons";
+import {
+  addEmptyNode,
+  changeTreeName,
+  changeTreeVisibility,
+  exportTree,
+  fetchTree,
+} from "./reducer/treeReducer";
+import { connectNodes } from "./reducer/updateNodes/connectChildWithNodes";
+import { connectPartners } from "./reducer/updateNodes/connectPartners";
+import { requestDisconnectNode } from "./reducer/updateNodes/disconnectNodes";
+import { hideBranch } from "./reducer/updateNodes/hideBranch";
+import TreeRenderer from "./TreeRenderer";
+
 const PanZoom = require("react-easy-panzoom").default;
 type TreeContainerState = {
   addDialog: boolean;
@@ -80,7 +71,6 @@ const styles = (theme: Theme) => ({
 });
 
 class Tree extends React.Component<any, TreeContainerState> {
-  private svgRef: React.RefObject<any>;
   private panRef: React.RefObject<any>;
   constructor(props: any) {
     super(props);
@@ -98,13 +88,9 @@ class Tree extends React.Component<any, TreeContainerState> {
       minX: -3000,
       minY: -3000,
     };
-    this.svgRef = React.createRef();
     this.panRef = React.createRef();
   }
 
-  getSvg = () => {
-    return this.svgRef.current;
-  };
   handleConnectStart = () => {};
 
   setTransform = (x: number, y: number, scale: number) => {
@@ -178,28 +164,10 @@ class Tree extends React.Component<any, TreeContainerState> {
     };
   };
   componentWillUnmount() {
-    document.removeEventListener("mousedown", this.handleCloseMenu);
+    document.removeEventListener("mousedown", this.closeAddNodeDialog);
     window.removeEventListener("resize", this.resetDimensions);
   }
 
-  handleCloseMenu = () => {
-    if (this.state.addDialog) {
-      this.setState({ addDialog: false });
-    }
-  };
-  handlePartnerAdd = (id: number, data: CreateNodeRequestData) => {
-    this.props.addPartner(id, data);
-  };
-
-  handleTreeNameChange = (
-    treeInformation: TreeInformation,
-    newName: string
-  ) => {
-    this.props.changeTreeName({ ...treeInformation, name: newName });
-  };
-  handleTreeVisibilityChange = (treeInformation: TreeInformation) => {
-    this.props.changeTreeVisibility(treeInformation);
-  };
   handleAddNode = (formData: CreateNodeFormData) => {
     const screenCenter = this.getScreenCenter();
     var createNodeData: CreateNodeRequestData = {
@@ -219,18 +187,12 @@ class Tree extends React.Component<any, TreeContainerState> {
         this.props.alertError("Error creating family member. Try again later.");
       } else {
         this.props.alertSuccess("Family member created sucessfully.");
-        this.handleCloseMenu();
+        this.closeAddNodeDialog();
       }
     });
   };
-  handleMoveOnCanvas = (x: number, y: number, scale?: number) => {
-    if (this.panRef) {
-      this.panRef.current.moveByRatio(100, 1, 0.0009775);
-    }
-  };
-  handleDefaultAddNode = () => {
-    const screenCenter = this.getScreenCenter();
 
+  handleDefaultAddNode = () => {
     const createNodeData: CreateNodeRequestData = {
       userId: 0,
       treeId: this.props.treeInformation.treeId,
@@ -253,30 +215,7 @@ class Tree extends React.Component<any, TreeContainerState> {
     };
     this.props.addEmptyNode(createNodeData);
   };
-  handleParentAdd = (id: number, data: CreateNodeRequestData) => {
-    this.props.addParentAsync2(id, data);
-  };
-  handleChildAdd = (
-    data: CreateNodeRequestData,
-    firstParentId: number,
-    secondParentId?: number
-  ) => {
-    this.props.addChild(data, firstParentId, secondParentId);
-  };
 
-  handleInviteUserToTree = (userId: number) => {
-    const treeId = parseFloat(this.props.computedMatch.params.treeId);
-    const data: SendInvitationRequestData = {
-      hostUserId: this.props.user.id,
-      askedUserId: userId,
-      treeId,
-    };
-    this.props.sendInvitation(data).then((resp: any) => {
-      if (!resp.error) {
-        this.props.alertSuccess("User invited");
-      }
-    });
-  };
   handleDisconnectNode = (node: PersonNode) => {
     this.props.requestDisconnectNode([node.id]);
   };
@@ -295,9 +234,7 @@ class Tree extends React.Component<any, TreeContainerState> {
     };
     this.props.connectNodes(data);
   };
-  handleExportTree = (treeId: number) => {
-    this.props.exportTree({ treeId });
-  };
+
   handleConnectAsPartner = (firstPartner: number, secondPartner: number) => {
     const data: ConnectPartnersRequestData = {
       firstPartnerId: firstPartner,
@@ -305,9 +242,7 @@ class Tree extends React.Component<any, TreeContainerState> {
     };
     this.props.connectPartners(data);
   };
-  handleSiblingAdd = (id: number, data: CreateNodeRequestData) => {
-    this.props.addSibling(id, data);
-  };
+
   setScale = (e: any) => {
     this.setState({ scale: e.scale });
   };
@@ -320,8 +255,7 @@ class Tree extends React.Component<any, TreeContainerState> {
 
     const pan = this.panRef?.current;
     if (pan) {
-      const scale = pan.state.scale;
-
+      // const scale = pan.state.scale;
       // pan.setState({
       //   x: -family.x * scale + this.state.canvasWidth / 2,
       //   y: -family.y * scale + this.state.canvasHeight / 2,
@@ -335,9 +269,14 @@ class Tree extends React.Component<any, TreeContainerState> {
     //   0.0009775
     //);
   };
-
+  openAddNodeDialog = () => this.setState({ addDialog: true });
+  closeAddNodeDialog = () => {
+    if (this.state.addDialog) {
+      this.setState({ addDialog: false });
+    }
+  };
   render() {
-    const { classes, treeInformation } = this.props;
+    const { classes } = this.props;
 
     if (this.props.isLoading)
       return <div className={classes.treeBackground}></div>;
@@ -351,46 +290,27 @@ class Tree extends React.Component<any, TreeContainerState> {
         <div className={classes.treeBackground}>
           <div className={classes.relative}>
             <div className={classes.treeInformationPanel}>
-              <TreeInformationPanel
-                onExportTree={this.handleExportTree}
-                treeInformation={treeInformation}
-                onTreeNameChange={this.handleTreeNameChange}
-                onTreeVisibilityChange={this.handleTreeVisibilityChange}
-                onInviteUser={this.handleInviteUserToTree}
-                onAddMockNode={this.handleDefaultAddNode}
-                onAddNode={() => this.setState({ addDialog: true })}
+              <TreeInformationContainer
+                onMockAddNode={this.handleDefaultAddNode}
+                onNodeAdd={this.openAddNodeDialog}
               />
             </div>
           </div>
 
-          <div
-            id="tree-canvas"
-            ref={this.svgRef}
-            className={classes.treeCanvas}
-          >
+          <div id="tree-canvas" className={classes.treeCanvas}>
             <PanZoom
               ref={this.panRef}
               style={{ width: "100%", height: "100%", overflow: "hidden" }}
               onStateChange={(e: any) => {
-                console.log(e);
                 this.setTransform(e.x, e.y, e.scale);
               }}
               boundaryRatioVertical={1}
-              // preventPan={(event: any, x: number, y: number) => {
-              //   const { minX, maxX, minY, maxY } = this.state;
-              //   return x < minX || x > maxX || y < minY || y > maxY;
-              // }}
               boundaryRatioHorizontal={1}
             >
               <TreeRenderer
                 onDisconnectNode={this.handleDisconnectNode}
                 onHideBranch={this.handleHideBranch}
-                canvasRef={this.svgRef}
                 scale={this.state.scale}
-                onParentAdd={this.handleParentAdd}
-                onPartnerAdd={this.handlePartnerAdd}
-                onChildAdd={this.handleChildAdd}
-                onSiblingAdd={this.handleSiblingAdd}
                 onConnectAsChild={this.handleConnectAsChild}
                 onConnectAsPartner={this.handleConnectAsPartner}
                 rectHeight={RECT_HEIGHT}
@@ -406,7 +326,7 @@ class Tree extends React.Component<any, TreeContainerState> {
         <CreateNodeDialog
           onSubmit={this.handleAddNode}
           open={this.state.addDialog}
-          onClose={this.handleCloseMenu}
+          onClose={this.closeAddNodeDialog}
         />
       </Paper>
     );
@@ -414,14 +334,10 @@ class Tree extends React.Component<any, TreeContainerState> {
 }
 
 const mapDispatch = {
-  getTree,
+  getTree: fetchTree,
   changeTreeName,
   changeTreeVisibility,
   addEmptyNode,
-  addParentAsync2,
-  addPartner,
-  addChild,
-  addSibling: addSiblingRequest,
   sendInvitation,
   connectNodes,
   connectPartners,

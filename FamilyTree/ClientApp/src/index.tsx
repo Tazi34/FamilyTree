@@ -4,13 +4,9 @@ import { createBrowserHistory } from "history";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Provider, useDispatch } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
 import App from "./App";
 import { authenticateToken } from "./components/loginPage/authenticationReducer";
-import {
-  addAuthorizationToken,
-  tokenLocalStorageKey,
-} from "./components/loginPage/tokenService";
+import { tokenLocalStorageKey } from "./components/loginPage/tokenService";
 import configureStore from "./helpers/configureStore";
 import "./index.css";
 import registerServiceWorker from "./registerServiceWorker";

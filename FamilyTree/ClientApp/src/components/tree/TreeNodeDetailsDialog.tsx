@@ -174,9 +174,6 @@ const TreeNodeDetailsDialog = ({
   const displayDate = format(new Date(details.birthday), "d MMM yyyy");
   const initialDate = format(new Date(details.birthday), "d.MM.yyyy");
 
-  //TODO brak gender
-  console.log(details);
-
   const genderIcon =
     details.sex === "Male"
       ? "fas fa-mars"

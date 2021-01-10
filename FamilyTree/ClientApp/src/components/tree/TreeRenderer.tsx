@@ -36,12 +36,8 @@ import {
 import TreeNodeDetailsDialog from "./TreeNodeDetailsDialog";
 import "./treeRenderer.css";
 
-const d3_base = require("d3");
-const d3_dag = require("d3-dag");
-const d3 = Object.assign({}, d3_base, d3_dag);
+const d3 = require("d3");
 
-const nodesGroupId = "nodes_group";
-const linksGroupId = "links_group";
 //TODO PRZENIESC
 export interface IDictionary<TValue> {
   [id: string]: TValue;
@@ -63,8 +59,6 @@ type OwnProps = {
   ) => void;
   [x: string]: any;
   scale: number;
-
-  canvasRef: any;
 };
 type DispatchProps = {
   moveNodeThunk: any;
@@ -93,21 +87,15 @@ type NodeDialogProps = {
   node: PersonNode | null;
   startOnEdit?: boolean;
 };
-type AddActionDialogProps = {
-  open: boolean;
-  node: PersonNode | null;
-};
+
 type State = {
   nodeDialog: NodeDialogProps;
   connection: ConnectionProps;
-  addActionDialog: AddActionDialogProps;
 };
 
 class TreeRenderer extends React.Component<Props, State, any> {
-  private ref: any;
   constructor(props: Props) {
     super(props);
-    this.ref = React.createRef();
     this.state = {
       nodeDialog: {
         open: false,
@@ -122,10 +110,6 @@ class TreeRenderer extends React.Component<Props, State, any> {
         },
         mode: null,
         firstTarget: null,
-      },
-      addActionDialog: {
-        open: false,
-        node: null,
       },
     };
   }
@@ -144,44 +128,23 @@ class TreeRenderer extends React.Component<Props, State, any> {
     });
   };
 
-  openAddActionDialog = (node: PersonNode) => {
-    this.setState({
-      addActionDialog: {
-        open: true,
-        node: node,
-      },
-    });
+  handleStopConnectingMode = (e: any) => {
+    if (this.state.connection.isConnecting) {
+      e.preventDefault();
+      this.resetConnectingMode();
+      return false;
+    }
   };
-  resetAddActionDialog = () => {
-    this.setState({
-      addActionDialog: {
-        open: false,
-        node: null,
-      },
-    });
-  };
-
   componentDidMount = () => {
-    document.oncontextmenu = (e: any) => {
-      if (this.state.connection.isConnecting) {
-        e.preventDefault();
-        this.resetConnectingMode();
-        return false;
-      }
-    };
+    document.addEventListener("contextmenu", this.handleStopConnectingMode);
   };
   componentWillUnmount = () => {
-    document.oncontextmenu = null;
+    document.removeEventListener("contextmenu", this.handleStopConnectingMode);
   };
   handleNodeDelete = (id: number) => {
     this.props.requestDeleteNode(id);
   };
-  handlePartnerAdd = (id: number, data: CreateNodeRequestData) => {
-    this.props.onPartnerAdd(id, data);
-  };
-  handleParentAdd = (id: number, data: CreateNodeRequestData) => {
-    this.props.onParentAdd(id, data);
-  };
+
   handleNodeMove = (node: Node, x: number, y: number) => {
     this.props.moveNode(node, x, y);
     this.props.moveNodeThunk({ nodeId: node.id as number, x, y });
@@ -299,9 +262,7 @@ class TreeRenderer extends React.Component<Props, State, any> {
       }
     });
   };
-  traverseTree = (node: Node, callback: Function) => {
-    //traverseRec(node, callback, 0, (id: number) => getNodeById(treeState, id));
-  };
+
   handleNodeVisibilityChange = (node: PersonNode) => {
     this.props.onNodeVisiblityChange(node);
   };
@@ -381,6 +342,7 @@ class TreeRenderer extends React.Component<Props, State, any> {
     this.setState({ nodeDialog: { open: false, node: null } });
   };
   handleConnectStart = (node: PersonNode, mode: ConnectionMode) => {
+    //REFACTOR
     Axios.post(baseURL + "/tree/node/possibleConnections", {
       mode: mode,
       nodeId: node.id,
@@ -397,16 +359,6 @@ class TreeRenderer extends React.Component<Props, State, any> {
     });
   };
 
-  handleChildAdd = (
-    data: CreateNodeRequestData,
-    firstParent: number,
-    secondParent?: number
-  ) => {
-    if (this.state.connection.isConnecting) {
-      return;
-    }
-    this.props.onChildAdd(data, firstParent, secondParent);
-  };
   render = () => {
     const { nodeDialog } = this.state;
 
@@ -417,31 +369,20 @@ class TreeRenderer extends React.Component<Props, State, any> {
     return (
       <Fade in={true} timeout={3000}>
         <div>
-          {/* <div> */}
           <NodesList
             onNodeVisiblityChange={this.props.changeNodeVisibility}
             onDisconnectNode={this.props.onDisconnectNode}
-            // positionX={this.props.positionX}
-            // positionY={this.props.positionY}
-            // canvasWidth={this.props.canvasWidth}
-            // canvasHeight={this.props.canvasHeight}
             possibleConnections={
               this.state.connection.possibleConnections.nodes
             }
             disabled={this.state.connection.isConnecting}
             onConnectStart={this.handleConnectStart}
-            onSiblingAdd={this.props.onSiblingAdd}
-            onChildAdd={this.props.onChildAdd}
-            viewRef={this.props.canvasRef}
             scale={this.props.scale}
             nodes={this.props.nodes}
             onNodeSelect={this.handleNodeSelect}
             onNodeMove={this.handleNodeMove}
-            onParentAdd={this.handleParentAdd}
-            onPartnerAdd={this.handlePartnerAdd}
             onNodeDelete={this.handleNodeDelete}
             onMoveNodeOnCanvas={this.moveNodeOnCanvas}
-            onAddActionMenuClick={this.openAddActionDialog}
           />
           <Families
             isConnecting={this.state.connection.isConnecting}
@@ -463,7 +404,6 @@ class TreeRenderer extends React.Component<Props, State, any> {
 
           <div>
             <TreeNodeDetailsDialog
-              //TODO na podstawie nodea
               startOnEdit={nodeDialog.startOnEdit}
               open={nodeDialog.open}
               node={nodeDialog.node}
@@ -479,11 +419,6 @@ class TreeRenderer extends React.Component<Props, State, any> {
 }
 
 const mapDispatch = {
-  // getTree,
-  // changeTreeName,
-  // changeTreeVisibility,
-  // addEmptyNode: addNode,
-  // addParentAsync2,
   changeNodeVisibility,
   requestDeleteNode,
   moveNodeThunk,
@@ -497,30 +432,3 @@ const mapState = (state: ApplicationState) => ({
 });
 
 export default connect(mapState, mapDispatch)(TreeRenderer);
-
-export const removeNodeFromFamily = (family: any, id: any) => {
-  if (family.firstParent == id) {
-    family.firstParent = null;
-  } else if (family.secondParent == id) {
-    family.secondParent = null;
-  } else {
-    family.children = family.children.filter((a: any) => a != id);
-  }
-};
-//TODO przeniesc do innego pliku
-export const traverseRec = (
-  node: Node,
-  callback: Function,
-  depth: number,
-  nodesSelector: Function
-) => {
-  callback(node, depth);
-
-  const childrens = node.children
-    .map((child) => nodesSelector(child))
-    .filter((a) => a) as Node[];
-
-  childrens.forEach((child) => {
-    traverseRec(child, callback, ++depth, nodesSelector);
-  });
-};

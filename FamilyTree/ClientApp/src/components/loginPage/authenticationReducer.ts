@@ -76,10 +76,8 @@ export const createUser = createAsyncThunk(
 export const loginUser = createAsyncThunk(
   "users/loginUser",
   async (loginData: LoginUserRequestData): Promise<AxiosResponse> => {
-    //TODO zmienic na logowanie do zdeployowanego backendu
     return await Axios.get(
       `${LOGIN_API_URL}/${loginData.email}/${loginData.password}`
-      //`${baseURL}/login`,
     );
   }
 );
