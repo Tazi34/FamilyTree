@@ -1,11 +1,5 @@
-import {
-  authenticateFacebookToken,
-  authenticateGmailToken,
-} from "./../../loginPage/authenticationReducer";
-import { connectionReducer } from "./../../tree/connectionReducer";
 import * as signalR from "@microsoft/signalr";
 import { AnyAction } from "redux";
-import { boolean } from "yup/lib/locale";
 import { ApplicationState } from "../../../helpers";
 import { logger } from "../../../helpers/logger";
 import {
@@ -17,10 +11,10 @@ import { tokenLocalStorageKey } from "../../loginPage/tokenService";
 import { onReceiveMessage, sendMessage } from "../chatReducer";
 import { baseURL } from "./../../../helpers/apiHelpers";
 import {
-  chatsSelectorsLocal,
-  getMessages,
-  receiveMessage,
-} from "./../chatReducer";
+  authenticateFacebookToken,
+  authenticateGmailToken,
+} from "./../../loginPage/authenticationReducer";
+import { chatsSelectorsLocal, getMessages } from "./../chatReducer";
 
 const connectionBuilder = (token: string) =>
   new signalR.HubConnectionBuilder().withUrl(

@@ -10,6 +10,7 @@ import {
   HOME_PAGE_URI,
 } from "../../applicationRouting";
 import { ADMIN_ROLE } from "../../helpers/roles";
+import useAlert from "../alerts/useAlert";
 import { withAlertMessage } from "../alerts/withAlert";
 import { getUser } from "../loginPage/authenticationReducer";
 import BlogPost from "./BlogPost";
@@ -30,6 +31,7 @@ const BlogPostPage = (props: Props) => {
   const classes = useStyles();
   const user = useSelector(getUser);
 
+  const alert = useAlert();
   const history = useHistory();
   const postId = props.computedMatch.params.postId;
   const dispatch = useThunkDispatch();
@@ -43,9 +45,9 @@ const BlogPostPage = (props: Props) => {
   const handleDeletePost = (id: number) => {
     dispatch(deletePost(id)).then((response: any) => {
       if (!response.error) {
-        props.alertSuccess("Post deleted");
+        alert.success("Post deleted");
       } else {
-        props.alertError("Couldn't delete post. Try again later");
+        alert.error("Couldn't delete post. Try again later");
       }
     });
   };

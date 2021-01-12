@@ -4,6 +4,7 @@ import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect, useHistory } from "react-router";
 import { BLOG_PAGE_URI, REGISTER_PAGE_URI } from "../../../applicationRouting";
+import useAlert from "../../alerts/useAlert";
 import { LoginUserRequestData } from "../API/loginUser";
 import {
   authenticateFacebookToken,
@@ -95,6 +96,7 @@ const LoginPage = (props: any) => {
   const dispatch: any = useDispatch();
   const user = useSelector(getUser);
   const history = useHistory();
+  const alert = useAlert();
 
   if (user) {
     return <Redirect to={`${BLOG_PAGE_URI}/${user.id}`} />;
@@ -102,9 +104,9 @@ const LoginPage = (props: any) => {
 
   const handleAuthenticationResponse = (response: any) => {
     if (response.error) {
-      props.onError("Could not verify your identity. ");
+      alert.error("Could not verify your identity. ");
     } else {
-      props.onSuccess("Logged in.");
+      alert.success("Logged in.");
       console.log(response);
       history.push(`${BLOG_PAGE_URI}/${response.payload.data.userId}`);
     }

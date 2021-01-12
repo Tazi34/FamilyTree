@@ -2,6 +2,7 @@ import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useDispatch } from "react-redux";
+import useAlert from "../alerts/useAlert";
 import { WithAlert, withAlertMessage } from "../alerts/withAlert";
 import { createUser } from "../loginPage/authenticationReducer";
 import RegistrationForm, { UserRegistrationData } from "./RegistrationForm";
@@ -11,17 +12,18 @@ const useStyles = makeStyles((theme: Theme) => ({}));
 const Registration = (props: any) => {
   const classes = useStyles();
   const dispatch: any = useDispatch();
+  const alert = useAlert();
 
   const handleRegister = (registrationData: UserRegistrationData) => {
     dispatch(createUser(registrationData)).then((data: any) => {
       if (data.error) {
         if (data.payload.status === 409) {
-          props.onError("Email already taken");
+          alert.error("Email already taken");
         } else {
-          props.onError("Error occured during account creation. ");
+          alert.error("Error occured during account creation. ");
         }
       } else {
-        props.onSuccess("Account created.");
+        alert.success("Account created.");
       }
     });
   };

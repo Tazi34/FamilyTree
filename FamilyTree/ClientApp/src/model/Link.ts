@@ -1,5 +1,5 @@
 import { EntityId } from "@reduxjs/toolkit";
-import { getLinkId } from "../helpers/idHelpers";
+import { getLinkId } from "../components/tree/helpers/idHelpers";
 
 export class Link {
   source: EntityId;

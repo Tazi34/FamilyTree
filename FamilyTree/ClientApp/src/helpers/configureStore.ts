@@ -45,6 +45,7 @@ export default function configureStore(
       removeAuthorizationToken();
       return {
         ...initialAppState,
+        alerts: state.alerts,
         router: state.router,
       };
     }

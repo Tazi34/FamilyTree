@@ -5,6 +5,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Provider, useDispatch } from "react-redux";
 import App from "./App";
+import GlobalAlerts from "./components/alerts/GlobalAlerts";
 import { authenticateToken } from "./components/loginPage/authenticationReducer";
 import { tokenLocalStorageKey } from "./components/loginPage/tokenService";
 import configureStore from "./helpers/configureStore";
@@ -31,8 +32,9 @@ ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <App />
-    </ConnectedRouter>
+    </ConnectedRouter>{" "}
   </Provider>,
+
   document.getElementById("root")
 );
 

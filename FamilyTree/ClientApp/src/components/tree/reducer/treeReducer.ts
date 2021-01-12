@@ -11,6 +11,7 @@ import {
 import Axios, { AxiosResponse } from "axios";
 import { baseURL } from "../../../helpers/apiHelpers";
 import { ApplicationState } from "../../../helpers/index";
+import { transformCanvas } from "../../canvas/reducer/canvasReducer";
 import { selectSelf } from "../../loginPage/authenticationReducer";
 import {
   CreateNodeRequestData,
@@ -21,11 +22,10 @@ import { GetTreeResponse } from "../API/getTree/getTreeRequest";
 import { treeAPI } from "../API/treeAPI";
 import { treeNodeMapper } from "../API/utils/NodeMapper";
 import { TreeAPI } from "../API/utils/TreeModel";
-import { FamilyNode, getFamilyLocation } from "../model/FamilyNode";
-import { Link } from "../model/Link";
-import { Node } from "../model/NodeClass";
-import { PersonNode } from "../model/PersonNode";
-import { Point } from "../Point";
+import { FamilyNode, getFamilyLocation } from "../../../model/FamilyNode";
+import { Link } from "../../../model/Link";
+import { Node } from "../../../model/NodeClass";
+import { Point } from "../../../model/Point";
 import { TreeInformation } from "./../../../model/TreeInformation";
 import {
   ChangeTreeNameRequestData,
@@ -33,11 +33,12 @@ import {
 } from "./../API/changeTreeName/changeTreeNameRequest";
 import { ChangeTreeVisibilityResponse } from "./../API/changeVisibility/changeTreeVisibilityRequest";
 import { ExportTreeRequestData } from "./../API/exportTree/requestExportTree";
-import { LinkLoaded } from "./../LinkComponent";
+import { LinkLoaded } from "../../link/LinkComponent";
 import { changeNodeVisibility } from "./updateNodes/changeNodeVisibility";
 import { moveNode, moveNodeThunk } from "./updateNodes/moveNode";
 import { uploadTreeNodePictureRequest } from "./updateNodes/setNodePicture";
 import { getNodeById } from "./utils/getOutboundLinks";
+import { PersonNode } from "../../../model/PersonNode";
 
 //TYPES
 export type TreeState = {
@@ -46,7 +47,7 @@ export type TreeState = {
   families: EntityState<FamilyNode>;
   isLoading: boolean;
   nextFamilyId: number;
-  treeId: EntityId | null;
+  treeId: number | null;
   treeInformation: TreeInformation | null;
 };
 
@@ -107,6 +108,7 @@ export const selectAllNodesLocal = createDraftSafeSelector<
 
 export const {
   selectAll: selectAllPersonNodes,
+  selectById: selectPersonNode,
 } = personNodesAdapter.getSelectors(
   (state: ApplicationState) => state.tree.nodes
 );
@@ -129,12 +131,54 @@ export const changeTreeName = createAsyncThunk<
 >(`userTrees/changeTreeName`, async (requestData) => {
   return await treeAPI.changeTreeNameRequest(requestData);
 });
+
 export const fetchTree = createAsyncThunk<
   AxiosResponse<GetTreeResponse>,
   number
 >(`${treeActionsPrefix}/treeFetched`, async (id) => {
   return await Axios.get(`${baseURL}/tree/${id}`);
 });
+
+export const getTree = (treeId: number) => (dispatch: any) => {
+  return dispatch(fetchTree(treeId)).then((resp: any) => {
+    if (resp.type === fetchTree.fulfilled.toString()) {
+      return dispatch(setAndCenterTree(resp.payload.data));
+    }
+    return resp;
+  });
+};
+export const setAndCenterTree = (tree: TreeAPI) => (
+  dispatch: any,
+  getState: any
+) => {
+  const state: ApplicationState = getState();
+  const canvas = state.canvas;
+
+  //wycentruj drzewo
+  const nodes = tree.nodes;
+  const margin = 400;
+  const maxX = Math.max(...nodes.map((n) => n.x)) + margin;
+  const maxY = Math.max(...nodes.map((n) => n.y)) + margin;
+  const minX = Math.min(...nodes.map((n) => n.x)) - margin;
+  const minY = Math.min(...nodes.map((n) => n.y)) - margin;
+  const width = maxX - minX;
+  const height = maxY - minY;
+
+  const widthScale = canvas.width / width;
+  const heightScale = canvas.height / height;
+
+  let scale = Math.min(widthScale, heightScale);
+  scale = scale < 1 ? scale : 1;
+  const transformState = {
+    x: -scale * (minX + width / 2) + canvas.width / 2,
+    y: -scale * (minY + height / 2) + canvas.height / 2,
+    scale: scale,
+  };
+  dispatch(transformCanvas(transformState));
+
+  return dispatch(setTree(tree));
+};
+
 export const setTree = createAction(
   `${treeActionsPrefix}/treeSet`,
   (tree: TreeAPI): any => ({
@@ -329,84 +373,6 @@ function createTree(tree: TreeAPI, state: TreeState) {
   state.treeId = tree.treeId;
   state.isLoading = false;
   state.treeInformation = treeInformation;
-
-  // var nodesNormalized = mapCollectionToEntity(nodes);
-
-  // const trees = GetTreeStructures(nodesNormalized);
-
-  // var links: string[][] = [];
-  // var families: FamilyNode[] = [];
-
-  // trees.forEach((tree) => {
-  //   links = [...links, ...tree.links];
-  //   families = [...families, ...tree.families];
-  // });
-
-  // var linksEntities: Link[] = links.map((link) => ({
-  //   source: link[0],
-  //   target: link[1],
-  //   id: getLinkId(link[0], link[1]),
-  // }));
-
-  // families.forEach((node: FamilyNode) => {
-  //   var familyMembers: EntityId[] = [];
-  //   const familyId = node.id;
-  //   if (node.fatherId) {
-  //     familyMembers.push(node.fatherId);
-  //   }
-  //   if (node.motherId) {
-  //     familyMembers.push(node.motherId);
-  //   }
-  //   familyMembers = [...node.children, ...familyMembers];
-
-  //   familyMembers.forEach((memberId) => {
-  //     const memberNode = nodes.find((n) => n.id == memberId);
-  //     if (memberNode && !memberNode.families.includes(familyId)) {
-  //     //  memberNode.families.push(familyId);
-  //     }
-  //   });
-  // });
-
-  // families.forEach((family) => {
-  //   let mother: PersonNode | undefined = undefined;
-  //   let father: PersonNode | undefined = undefined;
-
-  //   if (family.motherId) {
-  //     mother = nodes.find((n) => n.id == family.motherId);
-  //   }
-  //   if (family.fatherId) {
-  //     father = nodes.find((n) => n.id == family.fatherId);
-  //   }
-  //   if (mother && father) {
-  //     family.x =
-  //       Math.min(mother.x, father.x) + Math.abs(mother.x - father.x) / 2;
-  //     family.y =
-  //       Math.min(mother.y, father.y) + Math.abs(mother.y - father.y) / 2;
-  //   } else {
-  //     const existingMember = father ?? mother;
-  //     if (!existingMember) {
-  //       //TODO co jak nie ma? exception?
-  //     } else {
-  //       family.x = existingMember.x;
-  //       family.y = existingMember.y;
-  //     }
-  //   }
-  // });
-
-  // families.forEach((family) => {
-  //   let familyId = `f${family.fatherId ?? ""}${family.motherId ?? ""}`;
-  //   const childrenIds = family.children.map((child) => child as number).sort();
-
-  //   childrenIds.forEach((id) => {
-  //     familyId += id;
-  //   });
-  //   family.id = familyId;
-  // });
-
-  // linksAdapter.setAll(state.links, linksEntities);
-  // personNodesAdapter.setAll(state.nodes, nodes);
-  // familyNodesAdapter.setAll(state.families, families);
-  //
 }
 
 export const linkLoader = (state: TreeState, link: Link): LinkLoaded | null => {

@@ -1,4 +1,4 @@
-import { PersonInformation, PersonNode } from "../../model/PersonNode";
+import { PersonNode } from "../../../../model/PersonNode";
 import { TreeNodeAPI } from "./TreeModel";
 
 const mapToAPI = (personNode: PersonNode): TreeNodeAPI => {
@@ -51,20 +51,7 @@ const mapToLocal = (apiNode: TreeNodeAPI): PersonNode => {
   return node;
 };
 
-const getPersonInformation = (node: TreeNodeAPI): PersonInformation => {
-  const { birthday, name, surname, pictureUrl, description, sex } = node;
-  return {
-    birthday,
-    name,
-    surname,
-    pictureUrl,
-    description,
-    sex,
-  };
-};
-
 export const treeNodeMapper = {
   mapToLocal,
   mapToAPI,
-  getPersonInformation,
 };

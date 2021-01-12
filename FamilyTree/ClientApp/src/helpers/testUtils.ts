@@ -1,9 +1,9 @@
 import { ApplicationState } from "./index";
 import { EntityId } from "@reduxjs/toolkit";
-import { FamilyNode } from "../components/tree/model/FamilyNode";
-import { mockPerson, PersonNode } from "../components/tree/model/PersonNode";
-import { Link } from "../components/tree/model/Link";
+import { FamilyNode } from "../model/FamilyNode";
+import { Link } from "../model/Link";
 import { mapCollectionToEntity } from "./helpers";
+import { mockPerson, PersonNode } from "../model/PersonNode";
 
 export const createMockFamily = (
   firstParent: EntityId | null,

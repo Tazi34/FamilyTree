@@ -35,15 +35,24 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
+type Props = {
+  treeInformation: any;
+  onTreeVisibilityChange: any;
+  onTreeNameChange: any;
+  onInviteUser: any;
+  onAddNode: any;
+  onMockNodeAdd: any;
+  onExportTree: any;
+};
 const TreeInformationPanel = ({
   treeInformation,
   onTreeVisibilityChange,
   onTreeNameChange,
   onInviteUser,
   onAddNode,
-  onAddMockNode,
+  onMockNodeAdd,
   onExportTree,
-}: any) => {
+}: Props) => {
   const classes = useStyles();
   const [treeName, setTreeName] = React.useState(
     treeInformation ? treeInformation.name : ""
@@ -76,13 +85,13 @@ const TreeInformationPanel = ({
           >
             Add Family member
           </Button>
-          {/* <Button
+          <Button
             variant="outlined"
             className={classes.button}
-            onClick={() => onAddMockNode()}
+            onClick={() => onMockNodeAdd()}
           >
             Add mock Node
-          </Button> */}
+          </Button>
           <Button
             variant="outlined"
             className={classes.button}

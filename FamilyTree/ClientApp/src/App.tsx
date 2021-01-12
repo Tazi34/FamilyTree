@@ -53,6 +53,8 @@ import CreateNodeDialog from "./components/addNodeActionDialog/CreateNodeDialog"
 import LayoutBase from "./components/layout/LayoutBase";
 import useBackground from "./components/lazyBackground/useBackground";
 import BlogPostPage from "./components/blog/BlogPostPage";
+import GlobalAlerts from "./components/alerts/GlobalAlerts";
+import useAlert from "./components/alerts/useAlert";
 
 export const theme = createMuiTheme({
   palette: {
@@ -103,8 +105,6 @@ const App = (props: any) => {
     return null;
   }
 
-  const { alertSuccess, alertError, alertInfo } = props;
-
   return (
     <MuiThemeProvider theme={theme}>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -128,8 +128,6 @@ const App = (props: any) => {
           <AuthorizedPrivateRoute
             exact
             path={`${PROFILE_PAGE_URI}`}
-            onSuccess={alertSuccess}
-            onError={alertError}
             component={UserProfileDialog}
             layout={EmptyLayout}
             user={loggedUser}
@@ -160,16 +158,12 @@ const App = (props: any) => {
             path={LOGIN_PAGE_URI}
             component={LoginPage}
             layout={LayoutBase}
-            onSuccess={alertSuccess}
-            onError={alertError}
             user={loggedUser}
             background={"/background.jpg"}
           />
           <GuestRoute
             path={REGISTER_PAGE_URI}
             component={Registration}
-            onSuccess={alertSuccess}
-            onError={alertError}
             layout={EmptyLayout}
           />
           <LayoutRoute
@@ -198,6 +192,7 @@ const App = (props: any) => {
             layout={EmptyLayout}
           />
         </Switch>
+        <GlobalAlerts />
       </MuiPickersUtilsProvider>
     </MuiThemeProvider>
   );

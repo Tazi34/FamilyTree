@@ -1,7 +1,6 @@
 import { getLinkId } from "../../helpers/idHelpers";
-import { FamilyNode } from "../../model/FamilyNode";
-import { Node } from "../../model/NodeClass";
-import { PersonNode } from "../../model/PersonNode";
+import { FamilyNode } from "../../../../model/FamilyNode";
+import { Node } from "../../../../model/NodeClass";
 import {
   TreeState,
   selectFamily,
@@ -9,7 +8,8 @@ import {
   selectPersonNodeLocal,
 } from "../treeReducer";
 
-import { Link } from "../../model/Link";
+import { Link } from "../../../../model/Link";
+import { PersonNode } from "../../../../model/PersonNode";
 
 export const getOutboundLinks = (state: TreeState, node: Node): Link[] => {
   var links: Link[] = [];

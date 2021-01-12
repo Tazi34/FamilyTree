@@ -1,13 +1,13 @@
-import { Fade, makeStyles } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import Draggable from "react-draggable";
-import { useInView } from "react-intersection-observer";
-import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+import { useThunkDispatch } from "../..";
+import { disableZoom, enableZoom } from "../canvas/reducer/canvasReducer";
 import PersonNodeCard from "./PersonNodeCard";
 
 const DraggablePersonNode = (props: any) => {
   const node = props.person;
+
+  const dispatch = useThunkDispatch();
 
   return (
     <Draggable
@@ -18,6 +18,7 @@ const DraggablePersonNode = (props: any) => {
       onStart={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        dispatch(disableZoom());
       }}
       onDrag={(e, d) => {
         e.preventDefault();
@@ -32,6 +33,7 @@ const DraggablePersonNode = (props: any) => {
           e.stopPropagation();
           props.onNodeMove(node, d.x, d.y);
         }
+        dispatch(enableZoom());
       }}
       scale={props.scale}
     >

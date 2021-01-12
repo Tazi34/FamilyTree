@@ -6,11 +6,9 @@ import { Route } from "react-router";
 type Props = {
   component: React.Component;
   layout: React.Component;
-  background?: string;
 } & any;
 const LayoutRoute = ({
   layout: Layout,
-  background,
   component: Component,
   ...otherProps
 }: Props) => {
@@ -18,7 +16,7 @@ const LayoutRoute = ({
     <Route
       render={(props) => {
         return (
-          <Layout background={background}>
+          <Layout>
             <Component {...props} {...otherProps} />
           </Layout>
         );

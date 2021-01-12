@@ -2,7 +2,7 @@ import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { areEqualShallow } from "../../helpers/helpers";
-import { FamilyNode } from "./model/FamilyNode";
+import { FamilyNode } from "../../model/FamilyNode";
 
 const useStyles = makeStyles<any, any>((theme: Theme) => ({
   familyCard: ({ family, canConnectTo, isConnecting }) => ({

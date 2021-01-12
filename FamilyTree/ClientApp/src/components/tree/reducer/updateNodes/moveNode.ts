@@ -1,13 +1,11 @@
-import { PersonNode } from "./../../model/PersonNode";
+import { createAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
+import { PersonNode } from "../../../../model/PersonNode";
+import { treeAPI } from "../../API/treeAPI";
 import {
   MoveNodeRequestData,
   MoveNodeResponse,
 } from "./../../API/moveNode/moveNodeRequest";
-import { createAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { Node } from "../../model/NodeClass";
-import { treeActionsPrefix, personNodesActionsPrefix } from "../treeReducer";
-import { treeAPI } from "../../API/treeAPI";
 
 export const moveNodeThunk = createAsyncThunk<
   AxiosResponse<MoveNodeResponse>,

@@ -1,5 +1,6 @@
 import React, { Component, useState } from "react";
 import { AlertMessage } from "./AlertMessage";
+import { Alert } from "./reducer/alertsReducer";
 export type WithAlert = {
   alertInfo: (message: string) => {};
   alertSuccess: (message: string) => {};
@@ -11,20 +12,20 @@ export function withAlertMessage(WrappedComponent: any) {
     const [severity, setSeverity] = useState("");
     const [open, setOpen] = useState(false);
 
-    const alertMessage = (message: string, severity: any) => {
+    const alert = (message: string, severity: any) => {
       setMessage(message);
       setSeverity(severity);
       setOpen(true);
     };
 
     const alertSuccess = (message: string) => {
-      alertMessage(message, "success");
+      alert(message, "success");
     };
     const alertError = (message: string) => {
-      alertMessage(message, "error");
+      alert(message, "error");
     };
     const alertInfo = (message: string) => {
-      alertMessage(message, "info");
+      alert(message, "info");
     };
 
     return (
@@ -33,6 +34,7 @@ export function withAlertMessage(WrappedComponent: any) {
           alertInfo={alertInfo}
           alertError={alertError}
           alertSuccess={alertSuccess}
+          alert={alert}
           {...props}
         />
         <AlertMessage

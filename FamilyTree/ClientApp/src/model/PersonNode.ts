@@ -1,6 +1,6 @@
 import { EntityId } from "@reduxjs/toolkit";
-import { Sex } from "../../../model/Sex";
 import { Node } from "./NodeClass";
+import { Sex } from "./Sex";
 
 export class PersonNode extends Node {
   personDetails: PersonInformation;

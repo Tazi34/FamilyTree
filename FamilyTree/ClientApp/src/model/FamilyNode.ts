@@ -1,7 +1,5 @@
-import { RECT_HEIGHT } from "./../../../d3/RectMapper";
-import { PersonNode } from "./PersonNode";
 import { EntityId } from "@reduxjs/toolkit";
-import { Point } from "../Point";
+import { Point } from "./Point";
 import { Node } from "./NodeClass";
 
 export class FamilyNode extends Node {

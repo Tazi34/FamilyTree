@@ -22,6 +22,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useThunkDispatch } from "../..";
 import { formatDate } from "../../helpers/formatters";
 import { Sex } from "../../model/Sex";
+import useAlert from "../alerts/useAlert";
 import {
   authenticateToken,
   getUser,
@@ -93,6 +94,7 @@ const UserProfileDialog = (props: any) => {
   const user = useSelector(getUser) as User;
   const [pictureDialog, setPictureDialog] = React.useState(false);
   const [picturePreview, setPicturePreview] = React.useState(user.pictureUrl);
+  const alert = useAlert();
   const classes = useStyles();
 
   const dispatch = useThunkDispatch();
@@ -102,10 +104,10 @@ const UserProfileDialog = (props: any) => {
 
     dispatch(editProfile(requestData)).then((resp: any) => {
       if (!resp.error) {
-        props.onSuccess("Profile edited");
+        alert.success("Profile edited");
         props.onClose();
       } else {
-        props.onError("Error editing your profile. Try again later");
+        alert.error("Error editing your profile. Try again later");
       }
     });
   };

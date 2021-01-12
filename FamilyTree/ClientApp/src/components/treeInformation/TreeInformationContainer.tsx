@@ -15,22 +15,27 @@ import {
   exportTree,
 } from "../tree/reducer/treeReducer";
 import { withAlertMessage } from "../alerts/withAlert";
+import useTreeActions from "../tree/TreeActionsProvider";
+import useAlert from "../alerts/useAlert";
+import {
+  selectCanvas,
+  selectCanvasCenter,
+} from "../canvas/reducer/canvasReducer";
+import { CreateNodeRequestData } from "../tree/API/createNode/createNodeRequest";
+import { CreateNodeFormData } from "../addNodeActionDialog/CreateNodeDialog";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 type Props = {
-  onNodeAdd: (node: any) => any;
+  onNodeAddStart: any;
+  onNodeAdded: any;
+
   [x: string]: any;
 };
 
-const TreeInformationContainer = ({
-  alertSuccess,
-  alertError,
-  onNodeAdd,
-  onMockNodeAdd,
-}: Props) => {
-  const classes = useStyles();
+const TreeInformationContainer = ({ onNodeAdd, onDefaultNodeAdd }: any) => {
   const dispatch = useThunkDispatch();
   const user = useSelector(getUser);
+  const alert = useAlert();
   const treeInformation = useSelector<ApplicationState, TreeInformation | null>(
     (state) => state.tree.treeInformation
   );
@@ -58,7 +63,7 @@ const TreeInformationContainer = ({
       };
       dispatch(sendInvitation(data)).then((resp: any) => {
         if (!resp.error) {
-          alertSuccess("User invited");
+          alert.success("User invited");
         }
       });
     },
@@ -71,6 +76,10 @@ const TreeInformationContainer = ({
     }
   }, [treeInformation]);
 
+  if (!treeInformation) {
+    return null;
+  }
+
   return (
     <TreeInformationPanel
       treeInformation={treeInformation}
@@ -78,7 +87,7 @@ const TreeInformationContainer = ({
       onTreeNameChange={handleTreeNameChange}
       onInviteUser={handleInviteUser}
       onAddNode={onNodeAdd}
-      onAddMockNode={onMockNodeAdd}
+      onMockNodeAdd={onDefaultNodeAdd}
       onExportTree={handleTreeExport}
     />
   );

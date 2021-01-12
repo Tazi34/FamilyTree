@@ -7,6 +7,7 @@ import { useThunkDispatch } from "../..";
 import { HOME_PAGE_URI } from "../../applicationRouting";
 import { baseURL, BLOG_API_URL } from "../../helpers/apiHelpers";
 import { Post } from "../../model/Post";
+import useAlert from "../alerts/useAlert";
 import { withAlertMessage } from "../alerts/withAlert";
 import { EditPostRequestData } from "../blog/API/editPost";
 import { editPost, postByIdSelector } from "../blog/redux/postsReducer";
@@ -23,6 +24,8 @@ const EditPostFormContainer = (props: any) => {
   const classes = useStyles();
   const id = props.computedMatch.params.postId;
   const history = useHistory();
+  const alert = useAlert();
+
   const [post, setPost] = React.useState<Post | undefined>(undefined);
   React.useEffect(() => {
     axios
@@ -46,10 +49,10 @@ const EditPostFormContainer = (props: any) => {
     };
     dispatch(editPost(data)).then((response: any) => {
       if (!response.error) {
-        props.alertSuccess("Post edited. ");
+        alert.success("Post edited. ");
         history.goBack();
       } else {
-        props.alertError("Couldnt edit this post. Try again later");
+        alert.error("Couldnt edit this post. Try again later");
       }
     });
   };

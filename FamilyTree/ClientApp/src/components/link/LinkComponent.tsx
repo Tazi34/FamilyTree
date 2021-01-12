@@ -2,11 +2,9 @@ import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import { EntityId } from "@reduxjs/toolkit";
 import * as React from "react";
+import { Point } from "../../model/Point";
 import DrawableLink from "./DrawableLink";
-import { getLinkId } from "./helpers/idHelpers";
-import { createPath } from "./helpers/linkCreationHelpers";
-import { Node } from "./model/NodeClass";
-import { Point } from "./Point";
+import { Node } from "../../model/NodeClass";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 export type LinkLoaded = { linkId: EntityId; source: Node; target: Node };

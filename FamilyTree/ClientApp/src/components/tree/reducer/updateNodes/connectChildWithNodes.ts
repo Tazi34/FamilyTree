@@ -5,9 +5,8 @@ import {
   ConnectNodesResponse,
 } from "../../API/connectNodes/connectNodesRequest";
 import { treeAPI } from "../../API/treeAPI";
-import { FamilyNode } from "../../model/FamilyNode";
-import { Link } from "../../model/Link";
-import { PersonNode } from "../../model/PersonNode";
+import { FamilyNode } from "../../../../model/FamilyNode";
+import { Link } from "../../../../model/Link";
 import {
   familyNodesAdapter,
   linksAdapter,
@@ -17,6 +16,7 @@ import {
   TreeState,
 } from "../treeReducer";
 import { createLink } from "../utils/getOutboundLinks";
+import { PersonNode } from "../../../../model/PersonNode";
 
 export const connectNodes = (data: ConnectNodesRequestData) => (
   dispatch: any

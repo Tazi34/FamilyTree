@@ -1,6 +1,6 @@
 import * as React from "react";
+import { PersonNode } from "../../model/PersonNode";
 import DraggablePersonNode from "./DraggablePersonNode";
-import { PersonNode } from "./model/PersonNode";
 
 class NodesList extends React.Component<any> {
   render() {
@@ -16,7 +16,6 @@ class NodesList extends React.Component<any> {
               onAddActionMenuClick={props.onAddActionMenuClick}
               canConnectTo={this.props.possibleConnections.includes(node.id)}
               disabled={this.props.disabled}
-              onSiblingAdd={this.props.onSiblingAdd}
               viewRef={this.props.viewRef}
               key={node.id}
               scale={props.scale}

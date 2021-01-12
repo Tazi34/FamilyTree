@@ -93,18 +93,28 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100%",
   },
 }));
-export type FormProps = {
+export type TreeNodeDetailsFormProps = {
   name: string;
   surname: string;
   birthday: string;
   description: string;
   sex: Sex;
+  pictureUrl?: string;
 };
-type Props = {} & FormikProps;
-const PersonDetailsForm = ({ change, values, setFieldValue }: Props) => {
+type Props = {
+  onPictureSet?: any;
+} & FormikProps;
+const TreeNodeDetailsForm = ({
+  change,
+  values,
+  setFieldValue,
+  onPictureSet,
+}: Props) => {
   const classes = useStyles();
   const [pictureDialog, setPictureDialog] = React.useState(false);
-  const [picturePreview, setPicturePreview] = React.useState<any>(null);
+  const [picturePreview, setPicturePreview] = React.useState<any>(
+    values.pictureUrl
+  );
   const handleSetPicture = (data: any) => {
     if (data) {
       values.picture = data;
@@ -115,6 +125,7 @@ const PersonDetailsForm = ({ change, values, setFieldValue }: Props) => {
         }
       };
       fileReader.readAsDataURL(data);
+      if (onPictureSet) onPictureSet(data);
     }
     setPictureDialog(false);
   };
@@ -216,4 +227,4 @@ const PersonDetailsForm = ({ change, values, setFieldValue }: Props) => {
   );
 };
 
-export default PersonDetailsForm;
+export default TreeNodeDetailsForm;

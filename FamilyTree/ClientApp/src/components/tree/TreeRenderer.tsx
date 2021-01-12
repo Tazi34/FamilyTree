@@ -2,21 +2,20 @@ import { Fade } from "@material-ui/core";
 import { EntityId } from "@reduxjs/toolkit";
 import Axios from "axios";
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
+import { useThunkDispatch } from "../..";
 import { ApplicationState } from "../../helpers";
 import { baseURL } from "../../helpers/apiHelpers";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
 import Families from "./Families";
-import FollowableLink from "./FollowableLink";
-import { createPath } from "./helpers/linkCreationHelpers";
-import { LinkLoaded } from "./LinkComponent";
-import Links from "./Links";
-import { FamilyNode, getFamilyLocation } from "./model/FamilyNode";
-import { Link } from "./model/Link";
-import { Node } from "./model/NodeClass";
-import { PersonNode } from "./model/PersonNode";
+import FollowableLink from "../link/FollowableLink";
+import { LinkLoaded } from "../link/LinkComponent";
+import Links from "../link/Links";
+import moveNodeOnCanvas from "./logic/moveNodeOnCanvas";
+import { FamilyNode } from "../../model/FamilyNode";
+import { Link } from "../../model/Link";
+import { Node } from "../../model/NodeClass";
 import NodesList from "./NodesList";
-import { Point } from "./Point";
 import {
   linkLoader,
   selectAllFamilies,
@@ -25,52 +24,20 @@ import {
   TreeState,
 } from "./reducer/treeReducer";
 import { changeNodeVisibility } from "./reducer/updateNodes/changeNodeVisibility";
-
-import { requestDeleteNode } from "./reducer/updateNodes/deleteNode";
 import { moveNode, moveNodeThunk } from "./reducer/updateNodes/moveNode";
-import {
-  getIncomingLinks,
-  getNodeById,
-  getOutboundLinks,
-} from "./reducer/utils/getOutboundLinks";
-import TreeNodeDetailsDialog from "./TreeNodeDetailsDialog";
-import "./treeRenderer.css";
-
-const d3 = require("d3");
-
-//TODO PRZENIESC
-export interface IDictionary<TValue> {
-  [id: string]: TValue;
-}
+import useTreeActions from "./TreeActionsProvider";
+import { PersonNode } from "../../model/PersonNode";
 
 type OwnProps = {
-  rectWidth: number;
-  rectHeight: number;
-  onParentAdd: (id: number, data: CreateNodeRequestData) => void;
-  onPartnerAdd: (id: number, data: CreateNodeRequestData) => void;
-  onSiblingAdd: (id: number, data: CreateNodeRequestData) => void;
   onHideBranch: (family: FamilyNode) => void;
-  onSuccess: any;
-  onError: any;
   onChildAdd: (
     data: CreateNodeRequestData,
     firstParent: number,
     secondParent?: number
   ) => void;
-  [x: string]: any;
   scale: number;
-};
-type DispatchProps = {
-  moveNodeThunk: any;
-  treeState: TreeState;
-  moveNode: any;
-  links: Link[];
-  families: FamilyNode[];
-  nodes: PersonNode[];
-  requestDeleteNode: any;
-};
+} & any;
 
-type Props = DispatchProps & OwnProps;
 export type ConnectionMode = "AsChild" | "AsPartner" | "AsParent";
 type ConnectionProps = {
   isConnecting: boolean;
@@ -80,355 +47,190 @@ type ConnectionProps = {
     nodes: number[];
     families: EntityId[];
   };
-  firstTarget: PersonNode | null;
-};
-type NodeDialogProps = {
-  open: boolean;
-  node: PersonNode | null;
-  startOnEdit?: boolean;
 };
 
-type State = {
-  nodeDialog: NodeDialogProps;
-  connection: ConnectionProps;
-};
+const TreeRenderer = (props: OwnProps) => {
+  const {
+    onNodeDelete,
+    onAsChildConnect,
+    onAsPartnerConnect,
+    onBranchHide,
+    onNodeDisconnect,
+  } = useTreeActions();
+  const dispatch = useThunkDispatch();
+  const treeState = useSelector<ApplicationState, TreeState>(
+    (state) => state.tree
+  );
+  const families = useSelector(selectAllFamilies);
+  const links = useSelector(selectAllLinks);
+  const nodes = useSelector(selectAllPersonNodes);
+  const [connection, setConnection] = React.useState<ConnectionProps>({
+    isConnecting: false,
+    start: null,
+    possibleConnections: {
+      families: [],
+      nodes: [],
+    },
+    mode: null,
+  });
 
-class TreeRenderer extends React.Component<Props, State, any> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      nodeDialog: {
-        open: false,
-        node: null,
+  const resetConnectingMode = () => {
+    setConnection({
+      isConnecting: false,
+      possibleConnections: {
+        families: [],
+        nodes: [],
       },
-      connection: {
-        isConnecting: false,
-        start: null,
-        possibleConnections: {
-          families: [],
-          nodes: [],
-        },
-        mode: null,
-        firstTarget: null,
-      },
-    };
-  }
-  resetConnectingMode = () => {
-    this.setState({
-      connection: {
-        firstTarget: null,
-        isConnecting: false,
-        possibleConnections: {
-          families: [],
-          nodes: [],
-        },
-        mode: null,
-        start: null,
-      },
+      mode: null,
+      start: null,
     });
   };
 
-  handleStopConnectingMode = (e: any) => {
-    if (this.state.connection.isConnecting) {
+  const handleStopConnectingMode = (e: any) => {
+    if (connection.isConnecting) {
       e.preventDefault();
-      this.resetConnectingMode();
+      resetConnectingMode();
       return false;
     }
   };
-  componentDidMount = () => {
-    document.addEventListener("contextmenu", this.handleStopConnectingMode);
-  };
-  componentWillUnmount = () => {
-    document.removeEventListener("contextmenu", this.handleStopConnectingMode);
-  };
-  handleNodeDelete = (id: number) => {
-    this.props.requestDeleteNode(id);
+  React.useEffect(() => {
+    document.addEventListener("contextmenu", handleStopConnectingMode);
+    return () => {
+      document.removeEventListener("contextmenu", handleStopConnectingMode);
+    };
+  });
+
+  //zmienia polozenia wezla w storze i bazie danych - tylko przy zakonczeniu ruchu
+  const handleNodeMove = (node: Node, x: number, y: number) => {
+    dispatch(moveNode(node as PersonNode, x, y));
+    dispatch(moveNodeThunk({ nodeId: node.id as number, x, y }));
   };
 
-  handleNodeMove = (node: Node, x: number, y: number) => {
-    this.props.moveNode(node, x, y);
-    this.props.moveNodeThunk({ nodeId: node.id as number, x, y });
-  };
-  moveNodeOnCanvas = (e: any, node: Node) => {
-    if (this.state.connection.isConnecting) {
+  //przesuwa wezel lokalnie, na canvasie
+  const handleMoveNodeOnCanvas = (e: any, node: Node) => {
+    if (connection.isConnecting) {
       return;
     }
-    const treeState = this.props.treeState;
-
-    const nodeFamilies = this.props.families.filter(
-      (family) => family.fatherId === node.id || family.motherId === node.id
-    );
-
-    nodeFamilies.forEach((family) => {
-      var familyLocation: Point;
-
-      if (family.fatherId && family.motherId) {
-        const nodeToLoadId =
-          family.fatherId === node.id ? family.motherId : family.fatherId;
-        const otherNode = this.props.nodes.find(
-          (n) => n.id === nodeToLoadId
-        ) as PersonNode;
-        familyLocation = getFamilyLocation(
-          family,
-          { x: e.x, y: e.y },
-          otherNode
-        );
-      } else {
-        familyLocation = getFamilyLocation(family, { x: e.x, y: e.y });
-      }
-      const familyNode = d3.select("#" + family.id);
-      familyNode.style(
-        "transform",
-        `translate(${familyLocation.x - 10}px,${familyLocation.y - 10}px)`
-      );
-
-      //Przesun wszystkie polaczenia rodziny
-      const familyLinks = getOutboundLinks(treeState, family);
-      familyLinks.forEach((link: Link) => {
-        const otherNodelocation = getNodeById(treeState, link.target);
-        let path: any;
-        if (otherNodelocation) {
-          if (otherNodelocation.id === node.id) {
-            path = createPath(familyLocation.x, familyLocation.y, e.x, e.y);
-          } else {
-            path = createPath(
-              familyLocation.x,
-              familyLocation.y,
-              otherNodelocation.x,
-              otherNodelocation.y
-            );
-          }
-
-          const linksvg = d3.select("#" + link.id);
-          linksvg.attr("d", path);
-        }
-      });
-      const familyIncomingLinks = getIncomingLinks(treeState, family);
-
-      familyIncomingLinks.forEach((link: Link) => {
-        const otherNodelocation = getNodeById(treeState, link.source);
-        if (otherNodelocation) {
-          let path: any;
-          if (otherNodelocation.id === node.id) {
-            path = createPath(e.x, e.y, familyLocation.x, familyLocation.y);
-          } else {
-            path = createPath(
-              otherNodelocation.x,
-              otherNodelocation.y,
-              familyLocation.x,
-              familyLocation.y
-            );
-          }
-          const linksvg = d3.select("#" + link.id);
-          linksvg.attr("d", path);
-        }
-      });
-    });
-
-    const outbondLinks = getOutboundLinks(treeState, node);
-
-    outbondLinks
-      .filter(
-        (link) => !nodeFamilies.find((family) => link.target === family.id)
-      )
-      .forEach((link: Link) => {
-        const otherNodelocation = getNodeById(treeState, link.target);
-        if (otherNodelocation) {
-          var path = createPath(
-            e.x,
-            e.y,
-            otherNodelocation.x,
-            otherNodelocation.y
-          );
-          console.log(link);
-
-          const linksvg = d3.select("#" + link.id);
-          linksvg.attr("d", path);
-        }
-      });
-    const incomingLinks = getIncomingLinks(treeState, node);
-
-    incomingLinks.forEach((link: Link) => {
-      const otherNodelocation = getNodeById(treeState, link.source);
-      if (otherNodelocation) {
-        var path = createPath(
-          otherNodelocation.x,
-          otherNodelocation.y,
-          e.x,
-          e.y
-        );
-        const linksvg = d3.select("#" + link.id);
-        linksvg.attr("d", path);
-      }
-    });
+    moveNodeOnCanvas(e, node, nodes, families, treeState);
   };
 
-  handleNodeVisibilityChange = (node: PersonNode) => {
-    this.props.onNodeVisiblityChange(node);
-  };
-
-  addFirstTargetToConnection = (node: PersonNode) => {
-    this.setState({
-      connection: {
-        ...this.state.connection,
-        firstTarget: node,
-      },
-    });
-  };
-  handleFamilySelect = (familyNode: FamilyNode, event: any) => {
-    const connectionMode = this.state.connection;
+  const handleFamilySelect = (familyNode: FamilyNode, event: any) => {
+    const connectionMode = connection;
     if (connectionMode.isConnecting) {
       if (connectionMode.possibleConnections.families.includes(familyNode.id)) {
-        this.props.onConnectAsChild(
-          this.state.connection.start!.id,
-          familyNode.fatherId,
-          familyNode.motherId
+        onAsChildConnect(
+          treeState.treeId as number,
+          connection.start!.id as number,
+          familyNode.fatherId as number,
+          familyNode.motherId as number
         );
-        this.resetConnectingMode();
+        resetConnectingMode();
       }
     } else {
-      this.props.onHideBranch(familyNode);
+      onBranchHide(familyNode);
     }
   };
-  handleNodeSelect = (personNode: PersonNode) => {
-    const connectionMode = this.state.connection;
-    if (connectionMode.isConnecting) {
+  const handleNodeSelect = (personNode: PersonNode) => {
+    if (connection.isConnecting) {
       if (
-        connectionMode.possibleConnections.nodes.includes(
-          personNode.id as number
-        )
+        connection.possibleConnections.nodes.includes(personNode.id as number)
       ) {
-        if (connectionMode.mode === "AsChild") {
-          const startNode = connectionMode.start;
+        if (connection.mode === "AsChild") {
+          const startNode = connection.start;
           if (!startNode || (startNode.fatherId && startNode.motherId)) {
-            this.resetConnectingMode();
+            resetConnectingMode();
             return;
           }
           var existingParent = startNode.fatherId ?? startNode.motherId;
 
-          this.props.onConnectAsChild(
-            connectionMode.start!.id,
-            personNode.id,
-            existingParent
+          onAsChildConnect(
+            treeState.treeId as number,
+            connection.start!.id as number,
+            personNode.id as number,
+            existingParent as number
           );
         }
-        if (connectionMode.mode === "AsPartner") {
-          this.props.onConnectAsPartner(
-            this.state.connection.start!.id,
-            personNode.id
+        if (connection.mode === "AsPartner") {
+          onAsPartnerConnect(
+            connection.start!.id as number,
+            personNode.id as number
           );
         }
-        if (connectionMode.mode === "AsParent") {
-          const startNode = connectionMode.start;
+        if (connection.mode === "AsParent") {
+          const startNode = connection.start;
           if (!startNode || (startNode.fatherId && startNode.motherId)) {
-            this.resetConnectingMode();
+            resetConnectingMode();
             return;
           }
           var existingParent = personNode.fatherId ?? personNode.motherId;
 
-          this.props.onConnectAsChild(
-            personNode.id,
-            connectionMode.start!.id,
-            existingParent
+          onAsChildConnect(
+            treeState.treeId as number,
+
+            personNode.id as number,
+            connection.start!.id as number,
+            existingParent as number
           );
         }
       }
-      this.resetConnectingMode();
+      resetConnectingMode();
     } else {
-      this.setState({ nodeDialog: { open: true, node: personNode } });
+      props.onEditNodeDialogOpen(personNode.id);
     }
   };
-  handleDialogClose = () => {
-    this.setState({ nodeDialog: { open: false, node: null } });
-  };
-  handleConnectStart = (node: PersonNode, mode: ConnectionMode) => {
+
+  const handleConnectStart = (node: PersonNode, mode: ConnectionMode) => {
     //REFACTOR
     Axios.post(baseURL + "/tree/node/possibleConnections", {
       mode: mode,
       nodeId: node.id,
     }).then((resp) => {
-      this.setState({
-        connection: {
-          firstTarget: this.state.connection.firstTarget,
-          isConnecting: true,
-          start: node,
-          possibleConnections: resp.data,
-          mode,
-        },
+      setConnection({
+        isConnecting: true,
+        start: node,
+        possibleConnections: resp.data,
+        mode,
       });
     });
   };
+  const loadedLinks = links
+    .map((link: Link) => linkLoader(treeState, link))
+    .filter((a: any) => a) as LinkLoaded[];
 
-  render = () => {
-    const { nodeDialog } = this.state;
-
-    const loadedLinks = this.props.links
-      .map((link: Link) => linkLoader(this.props.treeState, link))
-      .filter((a: any) => a) as LinkLoaded[];
-
-    return (
-      <Fade in={true} timeout={3000}>
-        <div>
-          <NodesList
-            onNodeVisiblityChange={this.props.changeNodeVisibility}
-            onDisconnectNode={this.props.onDisconnectNode}
-            possibleConnections={
-              this.state.connection.possibleConnections.nodes
-            }
-            disabled={this.state.connection.isConnecting}
-            onConnectStart={this.handleConnectStart}
-            scale={this.props.scale}
-            nodes={this.props.nodes}
-            onNodeSelect={this.handleNodeSelect}
-            onNodeMove={this.handleNodeMove}
-            onNodeDelete={this.handleNodeDelete}
-            onMoveNodeOnCanvas={this.moveNodeOnCanvas}
+  return (
+    <Fade in={true} timeout={3000}>
+      <div>
+        <NodesList
+          onNodeVisiblityChange={changeNodeVisibility}
+          onDisconnectNode={onNodeDisconnect}
+          possibleConnections={connection.possibleConnections.nodes}
+          disabled={connection.isConnecting}
+          onConnectStart={handleConnectStart}
+          scale={props.scale}
+          nodes={nodes}
+          onNodeSelect={handleNodeSelect}
+          onNodeMove={handleNodeMove}
+          onNodeDelete={onNodeDelete}
+          onMoveNodeOnCanvas={handleMoveNodeOnCanvas}
+        />
+        <Families
+          isConnecting={connection.isConnecting}
+          possibleConnections={connection.possibleConnections.families}
+          families={families}
+          onSelect={handleFamilySelect}
+        />
+        <Links links={loadedLinks}>
+          <FollowableLink
+            enabled={connection.isConnecting}
+            positionX={props.positionX}
+            positionY={props.positionY}
+            scale={props.scale}
+            source={connection.start ?? { x: 1, y: 1 }}
           />
-          <Families
-            isConnecting={this.state.connection.isConnecting}
-            possibleConnections={
-              this.state.connection.possibleConnections.families
-            }
-            families={this.props.families}
-            onSelect={this.handleFamilySelect}
-          />
-          <Links links={loadedLinks}>
-            <FollowableLink
-              enabled={this.state.connection.isConnecting}
-              positionX={this.props.positionX}
-              positionY={this.props.positionY}
-              scale={this.props.scale}
-              source={this.state.connection.start ?? { x: 1, y: 1 }}
-            />
-          </Links>
-
-          <div>
-            <TreeNodeDetailsDialog
-              startOnEdit={nodeDialog.startOnEdit}
-              open={nodeDialog.open}
-              node={nodeDialog.node}
-              onClose={this.handleDialogClose}
-              onSuccess={this.props.onSuccess}
-              onError={this.props.onError}
-            />
-          </div>
-        </div>
-      </Fade>
-    );
-  };
-}
-
-const mapDispatch = {
-  changeNodeVisibility,
-  requestDeleteNode,
-  moveNodeThunk,
-  moveNode,
+        </Links>
+      </div>
+    </Fade>
+  );
 };
-const mapState = (state: ApplicationState) => ({
-  treeState: state.tree,
-  families: selectAllFamilies(state),
-  links: selectAllLinks(state),
-  nodes: selectAllPersonNodes(state),
-});
 
-export default connect(mapState, mapDispatch)(TreeRenderer);
+export default TreeRenderer;

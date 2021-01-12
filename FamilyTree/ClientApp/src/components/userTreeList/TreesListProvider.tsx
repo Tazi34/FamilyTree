@@ -6,6 +6,7 @@ import { useHistory } from "react-router";
 import { useThunkDispatch } from "../..";
 import { TREE_PAGE_URI } from "../../applicationRouting";
 import { TreeInformation } from "../../model/TreeInformation";
+import useAlert from "../alerts/useAlert";
 import { withAlertMessage } from "../alerts/withAlert";
 import { getUser, User } from "../loginPage/authenticationReducer";
 import {
@@ -27,6 +28,7 @@ const UserTreeListProvider = (props: any) => {
   const currentUser = useSelector(getUser);
   const userTreesState = useSelector(userTreesStateSelector);
   const userTrees = useSelector(usersTreesSelectors.selectAll);
+  const alert = useAlert();
 
   const handleTreeSelect = (tree: TreeInformation) => {
     history.push(`${TREE_PAGE_URI}/${tree.treeId}`);
@@ -34,9 +36,9 @@ const UserTreeListProvider = (props: any) => {
   const handleTreeCreate = (treeName: string) => {
     dispatch(createTree(treeName)).then((resp: any) => {
       if (resp.error) {
-        props.alertError("Couldn't create tree. Contact service provider");
+        alert.error("Couldn't create tree. Contact service provider");
       } else {
-        props.alertSuccess("Tree created");
+        alert.success("Tree created");
         const treeId = resp.payload.data.treeId;
         history.push(`${TREE_PAGE_URI}/${treeId}`);
       }

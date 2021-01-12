@@ -13,6 +13,7 @@ import { ApplicationState } from "../../helpers";
 import { StatusState } from "../../helpers/helpers";
 import { BlogProfile } from "../../model/BlogProfile";
 import { Post } from "../../model/Post";
+import useAlert from "../alerts/useAlert";
 import { withAlertMessage } from "../alerts/withAlert";
 import { tryOpenChat } from "../chat/chatReducer";
 import { getUser, User } from "../loginPage/authenticationReducer";
@@ -61,7 +62,7 @@ const BlogPage = (props: any) => {
   const dispatch = useThunkDispatch();
   const blogId = props.computedMatch.params.blogId;
   const history = useHistory();
-
+  const alert = useAlert();
   const [editProfileDialog, setEditProfileDialog] = React.useState(false);
   const [selectedTab, setSelectedTab] = React.useState(0);
 
@@ -93,9 +94,9 @@ const BlogPage = (props: any) => {
   const handlePostDelete = (id: number) => {
     dispatch(deletePost(id)).then((response: any) => {
       if (!response.error) {
-        props.alertSuccess("Post deleted");
+        alert.success("Post deleted");
       } else {
-        props.alertError("Couldn't delete post. Try again later");
+        alert.error("Couldn't delete post. Try again later");
       }
     });
   };
@@ -170,8 +171,6 @@ const BlogPage = (props: any) => {
         </div>
       </ResponsiveMainColumn>
       <UserProfileDialog
-        onSuccess={props.alertSuccess}
-        onError={props.alertError}
         open={editProfileDialog}
         onClose={closeEditProfileDialog}
       />

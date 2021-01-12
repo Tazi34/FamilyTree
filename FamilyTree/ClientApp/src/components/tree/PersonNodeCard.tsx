@@ -13,13 +13,14 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FaceIcon from "@material-ui/icons/Face";
 import * as React from "react";
-import { RECT_HEIGHT, RECT_WIDTH } from "../../d3/RectMapper";
+import { RECT_HEIGHT, RECT_WIDTH } from "../../helpers/RectSize";
 import { formatDate, formatInitials } from "../../helpers/formatters";
 import { areEqualShallow } from "../../helpers/helpers";
 import HiddenPersonNode from "./HiddenPersonNode";
-import { Node } from "./model/NodeClass";
-import { PersonNode } from "./model/PersonNode";
+import { Node } from "../../model/NodeClass";
+
 import { ConnectionMode } from "./TreeRenderer";
+import { PersonNode } from "../../model/PersonNode";
 const imageSize = 57;
 const dividerScale = 0.25;
 const addIconSize = 25;

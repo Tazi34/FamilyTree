@@ -1,8 +1,8 @@
 import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
-import { createPath } from "./helpers/linkCreationHelpers";
-import { Point } from "./Point";
+import { createPath } from "../tree/helpers/linkCreationHelpers";
+import { Point } from "../../model/Point";
 
 const useStyles = makeStyles((theme: Theme) => ({
   path: {

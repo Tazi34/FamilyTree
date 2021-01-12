@@ -14,7 +14,7 @@ import {
   UploadNodePictureRequestData,
   uploadTreeNodePicture,
 } from "../tree/API/uploadPicture/uploadTreeNodePicture";
-import PersonDetailsForm from "./PersonDetailsForm";
+import TreeNodeDetailsForm from "./TreeNodeDetailsForm";
 const useStyles = makeStyles((theme: Theme) => ({}));
 
 export type CreateNodeFormData = {
@@ -65,7 +65,7 @@ const CreateNodeDialog = ({ open, onClose, onSubmit }: Props) => {
               };
               return (
                 <form onSubmit={handleSubmit}>
-                  <PersonDetailsForm
+                  <TreeNodeDetailsForm
                     change={change}
                     values={values}
                     onSubmit={(values: any) => {
