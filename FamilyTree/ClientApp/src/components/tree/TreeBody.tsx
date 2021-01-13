@@ -3,6 +3,7 @@ import { Theme } from "@material-ui/core/styles";
 import React from "react";
 import { useSelector } from "react-redux";
 import { ApplicationState } from "../../helpers";
+import { PersonNode } from "../../model/PersonNode";
 import { selectCanvas } from "../canvas/reducer/canvasReducer";
 import MovableCanvas from "./MovableCanvas";
 import useTreeActions from "./TreeActionsProvider";
@@ -24,8 +25,9 @@ type CanvasZoom = {
 
 type Props = {
   onEditNodeDialogOpen: any;
+  onNodeDelete: (id: number, isUser: boolean) => void;
 };
-const TreeBody = ({ onEditNodeDialogOpen }: Props) => {
+const TreeBody = ({ onEditNodeDialogOpen, onNodeDelete }: Props) => {
   const classes = useStyles();
   const treeId = useSelector<ApplicationState, number>(
     (state) => state.tree.treeId ?? 0
@@ -57,6 +59,7 @@ const TreeBody = ({ onEditNodeDialogOpen }: Props) => {
           positionX={canvas.x}
           positionY={canvas.y}
           scale={canvas.scale}
+          onNodeDelete={onNodeDelete}
         />
       </MovableCanvas>
     </div>

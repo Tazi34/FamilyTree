@@ -7,19 +7,20 @@ import { useThunkDispatch } from "../..";
 import { HOME_PAGE_URI } from "../../applicationRouting";
 import { ApplicationState } from "../../helpers";
 import { TreeInformation } from "../../model/TreeInformation";
-import CreateNodeDialog, {
+import CreateTreeNodeDialog, {
   CreateNodeFormData,
-} from "../addNodeActionDialog/CreateNodeDialog";
+} from "../addNodeActionDialog/CreateTreeNodeDialog";
 import useAlert from "../alerts/useAlert";
 import {
   selectCanvas,
   selectCanvasCenter,
 } from "../canvas/reducer/canvasReducer";
 import TreeInformationContainer from "../treeInformation/TreeInformationContainer";
-import { getTree } from "./reducer/treeReducer";
+import { getTree, selectIsOnlyUserInTree } from "./reducer/treeReducer";
 import useTreeActions from "./TreeActionsProvider";
 import TreeBody from "./TreeBody";
 import TreeNodeDetailsDialog from "../treeNodesDetails/TreeNodeDetailsDialog";
+import DeleteLastNodeConfirmationDialog from "../deleteLastNodeConfirmationDialog/DeleteLastNodeConfirmationDialog";
 
 type TreeContainerState = {
   addDialog: boolean;
@@ -61,12 +62,20 @@ const Tree = (props: any) => {
     nodeId: null,
     open: false,
   });
+  const [
+    nodeDeleteDialog,
+    setNodeDeleteDialog,
+  ] = React.useState<NodeDialogProps>({
+    nodeId: null,
+    open: false,
+  });
+  const hasSingleUser = useSelector(selectIsOnlyUserInTree);
   const dispatch = useThunkDispatch();
   const alert = useAlert();
   const canvasCenter = useSelector(selectCanvasCenter);
   const classes = useStyles();
   const treeId = parseFloat(props.computedMatch.params.treeId);
-  const { onNodeAdd, onDefaultNodeAdd } = useTreeActions();
+  const { onNodeAdd, onDefaultNodeAdd, onNodeDelete } = useTreeActions();
   const treeInformation = useSelector<ApplicationState, TreeInformation | null>(
     (state) => state.tree.treeInformation
   );
@@ -77,6 +86,9 @@ const Tree = (props: any) => {
     //TODO rozwiazanie kwesti goscia - jak wejdzie gosc rzuca blad i elo
     dispatch(getTree(treeId)).then((resp: any) => {
       if (resp.error) {
+        alert.error(
+          "Error occured while loading the tree. Try again later or contact service provider."
+        );
         props.history.push(HOME_PAGE_URI);
       } else {
       }
@@ -110,6 +122,15 @@ const Tree = (props: any) => {
       }
     );
   };
+
+  const handleNodeDelete = (nodeId: number, isUser: boolean) => {
+    //jesli ostatni user wymagaj potwierdzenia
+    if (hasSingleUser && isUser) {
+      setNodeDeleteDialog({ open: true, nodeId });
+    } else {
+      onNodeDelete(nodeId);
+    }
+  };
   const handleMockNodeAdd = () => {
     onDefaultNodeAdd(treeId, canvasCenter.x, canvasCenter.y - 50);
   };
@@ -131,12 +152,21 @@ const Tree = (props: any) => {
             />
           </div>
         </div>
-        <TreeBody onEditNodeDialogOpen={handleEditNodeDialogOpen} />
+        <TreeBody
+          onNodeDelete={handleNodeDelete}
+          onEditNodeDialogOpen={handleEditNodeDialogOpen}
+        />
       </div>
-      <CreateNodeDialog
+      <CreateTreeNodeDialog
         onSubmit={handleNodeAdd}
         open={addDialog}
         onClose={closeAddNodeDialog}
+      />
+      <DeleteLastNodeConfirmationDialog
+        onConfirm={onNodeDelete}
+        nodeId={nodeDeleteDialog.nodeId}
+        open={nodeDeleteDialog.open}
+        onClose={() => setNodeDeleteDialog({ nodeId: null, open: false })}
       />
       {nodeEditDialog.nodeId && (
         <TreeNodeDetailsDialog

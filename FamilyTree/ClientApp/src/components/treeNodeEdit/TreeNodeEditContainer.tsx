@@ -38,7 +38,6 @@ const TreeNodeEditContainer = ({ node, onClose }: Props) => {
     }
   };
   const handleEdit = (values: TreeNodeDetailsFormProps) => {
-    console.log(values);
     var date = new Date(values.birthday);
     date.setHours(5);
     const data: UpdateNodeRequestData = {

@@ -22,12 +22,7 @@ const HiddenPersonNode = ({ hidden, picture, initials, onClick }: any) => {
   return (
     <Zoom in={!hidden} timeout={1000} style={{ transitionDelay: "1000ms" }}>
       <div>
-        <Avatar
-          src={picture}
-          className={classes.root}
-          onClick={onClick}
-          //style={{ visibility: hidden ? "hidden" : "visible" }}
-        >
+        <Avatar src={picture} className={classes.root} onClick={onClick}>
           {initials ?? ""}
         </Avatar>
       </div>

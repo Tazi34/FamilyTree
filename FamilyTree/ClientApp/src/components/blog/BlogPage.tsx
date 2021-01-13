@@ -22,7 +22,7 @@ import UserProfileDialog from "../userProfile/UserProfileDialog";
 import TreesListProvider from "../userTreeList/TreesListProvider";
 import BlogOwnerSection from "./BlogOwnerSection";
 import BlogProfileSection from "./BlogProfileSection";
-import PostsList from "./PostsList";
+import PostsList from "../posts/PostsList";
 import { deletePost, getBlog, postsSelectors } from "./redux/postsReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -44,6 +44,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     background: theme.palette.background.paper,
     padding: 20,
     position: "relative",
+    display: "flex",
+    flexDirection: "column",
   },
 
   treesContainer: {
@@ -54,9 +56,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   topPart: {},
 }));
-interface ParamTypes {
-  blogId: string | undefined;
-}
+
 const BlogPage = (props: any) => {
   const classes = useStyles();
   const dispatch = useThunkDispatch();
@@ -107,7 +107,7 @@ const BlogPage = (props: any) => {
     return <Redirect to={HOME_PAGE_URI} />;
   }
 
-  const isUserOwnerOfBlog = profile && profile.userId === user?.id;
+  const isUserOwnerOfBlog = Boolean(profile && profile.userId === user?.id);
   const isLoading = fetchStatus.loading || !profile;
   return (
     <div className={classes.main}>
@@ -152,13 +152,17 @@ const BlogPage = (props: any) => {
             >
               <div style={selectedTab === 0 ? {} : { height: 1 }}>
                 <PostsList
+                  isOwner={isUserOwnerOfBlog}
                   loaded={!isLoading}
                   posts={posts}
                   onPostDelete={handlePostDelete}
                 />
               </div>
 
-              <div className={classes.treesContainer}>
+              <div
+                className={classes.treesContainer}
+                style={selectedTab === 1 ? {} : { height: 1 }}
+              >
                 <TreesListProvider
                   loaded={!isLoading}
                   isOwner={isUserOwnerOfBlog}

@@ -13,6 +13,7 @@ import chatAPI from "./API/chatAPI";
 import { getLatestChats } from "./reducer/getLatestChats";
 import { GetChatResponse } from "./API/getChat";
 import { closeAllChats } from "./reducer/closeAllChats";
+import { createActionWithPayload } from "../../helpers/helpers";
 
 export type Message = {
   creationTime: Date;
@@ -28,6 +29,7 @@ export type Chat = {
   lastMessageTime: string;
   messages: Message[];
   loadedMessages: boolean;
+  unseen: boolean;
 };
 
 export type ChatsState = {
@@ -138,6 +140,10 @@ export const receiveMessage = createAction(
   })
 );
 
+export const markChatAsSeen = createActionWithPayload<number>(
+  `${chatActionsPrefix}/chatSeen`
+);
+
 export const chatReducer = createReducer<ChatsState>(
   chatInitialState,
   (builder) => {
@@ -193,12 +199,19 @@ export const chatReducer = createReducer<ChatsState>(
         const { message, userId, receiverId } = action.payload;
         const chat = state.chats.entities[userId];
         if (chat && chat.loadedMessages) {
+          chat.unseen = true;
           chat.messages.push({
             text: message,
             fromId: userId,
             toId: receiverId,
             creationTime: new Date(),
           });
+        }
+      })
+      .addCase(markChatAsSeen, (state, action) => {
+        const chat = state.chats.entities[action.payload];
+        if (chat) {
+          chat.unseen = false;
         }
       })
       .addCase(closeAllChats, (state, action) => {

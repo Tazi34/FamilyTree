@@ -93,6 +93,7 @@ const UserTreePanel = ({
       )}
       <div className={classes.treeList}>
         <TreesList
+          isOwner={isOwner}
           loading={loading}
           onTreeSelect={onTreeSelect}
           trees={userTrees}

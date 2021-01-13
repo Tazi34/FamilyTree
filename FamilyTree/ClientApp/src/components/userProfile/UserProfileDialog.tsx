@@ -2,14 +2,11 @@ import {
   Avatar,
   Button,
   Dialog,
-  FormControl,
   Grid,
   IconButton,
-  InputLabel,
   makeStyles,
   MenuItem,
   Paper,
-  Select,
   TextField,
   Typography,
 } from "@material-ui/core";
@@ -18,20 +15,16 @@ import { KeyboardDatePicker } from "@material-ui/pickers";
 import { parse } from "date-fns";
 import { Formik } from "formik";
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useThunkDispatch } from "../..";
 import { formatDate } from "../../helpers/formatters";
 import { Sex } from "../../model/Sex";
 import useAlert from "../alerts/useAlert";
-import {
-  authenticateToken,
-  getUser,
-  User,
-} from "../loginPage/authenticationReducer";
+import { getUser, User } from "../loginPage/authenticationReducer";
 import PicturePickerDialog from "../UI/PicturePickerDialog";
 import { editProfile } from "./API/editProfile";
-import { requestUploadProfilePicture } from "./API/uploadProfilePicture";
 import userProfileAPI from "./API/userProfileAPI";
+import UserProfilePreview from "./UserProfilePreview";
 
 const imgSize = 100;
 const useStyles = makeStyles((theme: Theme) => ({
@@ -53,11 +46,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   title: {
     marginBottom: 15,
   },
-  profilePreview: {
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-  },
+
   pictureContainer: {
     width: imgSize,
     height: imgSize,
@@ -119,7 +108,6 @@ const UserProfileDialog = (props: any) => {
     userProfileAPI
       .requestUploadProfilePicture({ picture: data })
       .then((resp: any) => {
-        console.log(resp);
         if (!resp.error) {
           setPicturePreview(resp.data.pictureUrl);
           closePictureDialog();
@@ -128,8 +116,6 @@ const UserProfileDialog = (props: any) => {
         }
       });
   };
-  const displayDate = formatDate(user.birthday);
-  const nameText = `${user.name} ${user.surname}`;
   return (
     <Dialog onClose={props.onClose} open={props.open}>
       <PicturePickerDialog
@@ -141,34 +127,17 @@ const UserProfileDialog = (props: any) => {
         <Typography variant="h4" align="center" className={classes.title}>
           User profile
         </Typography>
-        <div className={classes.profilePreview}>
-          <div
-            className={classes.pictureContainer}
-            onClick={() => setPictureDialog(true)}
-          >
-            <IconButton className={classes.editPictureIconContainer}>
-              <i className={`fas fa-camera ${classes.editPictureIcon}`} />
-            </IconButton>
-            <Avatar
-              className={classes.pictureContainer}
-              alt={nameText}
-              sizes={"(min-width: 40em) 80vw, 100vw"}
-              src={picturePreview}
-            />
-          </div>
-          <div className={classes.previewContent}>
-            <div>
-              <Typography variant="h5">{nameText}</Typography>
-              <Typography variant="body1">{displayDate}</Typography>
-            </div>
-          </div>
-        </div>
+        <UserProfilePreview
+          profile={user}
+          onClick={() => setPictureDialog(true)}
+        />
+
         <div className={classes.formContainer}>
           <Formik
             initialValues={{
               name: user.name,
               surname: user.surname,
-              birthday: "2001-05-25",
+              birthday: user.birthday,
               email: user.email,
               previousSurnames: [],
               sex: "Male",

@@ -1,36 +1,30 @@
 import {
-  IconButton,
+  Badge,
   Box,
+  ClickAwayListener,
   Divider,
+  IconButton,
   makeStyles,
   Paper,
-  Tooltip,
-  Drawer,
-  Menu,
-  Dialog,
-  Badge,
   Slide,
-  ClickAwayListener,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import * as React from "react";
-import LatestChatsProvider from "./LatestChatsProvider";
 import InvitationIcon from "@material-ui/icons/InsertInvitation";
+import * as React from "react";
+import { useSelector } from "react-redux";
+import { useHistory } from "react-router";
 import { useThunkDispatch } from "../..";
+import { TREE_PAGE_URI } from "../../applicationRouting";
+import { ApplicationState } from "../../helpers";
+import InvitationsList from "../invitation/InvitationsList";
 import {
   acceptInvitation,
-  getInvitations,
   rejectInvitation,
   selectInvitations,
 } from "../invitation/reducer/invitationsReducer";
-import { useSelector } from "react-redux";
-import { ApplicationState } from "../../helpers";
-import InvitationCard from "../invitation/InvitationCard";
 import { getUser } from "../loginPage/authenticationReducer";
-import { useHistory } from "react-router";
-import { TREE_PAGE_URI } from "../../applicationRouting";
-import InvitationsList from "../invitation/InvitationsList";
 import TooltipMouseFollow from "../UI/TooltipMouseFollow";
+import LatestChatsProvider from "./LatestChatsProvider";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -66,12 +60,10 @@ const FriendsPanel = (props: any) => {
   const classes = useStyles();
 
   const [showInvitations, setShowInvitations] = React.useState(false);
-  const [anchorEl, setAnchorEl] = React.useState<any>(null);
   const dispatch = useThunkDispatch();
   const user = useSelector(getUser);
   const history = useHistory();
   const recordButtonPosition = (event: any) => {
-    setAnchorEl(event.currentTarget);
     setShowInvitations(!showInvitations);
   };
   const invitations = useSelector((state: ApplicationState) =>

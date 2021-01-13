@@ -1,5 +1,5 @@
 import { useThunkDispatch } from "../..";
-import { CreateNodeFormData } from "../addNodeActionDialog/CreateNodeDialog";
+import { CreateNodeFormData } from "../addNodeActionDialog/CreateTreeNodeDialog";
 import { ConnectNodesRequestData } from "./API/connectNodes/connectNodesRequest";
 import { ConnectPartnersRequestData } from "./API/connectNodes/connectPartnerRequest";
 import { CreateNodeRequestData } from "./API/createNode/createNodeRequest";
@@ -11,6 +11,7 @@ import { requestDeleteNode } from "./reducer/updateNodes/deleteNode";
 import { requestDisconnectNode } from "./reducer/updateNodes/disconnectNodes";
 import { hideBranch } from "./reducer/updateNodes/hideBranch";
 import { PersonNode } from "../../model/PersonNode";
+import { changeNodeVisibility } from "./reducer/updateNodes/changeNodeVisibility";
 
 type TreeActions = {
   onNodeDisconnect: (node: PersonNode) => any;
@@ -30,6 +31,7 @@ type TreeActions = {
   ) => any;
   onDefaultNodeAdd: (treeId: number, x: number, y: number) => any;
   onNodeDelete: (id: number) => void;
+  onNodeVisibilityChange: (id: number) => void;
 };
 
 const useTreeActions = (): TreeActions => {
@@ -113,6 +115,10 @@ const useTreeActions = (): TreeActions => {
     };
     return dispatch(addEmptyNode(createNodeData));
   };
+
+  const onNodeVisibilityChange = (id: number) => {
+    dispatch(changeNodeVisibility(id));
+  };
   return {
     onBranchHide,
     onAsPartnerConnect,
@@ -121,6 +127,7 @@ const useTreeActions = (): TreeActions => {
     onNodeAdd,
     onDefaultNodeAdd,
     onNodeDelete,
+    onNodeVisibilityChange,
   };
 };
 export default useTreeActions;

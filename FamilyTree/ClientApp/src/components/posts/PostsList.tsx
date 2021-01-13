@@ -5,6 +5,7 @@ import * as React from "react";
 import { useSelector } from "react-redux";
 import { Post } from "../../model/Post";
 import { getUser } from "../loginPage/authenticationReducer";
+import EmptyPostsList from "./EmptyPostsList";
 import PostCard from "./PostCard";
 import PostCardContainer from "./PostCardContainer";
 
@@ -23,13 +24,27 @@ type PostsListProps = {
   posts: Post[];
   loaded: boolean;
   onPostDelete?: (id: number) => void;
+  isOwner: boolean;
 };
-const PostsList = ({ posts, onPostDelete, loaded }: PostsListProps) => {
+const PostsList = ({
+  posts,
+  onPostDelete,
+  loaded,
+  isOwner,
+}: PostsListProps) => {
   const classes = useStyles();
 
+  const hasPosts = posts && posts.length > 0;
+
+  const showEmptyList = loaded && !hasPosts;
+  const showPostsList = loaded && hasPosts;
+
+  if (showEmptyList) {
+    return <EmptyPostsList isOwner={isOwner} />;
+  }
   return (
     <List component={"div"} className={classes.root}>
-      {loaded &&
+      {showPostsList &&
         posts.map((p: Post) => (
           <Fade key={p.postId} in={loaded} timeout={1000}>
             <div className={classes.postCard}>

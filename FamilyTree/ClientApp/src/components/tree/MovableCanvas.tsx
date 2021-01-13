@@ -37,7 +37,6 @@ const MovableCanvas = (props: any) => {
     }
   };
 
-  console.log(canvas);
   React.useEffect(() => {
     onCanvasResize();
     window.addEventListener("resize", onCanvasResize);

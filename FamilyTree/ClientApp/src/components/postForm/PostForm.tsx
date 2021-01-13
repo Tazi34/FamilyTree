@@ -44,7 +44,6 @@ const PostForm = ({ post, onSubmit }: Props) => {
   const classes = useStyles();
 
   const [editorState, setEditorState] = React.useState(() => {
-    console.log("init state");
     if (post) {
       try {
         const raw = JSON.parse(post.text);

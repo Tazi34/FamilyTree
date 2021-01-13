@@ -15,10 +15,10 @@ import {
 } from "@material-ui/core";
 import * as signalR from "@microsoft/signalr";
 
-import { Theme } from "@material-ui/core/styles";
+import { Theme, useTheme } from "@material-ui/core/styles";
 import React, { useEffect, useRef, useState } from "react";
 import CloseIcon from "@material-ui/icons/Close";
-import { Chat as ChatType } from "./chatReducer";
+import { Chat as ChatType, Message } from "./chatReducer";
 import SendIcon from "@material-ui/icons/Send";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import ChatMessage from "./ChatMessage";
@@ -26,7 +26,9 @@ import { Formik } from "formik";
 import { formatInitials } from "../../helpers/formatters";
 import { useHistory } from "react-router";
 import { BLOG_PAGE_URI } from "../../applicationRouting";
-const useStyles = makeStyles((theme: Theme) => ({
+import Blinking from "../UI/Blinking";
+
+const useStyles = makeStyles<any, any>((theme: Theme) => ({
   chatTab: {
     position: "relative",
     display: "flex",
@@ -40,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: 470,
     background: "white",
     width: 328,
+    overflow: "hidden",
     transform: "translateZ(0)",
   },
   chat: {
@@ -47,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     flexDirection: "column",
     height: "100%",
   },
+
   chatTopBar: {
     display: "flex",
     alignItems: "center",
@@ -121,12 +125,15 @@ type Props = {
   chat: ChatType;
   onChatClose: (id: number) => void;
   onMessageSend: (id: number, text: string) => void;
+  onChatSeen: (id: number) => void;
 };
-const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
-  const classes = useStyles();
+const Chat = ({ chat, onChatClose, onMessageSend, onChatSeen }: Props) => {
+  const classes = useStyles({ unseenMessages: chat.unseen });
   const [open, setOpen] = React.useState(true);
 
+  const theme = useTheme();
   const history = useHistory();
+
   const handleChatClose = (e: any) => {
     e.stopPropagation();
     setOpen(false);
@@ -141,47 +148,51 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
   }, [chat]);
 
   const redirectToUserProfile = () => {
-    history.push(`${BLOG_PAGE_URI}/${chat.userId}`);
+    const targetPath = `${BLOG_PAGE_URI}/${chat.userId}`;
+    if (history.location.pathname !== targetPath) {
+      history.push(targetPath);
+    }
   };
   return (
     <Slide in={open} direction="up" timeout={1000}>
-      <div className={classes.chatTab}>
-        <Box
-          border={1}
-          borderColor="primary.dark"
-          component={Paper}
-          className={classes.chatWindow}
-        >
+      <div className={classes.chatTab} onClick={() => onChatSeen(chat.userId)}>
+        <Box component={Paper} className={classes.chatWindow}>
           <div className={classes.chat}>
-            <Box
-              component={CardActionArea}
-              className={classes.chatTopBar}
-              onClick={redirectToUserProfile}
+            <Blinking
+              blink={chat.unseen}
+              background={theme.palette.primary.light}
             >
-              <div className={classes.chatTopBarTitle}>
-                <Avatar
-                  src={chat.pictureUrl}
-                  className={classes.profilePicture}
-                >
-                  {formatInitials(chat.name, chat.surname)}
-                </Avatar>
+              <Box
+                component={CardActionArea}
+                className={`${classes.chatTopBar} blink`}
+                onClick={redirectToUserProfile}
+              >
+                <div className={classes.chatTopBarTitle}>
+                  <Avatar
+                    src={chat.pictureUrl}
+                    className={classes.profilePicture}
+                  >
+                    {formatInitials(chat.name, chat.surname)}
+                  </Avatar>
 
-                <div className={classes.titleContainer}>
-                  <Typography variant="h6">
-                    {chat.name} {chat.surname}
-                  </Typography>
+                  <div className={classes.titleContainer}>
+                    <Typography variant="h6">
+                      {chat.name} {chat.surname}
+                    </Typography>
+                  </div>
                 </div>
-              </div>
-              <div className={classes.chatTopBarButtons}>
-                <IconButton
-                  size="small"
-                  className={classes.iconButton}
-                  onClick={handleChatClose}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </div>
-            </Box>
+                <div className={classes.chatTopBarButtons}>
+                  <IconButton
+                    size="small"
+                    className={classes.iconButton}
+                    onClick={handleChatClose}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </div>
+              </Box>
+            </Blinking>
+
             <Divider />
             <div className={classes.chatBody}>
               <div className={classes.chatTextArea} ref={scrollRef}>
@@ -190,6 +201,12 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
                     key={index}
                     message={message}
                     receiverId={chat.userId}
+                    isOutgoing={message.toId === chat.userId}
+                    isLastInSegment={isLastInSegment(
+                      message,
+                      chat.messages,
+                      index
+                    )}
                   />
                 ))}
               </div>
@@ -198,14 +215,13 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
               <Formik
                 initialValues={{ message: "" }}
                 onSubmit={(values, { resetForm }) => {
+                  console.log(values.message);
                   onMessageSend(chat.userId, values.message);
                   resetForm();
                 }}
               >
                 {({ setFieldTouched, handleChange, handleSubmit, values }) => {
                   const change = (name: string, e: any) => {
-                    console.log(e);
-                    console.log(e.nativeEvent.keyCode);
                     e.persist();
                     handleChange(e);
                     setFieldTouched(name, true, false);
@@ -223,7 +239,8 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
                           type="submit"
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
-                              handleSubmit();
+                              if (values.message.length > 0) handleSubmit();
+                              e.preventDefault();
                             }
                           }}
                           multiline={true}
@@ -254,3 +271,14 @@ const Chat = ({ chat, onChatClose, onMessageSend }: Props) => {
 };
 
 export default Chat;
+
+const isLastInSegment = (
+  currentMessage: Message,
+  messages: Message[],
+  index: number
+) => {
+  if (index + 1 < messages.length) {
+    return currentMessage.fromId !== messages[index + 1].fromId;
+  }
+  return false;
+};

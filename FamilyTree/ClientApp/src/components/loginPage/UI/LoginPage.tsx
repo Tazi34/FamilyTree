@@ -107,7 +107,6 @@ const LoginPage = (props: any) => {
       alert.error("Could not verify your identity. ");
     } else {
       alert.success("Logged in.");
-      console.log(response);
       history.push(`${BLOG_PAGE_URI}/${response.payload.data.userId}`);
     }
   };

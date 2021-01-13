@@ -49,10 +49,10 @@ import PrivacyPolicyPage from "./components/privacy/PrivacyPolicyPage";
 import ThreeColumnLayout from "./components/layout/ThreeColumnLayout";
 import { useThunkDispatch } from ".";
 import { getInvitations } from "./components/invitation/reducer/invitationsReducer";
-import CreateNodeDialog from "./components/addNodeActionDialog/CreateNodeDialog";
+import CreateTreeNodeDialog from "./components/addNodeActionDialog/CreateTreeNodeDialog";
 import LayoutBase from "./components/layout/LayoutBase";
 import useBackground from "./components/lazyBackground/useBackground";
-import BlogPostPage from "./components/blog/BlogPostPage";
+import BlogPostPage from "./components/posts/BlogPostPage";
 import GlobalAlerts from "./components/alerts/GlobalAlerts";
 import useAlert from "./components/alerts/useAlert";
 

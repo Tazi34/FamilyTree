@@ -3,12 +3,14 @@ import { Theme } from "@material-ui/core/styles";
 import Skeleton from "@material-ui/lab/Skeleton";
 import * as React from "react";
 import { TreeInformation } from "../../model/TreeInformation";
+import EmptyTreesList from "./EmptyTreeList";
 import TreeCard from "./TreeCard";
 
 interface TreeListProps {
   trees: TreeInformation[];
   onTreeSelect: (tree: TreeInformation) => void;
   loading: boolean;
+  isOwner: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -22,8 +24,17 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 //
-const TreesList = ({ trees, onTreeSelect, loading }: TreeListProps) => {
+const TreesList = ({
+  trees,
+  onTreeSelect,
+  loading,
+  isOwner,
+}: TreeListProps) => {
   const classes = useStyles();
+
+  if (!loading && trees.length == 0)
+    return <EmptyTreesList isOwner={isOwner} />;
+
   return (
     <List className={classes.root}>
       {!loading &&

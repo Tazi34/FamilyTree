@@ -10,7 +10,6 @@ const useStyles = makeStyles((theme: Theme) => ({}));
 const GlobalAlerts = (props: any) => {
   const alerts = useSelector(selectAlerts);
 
-  console.log(alerts);
   React.useEffect(() => {
     if (alerts.length > 0) {
       const currentAlert = alerts[alerts.length - 1];

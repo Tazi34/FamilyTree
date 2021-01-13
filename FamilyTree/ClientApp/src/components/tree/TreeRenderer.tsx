@@ -35,6 +35,7 @@ type OwnProps = {
     firstParent: number,
     secondParent?: number
   ) => void;
+  onNodeDelete: (id: number, isUser: boolean) => void;
   scale: number;
 } & any;
 
@@ -51,11 +52,11 @@ type ConnectionProps = {
 
 const TreeRenderer = (props: OwnProps) => {
   const {
-    onNodeDelete,
     onAsChildConnect,
     onAsPartnerConnect,
     onBranchHide,
     onNodeDisconnect,
+    onNodeVisibilityChange,
   } = useTreeActions();
   const dispatch = useThunkDispatch();
   const treeState = useSelector<ApplicationState, TreeState>(
@@ -201,7 +202,7 @@ const TreeRenderer = (props: OwnProps) => {
     <Fade in={true} timeout={3000}>
       <div>
         <NodesList
-          onNodeVisiblityChange={changeNodeVisibility}
+          onNodeVisiblityChange={onNodeVisibilityChange}
           onDisconnectNode={onNodeDisconnect}
           possibleConnections={connection.possibleConnections.nodes}
           disabled={connection.isConnecting}
@@ -210,7 +211,7 @@ const TreeRenderer = (props: OwnProps) => {
           nodes={nodes}
           onNodeSelect={handleNodeSelect}
           onNodeMove={handleNodeMove}
-          onNodeDelete={onNodeDelete}
+          onNodeDelete={props.onNodeDelete}
           onMoveNodeOnCanvas={handleMoveNodeOnCanvas}
         />
         <Families

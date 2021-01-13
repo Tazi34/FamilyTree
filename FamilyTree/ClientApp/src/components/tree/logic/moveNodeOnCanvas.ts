@@ -96,7 +96,6 @@ export default (
           otherNodelocation.x,
           otherNodelocation.y
         );
-        console.log(link);
 
         const linksvg = d3.select("#" + link.id);
         linksvg.attr("d", path);

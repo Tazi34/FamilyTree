@@ -4,6 +4,7 @@ import {
   createDraftSafeSelector,
   createEntityAdapter,
   createReducer,
+  createSelector,
   EntityId,
   EntityState,
   Update,
@@ -387,3 +388,16 @@ export const linkLoader = (state: TreeState, link: Link): LinkLoaded | null => {
     linkId: link.id,
   };
 };
+
+export const selectIsOnlyUserInTree = createSelector<
+  ApplicationState,
+  ApplicationState,
+  boolean
+>(
+  (state) => state,
+  (state) => {
+    const nodes = selectAllPersonNodes(state);
+    const userNodes = nodes.filter((node) => node.userId != 0);
+    return userNodes.length <= 1;
+  }
+);

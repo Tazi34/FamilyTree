@@ -1,18 +1,10 @@
-import {
-  Avatar,
-  Button,
-  IconButton,
-  makeStyles,
-  Paper,
-  Typography,
-} from "@material-ui/core";
+import { IconButton, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import * as React from "react";
-import { BlogProfile } from "../../model/BlogProfile";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
-import { formatDate } from "../../helpers/formatters";
-import Skeleton from "@material-ui/lab/Skeleton";
 import MailOutlineIcon from "@material-ui/icons/MailOutline";
+import * as React from "react";
+import { formatDate } from "../../helpers/formatters";
+import { BlogProfile } from "../../model/BlogProfile";
+import UserProfilePreview from "../userProfile/UserProfilePreview";
 const avatarSize = 50;
 const useStyles = makeStyles((theme: Theme) => ({
   profileSectionRoot: {
@@ -84,19 +76,19 @@ const BlogProfileSection = ({ profile, onContact }: Props) => {
   const displayText = profile ? `${profile.name} ${profile.surname}` : "";
   const displayDate = profile ? formatDate(profile.birthday) : "28.03.1998";
 
-  //profile?.pictureUrl;
   return (
     <Paper className={classes.profileSectionRoot}>
       <div className={classes.card}>
-        <div className={classes.profilePictureContainer}>
+        {/* <div className={classes.profilePictureContainer}>
           {profile ? (
             <Avatar className={classes.profilePicture} src={""} />
           ) : (
             <Skeleton variant="circle" width={avatarSize} height={avatarSize} />
           )}
-        </div>
+        </div> */}
+        <UserProfilePreview profile={profile} imgSize={avatarSize} />
         <div className={classes.profileSectionContent}>
-          <div className={classes.personalInformation}>
+          {/* <div className={classes.personalInformation}>
             {profile ? (
               <div>
                 <Typography>{displayText}</Typography>
@@ -107,7 +99,7 @@ const BlogProfileSection = ({ profile, onContact }: Props) => {
                 <Skeleton variant="rect" className={classes.infoSkeleton} />
               </div>
             )}
-          </div>
+          </div> */}
           <div className={classes.filler} />
           <div className={classes.messageButtonContainer}>
             <IconButton className={classes.messageButton} onClick={onContact}>

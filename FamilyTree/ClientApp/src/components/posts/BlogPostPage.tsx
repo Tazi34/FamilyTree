@@ -14,13 +14,13 @@ import useAlert from "../alerts/useAlert";
 import { withAlertMessage } from "../alerts/withAlert";
 import { getUser } from "../loginPage/authenticationReducer";
 import BlogPost from "./BlogPost";
-import { getComments } from "./redux/comments/commentsActions";
+import { getComments } from "../blog/redux/comments/commentsActions";
 import {
   deletePost,
   fetchPost,
   selectCurrentPost,
   selectPostStatus,
-} from "./redux/postsReducer";
+} from "../blog/redux/postsReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 

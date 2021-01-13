@@ -4,8 +4,12 @@ import * as React from "react";
 import ValidationErrorText from "./ValidationErrorText";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
-
-const ErrorValidationWrapper = ({ error, touched, children }: any) => {
+type Props = {
+  error: any;
+  touched: any;
+  children: any;
+};
+const ErrorValidationWrapper = ({ error, touched, children }: Props) => {
   const classes = useStyles();
   const showError = error && touched;
   return (

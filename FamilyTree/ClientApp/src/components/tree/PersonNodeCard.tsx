@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Icon,
   IconButton,
   makeStyles,
   Paper,
@@ -55,6 +56,7 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
   iconContainer: {
     padding: 4,
   },
+
   buttonBase: {
     padding: 8,
     background: theme.palette.primary.light,
@@ -155,6 +157,14 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
     height: "100%",
     flexDirection: "column",
   },
+  gender: {
+    marginLeft: 10,
+  },
+  dateGender: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   topFiller: {
     height: RECT_HEIGHT * dividerScale + imageSize / 2,
   },
@@ -187,7 +197,7 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
 }));
 
 type Props = {
-  onNodeDelete: (id: number) => void;
+  onNodeDelete: (id: number, isUser: boolean) => void;
   onNodeMove: (node: Node, x: number, y: number) => void;
   onMoveNodeOnCanvas: (e: DragEvent, node: Node) => void;
   onNodeSelect: (node: PersonNode) => void;
@@ -222,7 +232,7 @@ const PersonNodeCard = ({
     hasUser: person.userId !== 0,
   });
   const handleNodeDelete = () => {
-    onNodeDelete(person.id as number);
+    onNodeDelete(person.id as number, person.userId !== 0);
   };
 
   const handleNodeSelect = (
@@ -248,6 +258,13 @@ const PersonNodeCard = ({
   const hidden = person.hidden;
 
   const canEdit = person.canEdit;
+  const genderIcon =
+    details.sex === "Male"
+      ? "fas fa-mars"
+      : details.sex === "Female"
+      ? "fas fa-venus"
+      : null;
+
   return (
     <div>
       <HiddenPersonNode
@@ -294,13 +311,18 @@ const PersonNodeCard = ({
                 >
                   {details.name} {details.surname}
                 </Typography>
-                <Typography
-                  align="center"
-                  variant="subtitle2"
-                  className={classes.dateSection}
-                >
-                  {displayDate}
-                </Typography>
+                <div className={classes.dateGender}>
+                  <Typography
+                    align="center"
+                    variant="subtitle2"
+                    className={classes.dateSection}
+                  >
+                    {displayDate}
+                  </Typography>
+                  {Boolean(genderIcon) && (
+                    <Icon className={`${genderIcon} ${classes.gender}`} />
+                  )}
+                </div>
               </div>
             </div>
             <div className={classes.filler} />
@@ -384,12 +406,10 @@ const areEqual = (prev: Props, next: Props) => {
     prev.person.hidden != next.person.hidden ||
     !areEqualShallow(prev.person.personDetails, next.person.personDetails)
   ) {
-    console.log("NOT EQUAL");
     return false;
   }
 
   return true;
 };
-const visibleStyle: any = {}; //{ visibility: "visible" };
-const hiddenStyle: any = {}; //{ visibility: "hidden" };
+
 export default React.memo(PersonNodeCard, areEqual);

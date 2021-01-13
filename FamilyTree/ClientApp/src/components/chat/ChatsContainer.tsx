@@ -4,7 +4,12 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUser } from "../loginPage/authenticationReducer";
 import Chat from "./Chat";
-import { closeChat, currentChatsSelector, sendMessage } from "./chatReducer";
+import {
+  closeChat,
+  currentChatsSelector,
+  markChatAsSeen,
+  sendMessage,
+} from "./chatReducer";
 const useStyles = makeStyles((theme: Theme) => ({
   chatContainer: {
     position: "relative",
@@ -39,6 +44,9 @@ const ChatsContainer = (props: any) => {
     dispatch(sendMessage(userId, text));
   };
 
+  const handleChatSeen = (chatId: number) => {
+    dispatch(markChatAsSeen(chatId));
+  };
   if (!user) {
     return null;
   }
@@ -52,6 +60,7 @@ const ChatsContainer = (props: any) => {
               chat={chat}
               onChatClose={handleChatClose}
               onMessageSend={handleMessageSend}
+              onChatSeen={handleChatSeen}
             />
           ))}
         </div>

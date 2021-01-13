@@ -22,7 +22,7 @@ import {
   selectCanvasCenter,
 } from "../canvas/reducer/canvasReducer";
 import { CreateNodeRequestData } from "../tree/API/createNode/createNodeRequest";
-import { CreateNodeFormData } from "../addNodeActionDialog/CreateNodeDialog";
+import { CreateNodeFormData } from "../addNodeActionDialog/CreateTreeNodeDialog";
 
 const useStyles = makeStyles((theme: Theme) => ({}));
 type Props = {
