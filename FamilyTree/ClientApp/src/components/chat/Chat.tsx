@@ -280,5 +280,6 @@ const isLastInSegment = (
   if (index + 1 < messages.length) {
     return currentMessage.fromId !== messages[index + 1].fromId;
   }
+  if (index + 1 == messages.length) return true;
   return false;
 };

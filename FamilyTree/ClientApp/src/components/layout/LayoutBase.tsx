@@ -7,7 +7,7 @@ import ChatsContainer from "../chat/ChatsContainer";
 import FriendsPanel from "../friendList/FriendsPanel";
 import useBackground from "../lazyBackground/useBackground";
 import { AuthenticationState } from "../loginPage/authenticationReducer.js";
-import Navbar from "../navbar/Navbar.jsx";
+import Navbar from "../navbar/Navbar";
 
 const useStyles = makeStyles((theme: Theme) => ({
   lightBackground: {
@@ -82,7 +82,7 @@ export default (props: { children?: React.ReactNode; background?: string }) => {
 
   return (
     <div className={classes.container}>
-      <Navbar isLoggedIn={isLoggedIn} user={authenticationState.user}></Navbar>
+      <Navbar user={authenticationState.user}></Navbar>
 
       {/* <div className={classes.filler}></div> */}
       {childrenWithProps}

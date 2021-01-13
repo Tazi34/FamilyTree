@@ -1,4 +1,4 @@
-import { Icon, Paper } from "@material-ui/core";
+import { Avatar, Chip, Icon, Paper } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import { createStyles, fade, makeStyles } from "@material-ui/core/styles";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -8,9 +8,11 @@ import * as React from "react";
 import { useHistory } from "react-router";
 import { ApplicationName } from "../../ApplicationData";
 import { BLOG_PAGE_URI, LOGIN_PAGE_URI } from "../../applicationRouting";
+import { User } from "../loginPage/authenticationReducer";
 import LogoutButton from "../loginPage/LogoutButton";
 import MainSearchContainer from "../search/MainSearchContainer";
 import { RedirectButton } from "../UI/RedirectButton";
+import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 const useStyles = makeStyles((theme) =>
   createStyles({
     grow: {
@@ -56,19 +58,25 @@ const useStyles = makeStyles((theme) =>
       top: 0,
     },
     logo: { marginRight: 8 },
+    avatar: {
+      marginLeft: 5,
+    },
   })
 );
-export default function PrimarySearchAppBar({ isLoggedIn, user }) {
+type Props = {
+  user: User | null;
+};
+export default function PrimarySearchAppBar({ user }: Props) {
   const classes = useStyles();
-  const history = useHistory();
+  const isLoggedIn = Boolean(user);
   React.useEffect(() => {
     const node = loadCSS(
       "https://use.fontawesome.com/releases/v5.12.0/css/all.css",
-      document.querySelector("#font-awesome-css")
+      document.querySelector("#font-awesome-css") as any
     );
 
     return () => {
-      node.parentNode.removeChild(node);
+      if (node) node?.parentNode?.removeChild(node);
     };
   }, []);
 
@@ -86,7 +94,7 @@ export default function PrimarySearchAppBar({ isLoggedIn, user }) {
           <div className={classes.sectionDesktop}>
             <RedirectButton
               className={classes.navbarButton}
-              to={`${BLOG_PAGE_URI}/${user.id}`}
+              to={`${BLOG_PAGE_URI}/${user!.id}`}
             >
               Home
             </RedirectButton>
@@ -105,6 +113,15 @@ export default function PrimarySearchAppBar({ isLoggedIn, user }) {
               Log in
             </RedirectButton>
           </div>
+        )}
+        {user && (
+          <TooltipMouseFollow title={`${user.name} ${user.surname}`}>
+            <Avatar
+              className={classes.avatar}
+              alt={`${user.name} ${user.surname}`}
+              src={user.pictureUrl}
+            />
+          </TooltipMouseFollow>
         )}
       </Toolbar>
     </AppBar>

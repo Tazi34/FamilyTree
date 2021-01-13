@@ -1,9 +1,11 @@
-import { Avatar, Box, ButtonBase, makeStyles } from "@material-ui/core";
+import { Avatar, Badge, Box, ButtonBase, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import * as React from "react";
+import { useThunkDispatch } from "../..";
 import { formatInitials } from "../../helpers/formatters";
-import { Chat } from "../chat/chatReducer";
+import { Chat, markChatAsSeen } from "../chat/chatReducer";
+import Blinking from "../UI/Blinking";
 import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
 type Props = {
@@ -13,21 +15,6 @@ type Props = {
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
-  accountIcon: {
-    fontSize: 44,
-    borderRadius: "50%",
-
-    objectFit: "cover",
-  },
-  profilePictureContainer: {
-    width: 42,
-    height: 42,
-
-    borderWidth: 2,
-    cursor: "pointer",
-
-    margin: "7px 0",
-  },
   profilePicture: {
     width: 42,
     height: 42,
@@ -37,20 +24,42 @@ const useStyles = makeStyles((theme: Theme) => ({
 
     margin: "7px 0",
   },
+  badge: {
+    marginRight: 5,
+    marginTop: 5,
+  },
 }));
 
 const ChatEntry = ({ chatEntry, onChatClick }: Props) => {
   const classes = useStyles();
-  const hasPicture = chatEntry.pictureUrl && chatEntry.pictureUrl.length > 0;
+  const dispatch = useThunkDispatch();
+  const handleChatClick = () => {
+    onChatClick(chatEntry);
+    if (chatEntry.unseen) {
+      dispatch(markChatAsSeen(chatEntry.userId));
+    }
+  };
   return (
     <TooltipMouseFollow title={`${chatEntry.name} ${chatEntry.surname}`}>
-      <Avatar
-        src={chatEntry.pictureUrl}
-        className={classes.profilePicture}
-        onClick={() => onChatClick(chatEntry)}
-      >
-        {formatInitials(chatEntry.name, chatEntry.surname)}
-      </Avatar>
+      {chatEntry.unseen ? (
+        <Badge color="primary" badgeContent="!">
+          <Avatar
+            src={chatEntry.pictureUrl}
+            className={classes.profilePicture}
+            onClick={handleChatClick}
+          >
+            {formatInitials(chatEntry.name, chatEntry.surname)}
+          </Avatar>
+        </Badge>
+      ) : (
+        <Avatar
+          src={chatEntry.pictureUrl}
+          className={classes.profilePicture}
+          onClick={handleChatClick}
+        >
+          {formatInitials(chatEntry.name, chatEntry.surname)}
+        </Avatar>
+      )}
     </TooltipMouseFollow>
   );
 };
