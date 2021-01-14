@@ -47,6 +47,10 @@ namespace FamilyTree.Helpers
     public abstract class NodeCycle
     {
         public string Id { get; set; }
+        public abstract List<string> Neighbours { get; }
+        public int FatherId { get; set; }
+        public int MotherId { get; set; }
+        public List<int> Children { get; set; }
         protected NodeCycle(string id, int fatherId, int motherId, List<int> children)
         {
             Id = id;
@@ -70,11 +74,6 @@ namespace FamilyTree.Helpers
                 return parents;
             }
         }
-        public abstract List<string> Neighbours { get; }
-        public int FatherId { get; set; }
-        public int MotherId { get; set; }
-        public List<int> Children { get; set; }
-
     }
 
     public static class NodeCycleMapper

@@ -563,7 +563,6 @@ namespace FamilyTree.Services
             {
                 alreadyHiddenFamily.Hidden = true;
             }
-
             var alreadyHiddenNodes = fullTreeResponse.Nodes.Where(n => model.HiddenNodes.Contains(n.NodeId));
             foreach (var alreadyHiddenNode in alreadyHiddenNodes)
             {
@@ -652,24 +651,6 @@ namespace FamilyTree.Services
             memberFamiliesId.Remove(prevFamilyId);
             hiddenFamiliesId.AddRange(memberFamiliesId);
         }
-       //private void HidePartnersFamily(DrawableTreeResponse tree, Family family, bool show)
-       //{
-       //     var partners = tree.Nodes.FindAll(n => n.NodeId == family.FirstParentId || n.NodeId == family.SecondParentId);
-
-       //     //schowaj rodziny ktorych jest rodzicem 
-       //     foreach(var partner in partners)
-       //     {
-       //         partner.Hidden = !show;
-       //         var families = tree.Families.Where(family => partner.Families.Contains(family.Id)).ToList();
-       //         //wez tylko te gdzie nie jest dzieckiem i rozna od juz wzietej
-       //         families = families.Where(f => (f.FirstParentId == partner.NodeId ||  f.SecondParentId == partner.NodeId) && f.Id != family.Id).ToList();
-           
-       //         foreach (var partnerFamily in families)
-       //         {
-       //             HideBranchReq(tree, partnerFamily.Id, show);
-       //         }
-       //     }
-       //}
         private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model, IFormFile picture = null)
         {
             var user = await GetUserFromContextAsync(model.UserId);

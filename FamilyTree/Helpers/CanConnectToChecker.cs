@@ -40,7 +40,7 @@ namespace FamilyTree.Helpers
                         return Parent(tree, node, cycleChecker);
                     }
 
-                default: throw new Exception("unsupp[ported");
+                default: throw new Exception("unsupported");
             }
         }
 
@@ -85,10 +85,8 @@ namespace FamilyTree.Helpers
                     }                  
                 }
 
-               
                 family.Children.Add(sourceId);
                 source.Families.Add(family.Id);
-
                 var hasCycle = cycleChecker.IsGraphCyclic(nodes);
                 if (!hasCycle)
                 {
@@ -111,7 +109,6 @@ namespace FamilyTree.Helpers
                 {
                     continue;
                 }
-
 
                 List<PersonNodeCycle> personNodes = tree.Nodes.Select(n => n.Map()).ToList();
                 var familyNodes = tree.Families.Select(f => f.Map()).ToList();
@@ -221,8 +218,12 @@ namespace FamilyTree.Helpers
                 if (node.FatherId != 0 || node.MotherId != 0)
                 {
                     var family = familyNodes.First(f => f.Children.Contains(childId));
+                    if (family.Parents.Count == 1 && targetNode.Partners.Contains(family.Parents[0]))
+                    {
+                        connectableNodes.Add(targetNode.NodeId);
+                        continue;
+                    }
                     //jesli rodzina ma wiele dzieci odepnij dziecko i utworz nowa rodzine 
-
                     if (family.Children.Count > 1)
                     {
                         family.Children.Remove(childId);
@@ -252,8 +253,6 @@ namespace FamilyTree.Helpers
                     else
                     {
                         var child = personNodes.Find(n => n.Id == childId.ToString());
-
-
                         if (child.FatherId == existingParentId)
                         {
                             family.MotherId = targetNodeId;
@@ -264,7 +263,6 @@ namespace FamilyTree.Helpers
                             child.FatherId = targetNodeId;
                             family.FatherId = targetNodeId;
                         }
-
                         target.Children.Add(childId);
                         target.Families.Add(family.Id);
                     }
