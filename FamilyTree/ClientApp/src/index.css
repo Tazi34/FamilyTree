@@ -1,0 +1,41 @@
+html,
+body,
+#root,
+.App {
+  height: 100%;
+}
+
+body {
+  background-size: cover;
+  background-position: 35% center;
+  background-repeat: no-repeat;
+  opacity: 2;
+  background-attachment: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+}
+.postFormTextEditor {
+  height: 800px;
+  padding: 5px;
+}
+
+.postFormTextEditorWrapper {
+  width: 100%;
+}
+.MuiDropzoneArea-root {
+  color: #f4f4f4;
+}
+.react-transform-component {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.react-transform-element {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.react-draggable {
+  position: absolute;
+}
