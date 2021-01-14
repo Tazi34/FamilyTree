@@ -78,7 +78,7 @@ export const theme = createMuiTheme({
     },
   },
 });
-
+///
 const App = (props: any) => {
   const [verifying, setVerifying] = React.useState(true);
   const loggedUser = useSelector(getUser);
