@@ -571,7 +571,7 @@ namespace FamilyTree.Services
 
             foreach (var hideFamilyId in model.Families)
             {
-                HideBranchReq(fullTreeResponse, hideFamilyId, model.Show);
+                HideBranchReq(fullTreeResponse, hideFamilyId, model.Show, new List<string>());
             }
             return fullTreeResponse;
         }
@@ -599,7 +599,7 @@ namespace FamilyTree.Services
             await context.SaveChangesAsync();
             return await GetTreeAsync(tree.TreeId, userId);
         }
-        private void HideBranchReq(DrawableTreeResponse tree, string familyId, bool show, string prevFamilyId = "")
+        private void HideBranchReq(DrawableTreeResponse tree, string familyId, bool show, List<string> hiddenFamilies)
         {
             var family = tree.Families.FirstOrDefault(f => f.Id == familyId);
             family.Hidden = !show;
@@ -608,22 +608,22 @@ namespace FamilyTree.Services
             var familyMembers = family.Children.Select(child => tree.Nodes.FirstOrDefault(node => node.NodeId == child));
             var firstParentNode = tree.Nodes.FirstOrDefault(n => n.NodeId == family.FirstParentId);
             //dla pierwszego wywołania nie ukrywaj rodziców
-            if (firstParentNode != null && !prevFamilyId.Equals(""))
+            if (firstParentNode != null && hiddenFamilies.Count != 0)
                 familyMembers = familyMembers.Append(firstParentNode);
             var secondParentNode = tree.Nodes.FirstOrDefault(n => n.NodeId == family.SecondParentId);
             //dla pierwszego wywołania nie ukrywaj rodziców
-            if (secondParentNode!= null && !prevFamilyId.Equals(""))
+            if (secondParentNode!= null && hiddenFamilies.Count != 0)
                 familyMembers = familyMembers.Append(secondParentNode);
             //lista rodzin członków rodziny, które zostały już ukryte
-            List<string> hidddenFamilies = new List<string>();
+            hiddenFamilies.Add(family.Id);
             foreach(var member in familyMembers)
             {
                 member.Hidden = !show;
                 var memberFamilies = GetNodeFamilies(tree, member);
-                UpdateHiddenFamilies(hidddenFamilies, memberFamilies, familyId, prevFamilyId);
+                CheckHiddenFamilies(hiddenFamilies, memberFamilies);
                 foreach(var memberFamily in memberFamilies)
                 {
-                    HideBranchReq(tree, memberFamily, show, familyId);
+                    HideBranchReq(tree, memberFamily, show, hiddenFamilies);
                 }
             }
         }
@@ -639,17 +639,11 @@ namespace FamilyTree.Services
             families.AddRange(familiesAsParent2);
             return families;
         }
-        //Usuwa z memberFamiliesId wartości, które są już w hiddenFamiliesId oraz currentFamilyId oraz prevFamilyId.
-        //Pozostałe wartości z memberFamiliesId są dodawane do hiddenFamiliesId
-        private void UpdateHiddenFamilies(List<string> hiddenFamiliesId, List<string> memberFamiliesId, string currentFamilyId, string prevFamilyId)
+        //Usuwa z memberFamiliesId wartości, które są już w hiddenFamiliesId.
+        private void CheckHiddenFamilies(List<string> hiddenFamiliesId, List<string> memberFamiliesId)
         {
             foreach(string familyId in hiddenFamiliesId)
-            {
                 memberFamiliesId.Remove(familyId);
-            }
-            memberFamiliesId.Remove(currentFamilyId);
-            memberFamiliesId.Remove(prevFamilyId);
-            hiddenFamiliesId.AddRange(memberFamiliesId);
         }
         private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model, IFormFile picture = null)
         {
