@@ -600,52 +600,74 @@ namespace FamilyTree.Services
             await context.SaveChangesAsync();
             return await GetTreeAsync(tree.TreeId, userId);
         }
-        private void HideBranchReq(DrawableTreeResponse tree, string familyId, bool show)
+        private void HideBranchReq(DrawableTreeResponse tree, string familyId, bool show, string prevFamilyId = "")
         {
             var family = tree.Families.FirstOrDefault(f => f.Id == familyId);
-
- 
             family.Hidden = !show;
-            var children = family.Children.Select(child => tree.Nodes.FirstOrDefault(node => node.NodeId == child));
 
-            //jesli rodzina nie ma dzieci to sa to partnerzy - schowaj ich i ich rodziny
-            if (!children.Any())
+            //wybieramy wszystkich członków rodziny
+            var familyMembers = family.Children.Select(child => tree.Nodes.FirstOrDefault(node => node.NodeId == child));
+            var firstParentNode = tree.Nodes.FirstOrDefault(n => n.NodeId == family.FirstParentId);
+            if (firstParentNode != null)
+                familyMembers.Append(firstParentNode);
+            var secondParentNode = tree.Nodes.FirstOrDefault(n => n.NodeId == family.SecondParentId);
+            if (secondParentNode!= null)
+                familyMembers.Append(secondParentNode);
+            //lista rodzin członków rodziny, które zostały już ukryte
+            List<string> hidddenFamilies = new List<string>();
+            foreach(var member in familyMembers)
             {
-                HidePartnersFamily(tree, family, show);             
-            }
-           
-
-        
-            foreach(var child in children)
-            {
-                          child.Hidden = !show;
-                //wez rodziny dzieci, ktore nie sa juz schowana rodzina - czyli rodziny ktorych rodzicem jest aktualny wezel
-                var childFamilies = child.Families.Where(f => f != familyId);
-                foreach(var childFamily in childFamilies)
+                member.Hidden = !show;
+                var memberFamilies = GetNodeFamilies(tree, member);
+                UpdateHiddenFamilies(hidddenFamilies, memberFamilies, familyId, prevFamilyId);
+                foreach(var memberFamily in memberFamilies)
                 {
-                    HideBranchReq(tree, childFamily, show);
+                    HideBranchReq(tree, memberFamily, show, familyId);
                 }
             }
         }
-       private void HidePartnersFamily(DrawableTreeResponse tree, Family family, bool show)
-       {
-            var partners = tree.Nodes.FindAll(n => n.NodeId == family.FirstParentId || n.NodeId == family.SecondParentId);
-
-            //schowaj rodziny ktorych jest rodzicem 
-            foreach(var partner in partners)
-            {
-                partner.Hidden = !show;
-                var families = tree.Families.Where(family => partner.Families.Contains(family.Id)).ToList();
-                //wez tylko te gdzie nie jest dzieckiem i rozna od juz wzietej
-                families = families.Where(f => (f.FirstParentId == partner.NodeId ||  f.SecondParentId == partner.NodeId) && f.Id != family.Id).ToList();
-           
-                foreach (var partnerFamily in families)
-                {
-                    HideBranchReq(tree, partnerFamily.Id, show);
-                }
-            }
-
+        //pobiera wszystkie rodziny w jakich występuje node
+        private List<string> GetNodeFamilies(DrawableTreeResponse tree, NodeResponse node)
+        {
+            var familiesAsChild = tree.Families.Where(f => f.Children.Contains(node.NodeId)).Select(f => f.Id).ToList();
+            var familiesAsParent1 = tree.Families.Where(f => f.FirstParentId == node.NodeId).Select(f => f.Id).ToList();
+            var familiesAsParent2 = tree.Families.Where(f => f.SecondParentId == node.NodeId).Select(f => f.Id).ToList();
+            var families = new List<string>();
+            families = familiesAsChild;
+            families.AddRange(familiesAsParent1);
+            families.AddRange(familiesAsParent2);
+            return families;
         }
+        //Usuwa z memberFamiliesId wartości, które są już w hiddenFamiliesId oraz currentFamilyId oraz prevFamilyId.
+        //Pozostałe wartości z memberFamiliesId są dodawane do hiddenFamiliesId
+        private void UpdateHiddenFamilies(List<string> hiddenFamiliesId, List<string> memberFamiliesId, string currentFamilyId, string prevFamilyId)
+        {
+            foreach(string familyId in hiddenFamiliesId)
+            {
+                memberFamiliesId.Remove(familyId);
+            }
+            memberFamiliesId.Remove(currentFamilyId);
+            memberFamiliesId.Remove(prevFamilyId);
+            hiddenFamiliesId.AddRange(memberFamiliesId);
+        }
+       //private void HidePartnersFamily(DrawableTreeResponse tree, Family family, bool show)
+       //{
+       //     var partners = tree.Nodes.FindAll(n => n.NodeId == family.FirstParentId || n.NodeId == family.SecondParentId);
+
+       //     //schowaj rodziny ktorych jest rodzicem 
+       //     foreach(var partner in partners)
+       //     {
+       //         partner.Hidden = !show;
+       //         var families = tree.Families.Where(family => partner.Families.Contains(family.Id)).ToList();
+       //         //wez tylko te gdzie nie jest dzieckiem i rozna od juz wzietej
+       //         families = families.Where(f => (f.FirstParentId == partner.NodeId ||  f.SecondParentId == partner.NodeId) && f.Id != family.Id).ToList();
+           
+       //         foreach (var partnerFamily in families)
+       //         {
+       //             HideBranchReq(tree, partnerFamily.Id, show);
+       //         }
+       //     }
+       //}
         private async Task<Node> CreateNode(Tree tree, CreateNodeRequest model, IFormFile picture = null)
         {
             var user = await GetUserFromContextAsync(model.UserId);
