@@ -6,6 +6,7 @@ using System.IO;
 using FamilyTree.Helpers;
 using Microsoft.EntityFrameworkCore;
 using FamilyTree.Gedcom;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTree.Services
 {

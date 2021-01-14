@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using FamilyTree.Entities;
 using System.Text;
 using System.IO;
+using Microsoft.Extensions.Logging;
+using FamilyTree.Services;
 
 namespace FamilyTree.Gedcom
 {

@@ -103,7 +103,7 @@ namespace FamilyTree.Services
                         Children = new List<int>() { sibling.NodeId },
                         Description = "",
                         Partners = new List<int>(),
-                        Sex = "Male",
+                        Sex = Sex.Male,
                         X = sibling.X + 100,
                         Y = sibling.Y - 450,
                         TreeId = sibling.TreeId,
@@ -306,11 +306,6 @@ namespace FamilyTree.Services
                 context.SaveChanges();
                 transcation.Commit();
             }
-
-
-            //var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
-            //if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
-            //    return null;
             return new DrawableTreeResponse(tree, user);
         }
         public async Task<DrawableTreeResponse> ConnectPartners(int userId, ConnectPartnersRequest model)
@@ -327,58 +322,14 @@ namespace FamilyTree.Services
                 Partner1 = firstPartner,
                 Partner2 = secondPartner
             });
+            context.NodeNodeMarriage.Add(new NodeNodeMarriage()
+            {
+                Partner2 = firstPartner,
+                Partner1 = secondPartner
+            });
             await context.SaveChangesAsync();
             return new DrawableTreeResponse(tree, user);
         }
-
-
-        //public async Task<DrawableTreeResponse> ConnectNodeToFamily(int userId, ConnectNodeToFamilyRequest model)
-        //{
-        //    //var user = await GetUserFromContextAsync(userId);
-        //    //var node = await GetNodeFromContextAsync(model.NodeId);
-
-        //    //var tree = await GetTreeFromContextAsync(node.TreeId);
-        //    //if (node == null)
-        //    //{
-        //    //    return null;
-        //    //}
-        //    //var firstParent = await GetNodeFromContextAsync(model.FirstParentId);
-        //    //if (firstParent == null)
-        //    //{
-        //    //    return null;
-        //    //}
-        //    //Node secondParent = null;
-        //    //if (model.SecondParentId.HasValue)
-        //    //{
-        //    //    //ma obu rodzicow a chcemy cos zmieniac w obu
-        //    //    if (node.Parents.Any())
-        //    //    {
-        //    //        return null;
-        //    //    }
-        //    //    secondParent = await GetNodeFromContextAsync(model.SecondParentId.Value);
-        //    //    if (secondParent == null)
-        //    //    {
-        //    //        return null;
-        //    //    }
-        //    //}
-        //    //var transcation = context.Database.BeginTransaction();
-        //    //context.NodeNode.RemoveRange(node.Parents);
-        //    //context.SaveChanges();
-
-        //    //node.Parents.Add(new NodeNode() { Parent = firstParent, ParentId = firstParent.NodeId });
-        //    //if (secondParent != null)
-        //    //{
-        //    //    node.Parents.Add(new NodeNode() { Parent = secondParent, ParentId = secondParent.NodeId });
-        //    //}
-        //    //context.SaveChanges();
-        //    //transcation.Commit();
-
-
-        //    ////var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
-        //    ////if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
-        //    ////    return null;
-        //    //return new DrawableTreeResponse(tree, user);
-        //}
 
         public async Task<DrawableTreeResponse> GetTreeAsync(int treeId, int userId)
         {

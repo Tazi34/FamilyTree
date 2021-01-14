@@ -218,10 +218,14 @@ namespace FamilyTree.Helpers
                 if (node.FatherId != 0 || node.MotherId != 0)
                 {
                     var family = familyNodes.First(f => f.Children.Contains(childId));
-                    if (family.Parents.Count == 1 && targetNode.Partners.Contains(family.Parents[0]))
+                    if (family.Parents.Count == 1)
                     {
-                        connectableNodes.Add(targetNode.NodeId);
-                        continue;
+                        var parentNode = tree.Nodes.First(n => n.NodeId == family.Parents[0]);
+                        if (targetNode.Partners.Contains(parentNode.NodeId) || parentNode.Partners.Contains(targetNode.NodeId))
+                        {
+                            connectableNodes.Add(targetNode.NodeId);
+                            continue;
+                        }                
                     }
                     //jesli rodzina ma wiele dzieci odepnij dziecko i utworz nowa rodzine 
                     if (family.Children.Count > 1)
