@@ -306,11 +306,6 @@ namespace FamilyTree.Services
                 context.SaveChanges();
                 transcation.Commit();
             }
-
-
-            //var authLevel = treeAuthService.GetTreeAuthLevel(user, tree, node);
-            //if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
-            //    return null;
             return new DrawableTreeResponse(tree, user);
         }
         public async Task<DrawableTreeResponse> ConnectPartners(int userId, ConnectPartnersRequest model)
@@ -326,6 +321,11 @@ namespace FamilyTree.Services
             {
                 Partner1 = firstPartner,
                 Partner2 = secondPartner
+            });
+            context.NodeNodeMarriage.Add(new NodeNodeMarriage()
+            {
+                Partner2 = firstPartner,
+                Partner1 = secondPartner
             });
             await context.SaveChangesAsync();
             return new DrawableTreeResponse(tree, user);
