@@ -11,10 +11,7 @@ import { baseURL } from "../../helpers/apiHelpers";
 import { addThunkWithStatusHandlers, StatusState } from "../../helpers/helpers";
 import { TreeInformation } from "../../model/TreeInformation";
 import { initialStatus } from "../blog/redux/postsReducer";
-import { treeAPI } from "../tree/API/treeAPI";
 import { TreeAPI } from "../tree/API/utils/TreeModel";
-
-const treesReducerPath = "userTrees";
 
 export type UserTreesState = {
   trees: EntityState<TreeInformation>;
@@ -29,9 +26,7 @@ export const initialUserTreesState: UserTreesState = {
   status: initialStatus,
   currentTree: null,
 };
-const usersTreesSelectorsLocal = userTreesAdapter.getSelectors<ApplicationState>(
-  (state) => state.userTrees.trees
-);
+
 export const usersTreesSelectors = userTreesAdapter.getSelectors<ApplicationState>(
   (state) => state.userTrees.trees
 );

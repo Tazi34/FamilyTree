@@ -160,7 +160,7 @@ export const postsReducer = createReducer(postsInitialState, (builder) => {
     (state: PostsState, action: any) => {
       if (state.comments) {
         const comments = state.comments.filter(
-          (c) => c.commentId != action.payload.data.commentId
+          (c) => c.commentId !== action.payload.data.commentId
         );
         comments.push(action.payload.data);
         state.comments = comments;

@@ -39,12 +39,8 @@ const TreesList = ({
     <List className={classes.root}>
       {!loading &&
         trees.map((tree) => (
-          <div>
-            <TreeCard
-              key={tree.treeId}
-              onTreeSelect={onTreeSelect}
-              tree={tree}
-            />
+          <div key={tree.treeId}>
+            <TreeCard onTreeSelect={onTreeSelect} tree={tree} />
             <Divider />
           </div>
         ))}

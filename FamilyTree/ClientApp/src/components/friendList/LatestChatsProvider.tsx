@@ -1,5 +1,3 @@
-import { makeStyles } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useThunkDispatch } from "../..";
@@ -12,8 +10,6 @@ import {
 import { getLatestChats } from "../chat/reducer/getLatestChats";
 import { getUser } from "../loginPage/authenticationReducer";
 import ChatsList from "./ChatsList";
-
-const useStyles = makeStyles((theme: Theme) => ({}));
 
 const LatestChatsProvider = (props: any) => {
   const dispatch = useThunkDispatch();

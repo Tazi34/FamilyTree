@@ -85,13 +85,13 @@ const TreeInformationPanel = ({
           >
             Add Family member
           </Button>
-          {/* <Button
+          <Button
             variant="outlined"
             className={classes.button}
             onClick={() => onMockNodeAdd()}
           >
             Add mock Node
-          </Button> */}
+          </Button>
           <Button
             variant="outlined"
             className={classes.button}

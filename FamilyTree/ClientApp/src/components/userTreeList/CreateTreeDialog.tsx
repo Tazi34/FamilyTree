@@ -11,8 +11,6 @@ import React from "react";
 import ValidationErrorText from "../UI/ValidationErrorText";
 import createTreeValidationSchema from "./createTreeValidationSchema";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
-
 type Props = {
   open: boolean;
   onClose: () => void;

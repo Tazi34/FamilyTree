@@ -4,19 +4,19 @@ import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect, useHistory } from "react-router";
 import { BLOG_PAGE_URI, REGISTER_PAGE_URI } from "../../../applicationRouting";
+import { ApplicationState } from "../../../helpers";
 import useAlert from "../../alerts/useAlert";
 import { LoginUserRequestData } from "../API/loginUser";
 import {
   authenticateFacebookToken,
   authenticateGmailToken,
   getUser,
-  isLoggedIn,
   loginUser,
 } from "../authenticationReducer";
+import { rememberUserLocalStorageKey } from "../tokenService";
 import LoginForm from "./LoginForm";
 import SocialMediaLoginPanel from "./SocialMediaLoginPanel";
 
-const backColor = "#BCBCBC";
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     height: 700,
@@ -111,6 +111,10 @@ const LoginPage = (props: any) => {
     }
   };
 
+  const handleRememberUser = (remember: boolean) => {
+    localStorage.setItem(rememberUserLocalStorageKey, remember.toString());
+  };
+
   const handleLoginUser = (userData: LoginUserRequestData) => {
     dispatch(loginUser(userData)).then((data: any) => {
       handleAuthenticationResponse(data);
@@ -155,7 +159,10 @@ const LoginPage = (props: any) => {
                 Family Tree account
               </Typography>
               <div>
-                <LoginForm onLoginUser={handleLoginUser}></LoginForm>
+                <LoginForm
+                  onRemember={handleRememberUser}
+                  onLoginUser={handleLoginUser}
+                ></LoginForm>
               </div>
             </div>
 

@@ -11,21 +11,14 @@ import CreateTreeNodeDialog, {
   CreateNodeFormData,
 } from "../addNodeActionDialog/CreateTreeNodeDialog";
 import useAlert from "../alerts/useAlert";
-import {
-  selectCanvas,
-  selectCanvasCenter,
-} from "../canvas/reducer/canvasReducer";
+import { selectCanvasCenter } from "../canvas/reducer/canvasReducer";
+import DeleteLastNodeConfirmationDialog from "../deleteLastNodeConfirmationDialog/DeleteLastNodeConfirmationDialog";
 import TreeInformationContainer from "../treeInformation/TreeInformationContainer";
+import TreeNodeDetailsDialog from "../treeNodesDetails/TreeNodeDetailsDialog";
 import { getTree, selectIsOnlyUserInTree } from "./reducer/treeReducer";
 import useTreeActions from "./TreeActionsProvider";
 import TreeBody from "./TreeBody";
-import TreeNodeDetailsDialog from "../treeNodesDetails/TreeNodeDetailsDialog";
-import DeleteLastNodeConfirmationDialog from "../deleteLastNodeConfirmationDialog/DeleteLastNodeConfirmationDialog";
 
-type TreeContainerState = {
-  addDialog: boolean;
-  nodeEditDialog: NodeDialogProps;
-};
 type NodeDialogProps = {
   open: boolean;
   nodeId: EntityId | null;
@@ -140,7 +133,7 @@ const Tree = (props: any) => {
   if (treeInformation && treeInformation.treeId == 0) {
     return <Redirect to={HOME_PAGE_URI} />;
   }
-
+  console.log("TREE");
   return (
     <Paper className={classes.root}>
       <div className={classes.treeBackground}>

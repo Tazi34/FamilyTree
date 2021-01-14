@@ -8,7 +8,6 @@ import {
 import { Theme } from "@material-ui/core/styles";
 import { DropzoneArea } from "material-ui-dropzone";
 import * as React from "react";
-import { logger } from "../../helpers/logger";
 
 const useStyles = makeStyles((theme: Theme) => ({
   pictureDialogContainer: {

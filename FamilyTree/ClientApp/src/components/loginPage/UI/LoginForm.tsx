@@ -14,20 +14,13 @@ import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
 import { Formik } from "formik";
 import * as React from "react";
-import { REGISTER_PAGE_URI } from "../../../applicationRouting";
-import { TypographyLink } from "../../navigation/TypographyLink";
 import ErrorValidationWrapper from "../../UI/ErrorValidationWrapper";
 import PasswordField from "./PasswordField";
 import loginValidationSchema from "./validation/loginValidationSchema";
 
-interface State {
-  password: string;
-  showPassword: boolean;
-  rememberUser: boolean;
-}
-
 interface Props {
   onLoginUser: Function;
+  onRemember: (remember: boolean) => void;
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -46,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const LoginForm = ({ onLoginUser }: Props) => {
+const LoginForm = ({ onLoginUser, onRemember }: Props) => {
   const [formState, setFormState] = React.useState({
     rememberUser: false,
   });
@@ -54,7 +47,7 @@ const LoginForm = ({ onLoginUser }: Props) => {
   const classes = useStyles();
   return (
     <Formik
-      onSubmit={(values, { setSubmitting, resetForm }) => {
+      onSubmit={(values, { setSubmitting }) => {
         onLoginUser(values);
         values.password = "";
 
@@ -70,7 +63,6 @@ const LoginForm = ({ onLoginUser }: Props) => {
         errors,
         touched,
         handleChange,
-        handleBlur,
         handleSubmit,
         isSubmitting,
         setFieldTouched,
@@ -140,14 +132,10 @@ const LoginForm = ({ onLoginUser }: Props) => {
                     control={
                       <Checkbox
                         color="default"
-                        checked={formState.rememberUser}
                         icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
                         checkedIcon={<CheckBoxIcon fontSize="small" />}
-                        onChange={() => {
-                          setFormState({
-                            ...formState,
-                            rememberUser: !formState.rememberUser,
-                          });
+                        onChange={(e, checked) => {
+                          onRemember(checked);
                         }}
                       />
                     }

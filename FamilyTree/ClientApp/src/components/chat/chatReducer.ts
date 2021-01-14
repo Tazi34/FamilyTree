@@ -198,14 +198,17 @@ export const chatReducer = createReducer<ChatsState>(
       .addCase(receiveMessage, (state, action) => {
         const { message, userId, receiverId } = action.payload;
         const chat = state.chats.entities[userId];
-        if (chat && chat.loadedMessages) {
+
+        if (chat) {
           chat.unseen = true;
-          chat.messages.push({
-            text: message,
-            fromId: userId,
-            toId: receiverId,
-            creationTime: new Date(),
-          });
+          if (chat.loadedMessages) {
+            chat.messages.push({
+              text: message,
+              fromId: userId,
+              toId: receiverId,
+              creationTime: new Date(),
+            });
+          }
         }
       })
       .addCase(markChatAsSeen, (state, action) => {

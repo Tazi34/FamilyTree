@@ -68,7 +68,7 @@ type Props = {
 };
 export default function PrimarySearchAppBar({ user }: Props) {
   const classes = useStyles();
-  const isLoggedIn = Boolean(user);
+  const history = useHistory();
   React.useEffect(() => {
     const node = loadCSS(
       "https://use.fontawesome.com/releases/v5.12.0/css/all.css",
@@ -90,7 +90,7 @@ export default function PrimarySearchAppBar({ user }: Props) {
           </Typography>
         </RedirectButton>
         <MainSearchContainer />
-        {isLoggedIn && (
+        {user && (
           <div className={classes.sectionDesktop}>
             <RedirectButton
               className={classes.navbarButton}
@@ -98,11 +98,22 @@ export default function PrimarySearchAppBar({ user }: Props) {
             >
               Home
             </RedirectButton>
-
             <LogoutButton className={classes.navbarButton}>Logout</LogoutButton>
+
+            <TooltipMouseFollow title={`${user.name} ${user.surname}`}>
+              <Avatar
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  history.push(`${BLOG_PAGE_URI}/${user!.id}`);
+                }}
+                className={classes.avatar}
+                alt={`${user.name} ${user.surname}`}
+                src={user.pictureUrl}
+              />
+            </TooltipMouseFollow>
           </div>
         )}
-        {!isLoggedIn && (
+        {!user && (
           <div className={classes.sectionDesktop}>
             <RedirectButton
               className={classes.navbarButton}
@@ -113,15 +124,6 @@ export default function PrimarySearchAppBar({ user }: Props) {
               Log in
             </RedirectButton>
           </div>
-        )}
-        {user && (
-          <TooltipMouseFollow title={`${user.name} ${user.surname}`}>
-            <Avatar
-              className={classes.avatar}
-              alt={`${user.name} ${user.surname}`}
-              src={user.pictureUrl}
-            />
-          </TooltipMouseFollow>
         )}
       </Toolbar>
     </AppBar>

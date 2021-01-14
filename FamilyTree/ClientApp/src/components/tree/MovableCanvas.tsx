@@ -48,6 +48,9 @@ const MovableCanvas = (props: any) => {
   React.useEffect(() => {
     panRef.current.setState({ x: canvas.x, y: canvas.y, scale: canvas.scale });
   });
+
+  console.log("MovableCanvas");
+
   return (
     <div id="panZoomContainer" className={classes.panZoomContainer}>
       <PanZoom

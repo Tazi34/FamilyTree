@@ -55,4 +55,12 @@ const DraggablePersonNode = (props: any) => {
   );
 };
 
+const areEqual = (prev: any, next: any) => {
+  if (prev.person.x != next.person.x || prev.person.y != next.person.y) {
+    return false;
+  }
+
+  return true;
+};
+
 export default React.memo(DraggablePersonNode);

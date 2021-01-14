@@ -128,7 +128,7 @@ const UserProfileDialog = (props: any) => {
           User profile
         </Typography>
         <UserProfilePreview
-          profile={user}
+          profile={{ ...user, pictureUrl: picturePreview }}
           onClick={() => setPictureDialog(true)}
         />
 

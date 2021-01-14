@@ -28,12 +28,12 @@ const startSignalRConnection = async (connection: any) => {
   try {
     await connection.start();
     console.assert(connection.state === signalR.HubConnectionState.Connected);
-    console.log("SignalR connection established");
+    console.log("Connection established");
   } catch (err) {
     console.assert(
       connection.state === signalR.HubConnectionState.Disconnected
     );
-    console.error("SignalR Connection Error: ", err);
+    console.error("Connection Error: ", err);
     setTimeout(() => startSignalRConnection(connection), 5000);
   }
 };

@@ -11,7 +11,6 @@ import {
 } from "@material-ui/core";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Skeleton from "@material-ui/lab/Skeleton";
-import { index } from "d3";
 import { formatDistance } from "date-fns";
 import { convertFromRaw, EditorState } from "draft-js";
 import * as React from "react";
@@ -19,7 +18,6 @@ import { Editor } from "react-draft-wysiwyg";
 import "../../../node_modules/react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { Post } from "../../model/Post";
 import CommentsProvider from "../comments/CommentsProvider";
-import CommentsSection from "../comments/CommentsSection";
 
 const useStyles = makeStyles((theme: Theme) => ({
   postPage: {
