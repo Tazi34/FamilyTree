@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: "5px 10px",
     width: "100%",
   },
-  emailInput: {
+  fill: {
     flex: 1,
   },
   inputRow: {
@@ -40,10 +40,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const LoginForm = ({ onLoginUser, onRemember }: Props) => {
-  const [formState, setFormState] = React.useState({
-    rememberUser: false,
-  });
-
   const classes = useStyles();
   return (
     <Formik
@@ -86,7 +82,7 @@ const LoginForm = ({ onLoginUser, onRemember }: Props) => {
                 <Grid item>
                   <AccountCircle />
                 </Grid>
-                <Grid item className={classes.emailInput}>
+                <Grid item className={classes.fill}>
                   <ErrorValidationWrapper
                     error={errors.email}
                     touched={touched.email}
@@ -111,12 +107,13 @@ const LoginForm = ({ onLoginUser, onRemember }: Props) => {
                 <Grid item>
                   <LockOpenIcon />
                 </Grid>
-                <Grid item>
+                <Grid item className={classes.fill}>
                   <ErrorValidationWrapper
                     error={errors.password}
                     touched={touched.password}
                   >
                     <PasswordField
+                      fullWidth
                       autoComplete="current-password"
                       name="password"
                       value={values.password}
