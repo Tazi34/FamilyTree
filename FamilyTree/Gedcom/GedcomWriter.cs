@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using FamilyTree.Entities;
 using System.Text;
 using System.IO;
+using Microsoft.Extensions.Logging;
+using FamilyTree.Services;
 
 namespace FamilyTree.Gedcom
 {
@@ -13,14 +15,17 @@ namespace FamilyTree.Gedcom
         private Tree tree;
         private List<Family> families = new List<Family>();
         private List<Individual> people = new List<Individual>();
-        public GedcomWriter(Tree tree)
+        ILogger<GedcomService> logger;
+        public GedcomWriter(Tree tree, ILogger<GedcomService> logger)
         {
+            this.logger = logger;
             this.tree = tree;
             CreateIndividuals();
             CreateFamilies();
         }
         public Stream GetGedcom()
         {
+            logger.LogInformation("logowanie bla bla");
             StringBuilder gedcom = new StringBuilder();
             GenerateHead(gedcom, tree.Name);
             foreach(Individual i in people)

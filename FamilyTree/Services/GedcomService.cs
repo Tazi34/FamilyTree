@@ -6,6 +6,7 @@ using System.IO;
 using FamilyTree.Helpers;
 using Microsoft.EntityFrameworkCore;
 using FamilyTree.Gedcom;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyTree.Services
 {
@@ -17,10 +18,12 @@ namespace FamilyTree.Services
     {
         private ITreeAuthService treeAuthService;
         private DataContext context;
-        public GedcomService(DataContext dataContext, ITreeAuthService treeAuthService)
+        ILogger<GedcomService> logger;
+        public GedcomService(DataContext dataContext, ITreeAuthService treeAuthService, ILogger<GedcomService> logger)
         {
             this.treeAuthService = treeAuthService;
             this.context = dataContext;
+            this.logger = logger;
         }
         public async Task<Stream> GetGedcom(int userId, int treeId)
         {
@@ -34,7 +37,7 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
-            var gedcomWriter = new GedcomWriter(tree);
+            var gedcomWriter = new GedcomWriter(tree, logger);
             return gedcomWriter.GetGedcom();
         }
     }
