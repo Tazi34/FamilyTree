@@ -18,12 +18,10 @@ namespace FamilyTree.Services
     {
         private ITreeAuthService treeAuthService;
         private DataContext context;
-        ILogger<GedcomService> logger;
-        public GedcomService(DataContext dataContext, ITreeAuthService treeAuthService, ILogger<GedcomService> logger)
+        public GedcomService(DataContext dataContext, ITreeAuthService treeAuthService)
         {
             this.treeAuthService = treeAuthService;
             this.context = dataContext;
-            this.logger = logger;
         }
         public async Task<Stream> GetGedcom(int userId, int treeId)
         {
@@ -37,7 +35,7 @@ namespace FamilyTree.Services
             var authLevel = treeAuthService.GetTreeAuthLevel(user, tree);
             if (!treeAuthService.IsAuthLevelSuficient(TreeAuthLevel.PublicTree, authLevel))
                 return null;
-            var gedcomWriter = new GedcomWriter(tree, logger);
+            var gedcomWriter = new GedcomWriter(tree);
             return gedcomWriter.GetGedcom();
         }
     }
