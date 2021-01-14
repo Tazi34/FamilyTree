@@ -608,10 +608,10 @@ namespace FamilyTree.Services
             //wybieramy wszystkich członków rodziny
             var familyMembers = family.Children.Select(child => tree.Nodes.FirstOrDefault(node => node.NodeId == child));
             var firstParentNode = tree.Nodes.FirstOrDefault(n => n.NodeId == family.FirstParentId);
-            if (firstParentNode != null)
+            if (firstParentNode != null && !prevFamilyId.Equals(""))
                 familyMembers = familyMembers.Append(firstParentNode);
             var secondParentNode = tree.Nodes.FirstOrDefault(n => n.NodeId == family.SecondParentId);
-            if (secondParentNode!= null)
+            if (secondParentNode!= null && !prevFamilyId.Equals(""))
                 familyMembers = familyMembers.Append(secondParentNode);
             //lista rodzin członków rodziny, które zostały już ukryte
             List<string> hidddenFamilies = new List<string>();
