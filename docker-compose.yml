@@ -1,0 +1,37 @@
+version: "3.4"
+
+services:
+  #mssql server
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    environment:
+      MSSQL_SA_PASSWORD: "Haslo123"
+      ACCEPT_EULA: "Y"
+  #konener backendu - uruchamiany na porcie 8000 HTTTP - konfiguracja z pliku appsettings.docker.json
+  familytree:
+    image: ${DOCKER_REGISTRY-}backend
+    build:
+      context: .
+      dockerfile: FamilyTree/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=docker
+  #konener frontendu - uruchamiany na porcie 3001 HTTPS, skonfigurowany do rozmawiania z lokalnym backendem. Wersja developerska
+  frontend:
+    image: ${DOCKER_REGISTRY-}frontend
+    build:
+      context: .
+      dockerfile: FamilyTree/ClientApp/Dockerfile
+    ports:
+      - "3001:3000"
+    stdin_open: true
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - SKIP_PREFLIGHT_CHECK=TRUE
+      - HTTPS=true
+      - REACT_APP_BACKEND_API_BASE_URL=http://localhost:8000
+      - REACT_APP_FACEBOOK_APP_ID=397727788098228
+      - REACT_APP_GMAIL_CLIENT_ID=941927718703-sabevb4hdfuit5aca0egk363d1lth7m8.apps.googleusercontent.com

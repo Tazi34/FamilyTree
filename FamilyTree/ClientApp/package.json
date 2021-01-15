@@ -105,7 +105,7 @@
   },
   "scripts": {
     "test:debug": "react-scripts --inspect-brk test --runInBand --no-cache",
-    "start": "set HTTPS=true&&react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "cross-env CI=true react-scripts test --env=jsdom",
     "eject": "react-scripts eject",

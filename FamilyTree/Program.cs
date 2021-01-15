@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using FamilyTree.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyTree
 {
@@ -19,7 +20,14 @@ namespace FamilyTree
 
             using (var scope = host.Services.CreateScope())
             {
+                var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+                if (db.Database.GetPendingMigrations().Any())
+                {
+                    db.Database.Migrate();
+                }
+
                 var services = scope.ServiceProvider;
+                
                 SeedData.Initialize(services);
                 try
                 {
@@ -31,6 +39,7 @@ namespace FamilyTree
                     logger.LogError(ex, "An error occurred seeding the DB.");
                 }
             }
+            
             host.Run();
         }
 

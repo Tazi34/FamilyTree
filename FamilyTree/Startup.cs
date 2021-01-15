@@ -55,17 +55,15 @@ namespace FamilyTree
             });
 
             app.UseHttpsRedirection();
-
+          
             app.UseCors(options =>
             {
-                //TODO PK: dodac restrykcje dla CORSU - na razie potrzebuje do testowania frontu na szybko
                 options
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .SetIsOriginAllowed(origin => true) // allow any origin
                 .AllowCredentials();
             });
-
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

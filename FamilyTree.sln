@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FamilyTree", "FamilyTree\FamilyTree.csproj", "{317409DA-1D64-49BD-98DE-46D6EAA0C5B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FamilyTreeTests", "FamilyTreeTests\FamilyTreeTests.csproj", "{79CD385A-AF3B-4EE3-A2BC-E5FD68D70949}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FamilyTreeTests", "FamilyTreeTests\FamilyTreeTests.csproj", "{79CD385A-AF3B-4EE3-A2BC-E5FD68D70949}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{A2391798-B30B-45E2-9D29-889F39838FAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{79CD385A-AF3B-4EE3-A2BC-E5FD68D70949}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79CD385A-AF3B-4EE3-A2BC-E5FD68D70949}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79CD385A-AF3B-4EE3-A2BC-E5FD68D70949}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2391798-B30B-45E2-9D29-889F39838FAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2391798-B30B-45E2-9D29-889F39838FAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2391798-B30B-45E2-9D29-889F39838FAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2391798-B30B-45E2-9D29-889F39838FAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
