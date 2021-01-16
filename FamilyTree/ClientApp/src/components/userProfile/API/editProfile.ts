@@ -11,7 +11,7 @@ export type EditProfileRequestData = {
   surname: string;
   email: string;
   birthday: string;
-  previousSurnames: string[];
+  maidenName: string;
   sex: "Male" | "Female" | "NotSure";
 };
 export type EditProfileResponse = FullUserInformation;

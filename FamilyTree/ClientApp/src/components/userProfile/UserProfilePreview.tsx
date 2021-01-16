@@ -1,7 +1,6 @@
 import { Avatar, IconButton, makeStyles, Typography } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Skeleton from "@material-ui/lab/Skeleton";
-import { format } from "date-fns";
 import * as React from "react";
 import { formatDate } from "../../helpers/formatters";
 import { Profile } from "../../model/Profile";
@@ -76,7 +75,10 @@ const UserProfilePreview = ({ profile, onClick, imgSize }: Props) => {
       ? "fas fa-venus"
       : null
     : null;
-  const displayName = profile ? `${profile?.name} ${profile?.surname}` : "";
+  let displayName = profile ? `${profile?.name} ${profile?.surname}` : "";
+  if (profile && Boolean(profile?.maidenName)) {
+    displayName += ` (${profile?.maidenName})`;
+  }
   const displayDate = formatDate(profile?.birthday);
 
   const handleClick = () => {

@@ -12,5 +12,5 @@ export type LoginUserResponseSuccessData = {
   role: string;
   pictureUrl: string;
   birthday: string;
-  previousSurnames: string[];
+  maidenName: string;
 };

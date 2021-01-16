@@ -5,5 +5,6 @@ export type Profile = {
   surname: string;
   birthday: string;
   pictureUrl: string;
+  maidenName?: string;
   sex?: Sex;
 };

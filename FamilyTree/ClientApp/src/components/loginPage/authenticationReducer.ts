@@ -49,7 +49,7 @@ export type User = {
   surname: string;
   birthday: string;
   token: string;
-  previousSurnames: string[];
+  maidenName: string;
   pictureUrl: string;
 };
 export const userActionsPrefix = "users";
@@ -149,7 +149,7 @@ export const authenticationReducer = createReducer(
           token: userData.token,
           birthday: userData.birthday,
           pictureUrl: "",
-          previousSurnames: userData.previousSurnames,
+          maidenName: userData.maidenName,
         };
         addAuthorizationToken(userData.token);
       });
@@ -240,6 +240,6 @@ const setUserLoggedIn = (
     role: userData.role,
     token: userData.token,
     pictureUrl: userData.pictureUrl,
-    previousSurnames: userData.previousSurnames,
+    maidenName: userData.maidenName,
   };
 };

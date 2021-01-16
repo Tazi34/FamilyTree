@@ -6,7 +6,7 @@ export type FullUserInformation = {
   surname: string;
   email: string;
   password: string;
-  previousSurnames: string[];
+  maidenName: string;
   token: string;
   role: string;
   birthday: string;

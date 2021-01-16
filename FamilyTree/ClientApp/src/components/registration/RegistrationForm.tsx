@@ -32,7 +32,7 @@ export type UserRegistrationData = {
   email: string;
   password: string;
   birthday: string;
-  previousSurnames: string[];
+  maidenName: string;
   sex: Sex;
 };
 
@@ -43,14 +43,14 @@ const initialData = {
   password: "",
   confirmPassword: "",
   birthday: new Date(),
-  previousSurnames: [],
+  maidenName: "",
 };
 
 type Props = {
   onRegister: Function;
-} & WithAlert;
+};
 
-const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
+const RegistrationForm = ({ onRegister }: Props) => {
   const classes = useStyles();
 
   return (
@@ -117,6 +117,17 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
                 />
               </ErrorValidationWrapper>
               <ErrorValidationWrapper
+                error={errors.maidenName}
+                touched={touched.maidenName}
+              >
+                <TextField
+                  fullWidth
+                  label="Maiden name"
+                  name={"maidenName"}
+                  onChange={change.bind(null, "maidenName")}
+                />
+              </ErrorValidationWrapper>
+              <ErrorValidationWrapper
                 error={errors.email}
                 touched={touched.email}
               >
@@ -129,7 +140,6 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
                   onChange={change.bind(null, "email")}
                 />
               </ErrorValidationWrapper>
-
               <ErrorValidationWrapper
                 error={errors.birthday}
                 touched={touched.birthday}
@@ -195,4 +205,4 @@ const RegistrationForm = ({ onRegister, alertSuccess, alertError }: Props) => {
   );
 };
 
-export default withAlertMessage(RegistrationForm);
+export default RegistrationForm;

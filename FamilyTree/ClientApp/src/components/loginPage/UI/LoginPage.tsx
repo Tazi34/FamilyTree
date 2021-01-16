@@ -109,6 +109,7 @@ const LoginPage = (props: any) => {
       alert.success("Logged in.");
       history.push(`${BLOG_PAGE_URI}/${response.payload.data.userId}`);
     }
+    return response;
   };
 
   const handleRememberUser = (remember: boolean) => {
@@ -116,7 +117,7 @@ const LoginPage = (props: any) => {
   };
 
   const handleLoginUser = (userData: LoginUserRequestData) => {
-    dispatch(loginUser(userData)).then((data: any) => {
+    return dispatch(loginUser(userData)).then((data: any) => {
       handleAuthenticationResponse(data);
     });
   };

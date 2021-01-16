@@ -73,33 +73,12 @@ type Props = {
 };
 const BlogProfileSection = ({ profile, onContact }: Props) => {
   const classes = useStyles();
-  const displayText = profile ? `${profile.name} ${profile.surname}` : "";
-  const displayDate = profile ? formatDate(profile.birthday) : "28.03.1998";
 
   return (
     <Paper className={classes.profileSectionRoot}>
       <div className={classes.card}>
-        {/* <div className={classes.profilePictureContainer}>
-          {profile ? (
-            <Avatar className={classes.profilePicture} src={""} />
-          ) : (
-            <Skeleton variant="circle" width={avatarSize} height={avatarSize} />
-          )}
-        </div> */}
         <UserProfilePreview profile={profile} imgSize={avatarSize} />
         <div className={classes.profileSectionContent}>
-          {/* <div className={classes.personalInformation}>
-            {profile ? (
-              <div>
-                <Typography>{displayText}</Typography>
-                <Typography>{displayDate}</Typography>
-              </div>
-            ) : (
-              <div className={classes.infoSkeletonContainer}>
-                <Skeleton variant="rect" className={classes.infoSkeleton} />
-              </div>
-            )}
-          </div> */}
           <div className={classes.filler} />
           <div className={classes.messageButtonContainer}>
             <IconButton className={classes.messageButton} onClick={onContact}>

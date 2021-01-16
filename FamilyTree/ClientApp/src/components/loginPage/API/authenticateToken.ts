@@ -13,7 +13,7 @@ export type AuthenticateTokenResponse = {
   email: string;
   token: string;
   role: string;
-  previousSurnames: string[];
+  maidenName: string;
   birthday: string;
   pictureUrl: string;
   sex: Sex;

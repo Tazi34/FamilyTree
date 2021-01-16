@@ -71,9 +71,6 @@ type Props = {
 };
 const TreeNodeDetails = ({ onClose, details }: Props) => {
   const classes = useStyles();
-
-  const displayDate = format(new Date(details.birthday), "d MMM yyyy");
-
   return (
     <div>
       <div className={classes.personDialog}>
