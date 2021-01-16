@@ -10,7 +10,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 # install app dependencies
 COPY ./FamilyTree/ClientApp/package.json ./
-COPY ./FamilyTree/ClientApp/package-lock.json ./
+
 RUN npm install 
 RUN npm install react-scripts@3.4.1 -g 
 
