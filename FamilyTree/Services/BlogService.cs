@@ -77,6 +77,7 @@ namespace FamilyTree.Services
                     UserId = user.UserId,
                     Name = user.Name,
                     Surname = user.Surname,
+                    MaidenName = user.MaidenName,
                     PictureUrl =user.PictureUrl,
                     Birthday = user.Birthday,
                 },
@@ -96,6 +97,7 @@ namespace FamilyTree.Services
                         UserId = user.UserId,
                         Name = user.Name,
                         Surname = user.Surname,
+                        MaidenName = user.MaidenName,
                         PictureUrl = user.PictureUrl
                     }
                 });
@@ -135,6 +137,7 @@ namespace FamilyTree.Services
                     UserId = user.UserId,
                     Name = user.Name,
                     Surname = user.Surname,
+                    MaidenName = user.MaidenName,
                     PictureUrl = user.PictureUrl
                 }
             };

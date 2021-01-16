@@ -38,7 +38,7 @@ namespace FamilyTree.Services
         }
         public async Task<AuthenticateResponse> AuthenticateAsync(string email, string password)
         {
-            var user = await context.Users.Include(u => u.PrevSurnames).FirstOrDefaultAsync(x => x.Email.Equals(email));
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Email.Equals(email));
             if (user == null || !passwordService.Compare(user.PasswordHash, password, user.Salt))
                 return null;
             return CreateResponse(user);
@@ -46,7 +46,7 @@ namespace FamilyTree.Services
 
         public async Task<AuthenticateResponse> AuthenticateFacebookAsync(FacebookUserInfoResult userInfo)
         {
-            var user = await context.Users.Include(u => u.PrevSurnames).FirstOrDefaultAsync(u => u.Email.Equals(userInfo.Email));
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Email.Equals(userInfo.Email));
             if(user == null)
             {
                 user = new User
@@ -55,7 +55,6 @@ namespace FamilyTree.Services
                     Surname = userInfo.LastName,
                     Email = userInfo.Email,
                     Role = Role.User,
-                    PrevSurnames = new List<PreviousSurname>(),
                     PictureUrl = userInfo.Picture.Details.Url.ToString(),
                     Sex = Sex.NotSure,
                     Birthday = DateTime.Now
@@ -68,14 +67,13 @@ namespace FamilyTree.Services
 
         public async Task<AuthenticateResponse> AuthenticateGoogleAsync(string email)
         {
-            var user = await context.Users.Include(u => u.PrevSurnames).FirstOrDefaultAsync(u => u.Email.Equals(email));
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
             if(user == null)
             {
                 user = new User
                 {
                     Email = email,
                     Role = Role.User,
-                    PrevSurnames = new List<PreviousSurname>(),
                     Name = "",
                     Surname = "",
                     Sex = Sex.NotSure,
@@ -89,7 +87,7 @@ namespace FamilyTree.Services
 
         public async Task<AuthenticateResponse> ChangePasswordAsync(int userId, ChangePasswordRequest model)
         {
-            var user = await context.Users.Include(u => u.PrevSurnames).FirstOrDefaultAsync(u => u.UserId == model.UserId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == model.UserId);
             var orderingUser = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null || !passwordService.Compare(user.PasswordHash, model.OldPassword, user.Salt) || 
                 (userId != model.UserId && !orderingUser.Role.Equals(Role.Admin)))
@@ -102,7 +100,7 @@ namespace FamilyTree.Services
 
         public async Task<AuthenticateResponse> CheckUserIdAsync(int userId)
         {
-            var user = await context.Users.Include(u => u.PrevSurnames).FirstOrDefaultAsync(u => u.UserId == userId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if(user == null)
                 return null;
             return CreateResponse(user);
@@ -113,17 +111,6 @@ namespace FamilyTree.Services
             var sameEmailUser = await context.Users.FirstOrDefaultAsync(u => u.Email.Equals(model.Email));
             if (sameEmailUser != null)
                 return null;
-            var previousSurnames = new List<PreviousSurname>();
-            if(model.PreviousSurnames != null)
-            {
-                foreach (string surname in model.PreviousSurnames)
-                {
-                    previousSurnames.Add(new PreviousSurname
-                    {
-                        Surname = surname
-                    });
-                }
-            }
             var hashSaltTuple = passwordService.CreateHash(model.Password);
             var user = new User
             {
@@ -134,9 +121,9 @@ namespace FamilyTree.Services
                 Salt = hashSaltTuple.Item2,
                 Role = Role.User,
                 Birthday = model.Birthday,
-                PrevSurnames = previousSurnames,
                 Sex = model.Sex,
-                PictureUrl = ""
+                PictureUrl = "",
+                MaidenName = model.MaidenName
             };
             context.Users.Add(user);
             await context.SaveChangesAsync();
@@ -145,12 +132,12 @@ namespace FamilyTree.Services
 
         public User GetUserById(int userId)
         {
-            return context.Users.Include(u => u.PrevSurnames).SingleOrDefault(x => x.UserId == userId);
+            return context.Users.SingleOrDefault(x => x.UserId == userId);
         }
 
         public async Task<AuthenticateResponse> ModifyAsync(int userId, ModifyUserRequest model)
         {
-            var user = await context.Users.Include(x => x.PrevSurnames).FirstOrDefaultAsync(u => u.UserId == model.UserId);
+            var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == model.UserId);
             var orderingUser = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null || orderingUser == null || (user.UserId != orderingUser.UserId && !orderingUser.Role.Equals(Role.Admin)))
                 return null;
@@ -169,28 +156,7 @@ namespace FamilyTree.Services
                 user.Sex = model.Sex;
             if (model.Birthday != null)
                 user.Birthday = model.Birthday;
-            if (model.PreviousSurnames != null)
-            {
-                foreach(string surname in model.PreviousSurnames)
-                {
-                    bool newSurname = true;
-                    foreach(PreviousSurname s in user.PrevSurnames)
-                    {
-                        if (s.Surname.Equals(surname))
-                        {
-                            newSurname = false;
-                            break;
-                        }
-                    }
-                    if (newSurname)
-                    {
-                        user.PrevSurnames.Add(new PreviousSurname
-                        {
-                            Surname = surname
-                        });
-                    }
-                }
-            }
+            user.MaidenName = model.MaidenName;
             context.Users.Update(user);
             await context.SaveChangesAsync();
             return CreateResponse(user);
@@ -205,7 +171,7 @@ namespace FamilyTree.Services
                 UserId = user.UserId,
                 Token = tokenService.GetToken(user.UserId),
                 Role = user.Role,
-                PreviousSurnames = user.PrevSurnames?.Select(x => x.Surname).ToList(),
+                MaidenName = user.MaidenName,
                 PictureUrl = user.PictureUrl,
                 Birthday = user.Birthday,
                 Sex = user.Sex

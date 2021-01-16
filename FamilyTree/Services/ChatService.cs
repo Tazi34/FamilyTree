@@ -153,6 +153,7 @@ namespace FamilyTree.Services
             {
                 Name = user.Name,
                 Surname = user.Surname,
+                MaidenName = user.MaidenName,
                 PictureUrl = user.PictureUrl,
                 UserId = user.UserId
             };

@@ -19,8 +19,8 @@ namespace FamilyTree.Models
         public string Email { get; set; }
         [Required]
         public DateTime Birthday { get; set; }
-        [Required]
-        public List<string> PreviousSurnames { get; set; }
+        [Required(AllowEmptyStrings = true)]
+        public string MaidenName { get; set; }
         [Required]
         [RegularExpression(@"Male|Female|NotSure")]
         public string Sex { get; set; }

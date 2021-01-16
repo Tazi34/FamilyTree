@@ -4,6 +4,7 @@
 ./bin
 ./bin/debug
 /.vs
+obj/
 FamilyTree/ClientApp/.vscode/launch.json
 FamilyTree/ClientApp/package-lock.json
 FamilyTree/ClientApp/package-lock.json
