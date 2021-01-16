@@ -76,9 +76,7 @@ export const createUser = createAsyncThunk(
 export const loginUser = createAsyncThunk(
   "users/loginUser",
   async (loginData: LoginUserRequestData): Promise<AxiosResponse> => {
-    return await Axios.get(
-      `${LOGIN_API_URL}/${loginData.email}/${loginData.password}`
-    );
+    return await Axios.post(`${LOGIN_API_URL}/auth`, loginData);
   }
 );
 export const authenticateToken = createAsyncThunk<
