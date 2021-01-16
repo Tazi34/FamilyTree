@@ -30,14 +30,12 @@ namespace FamilyTree.Controllers
         /// <summary>
         /// Uzyskanie tokena
         /// </summary>
-        /// <param name="email">Email</param>
-        /// <param name="password">hasło</param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("{email}/{password}")]
-        public async Task<ActionResult<AuthenticateResponse>> GetJWT (string email, string password)
+        [HttpPost]
+        [Route("auth")]
+        public async Task<ActionResult<AuthenticateResponse>> GetJWT (AuthenticateRequest model)
         {
-            var request = await userService.AuthenticateAsync(email, password);
+            var request = await userService.AuthenticateAsync(model.Email, model.Password);
             if (request == null)
                 return Unauthorized();
             return Ok(request);
