@@ -2,11 +2,11 @@
 
 namespace FamilyTree.Models
 {
-    public class CreateTreeRequest
+    public class AuthenticateRequest
     {
         [Required]
-        public string TreeName { get; set; }
+        public string Email { get; set; }
         [Required]
-        public bool IsPrivate { get; set; }
+        public string Password { get; set; }
     }
 }
