@@ -25,21 +25,7 @@ namespace FamilyTree
                 {
                     db.Database.Migrate();
                 }
-
-                var services = scope.ServiceProvider;
-                
-                SeedData.Initialize(services);
-                try
-                {
-                    SeedData.Initialize(services);
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred seeding the DB.");
-                }
             }
-            
             host.Run();
         }
 

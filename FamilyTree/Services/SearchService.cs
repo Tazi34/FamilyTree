@@ -84,21 +84,21 @@ namespace FamilyTree.Services
             List<User> exactResults = null, startsWithResults = null, prevSurnamesResults = null;
             if(splittedExpression.Count >= 2)
             {
-                exactResults = await context.Users.Include(u => u.PrevSurnames)
+                exactResults = await context.Users
                     .Where(u => u.Name.ToUpper().Equals(splittedExpression[0]) && (u.Surname.ToUpper().Equals(splittedExpression[1]))).Take(20).ToListAsync();
-                startsWithResults = await context.Users.Include(u => u.PrevSurnames)
+                startsWithResults = await context.Users
                     .Where(u => u.Name.ToUpper().StartsWith(splittedExpression[0]) && (u.Surname.ToUpper().StartsWith(splittedExpression[1]))).Take(20).ToListAsync();
-                prevSurnamesResults = await context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => u.Name.ToUpper().Equals(splittedExpression[0]) && u.PrevSurnames.Any(p => p.Surname.ToUpper().Equals(splittedExpression[1]))).Take(20).ToListAsync();
+                prevSurnamesResults = await context.Users
+                    .Where(u => u.Name.ToUpper().Equals(splittedExpression[0]) && u.MaidenName.ToUpper().Equals(splittedExpression[1])).Take(20).ToListAsync();
             }
             else if(splittedExpression.Count == 1)
             {
-                exactResults = await context.Users.Include(u => u.PrevSurnames)
+                exactResults = await context.Users
                     .Where(u => (u.Surname.ToUpper().Equals(splittedExpression[0]))).Take(20).ToListAsync();
-                startsWithResults = await context.Users.Include(u => u.PrevSurnames)
+                startsWithResults = await context.Users
                     .Where(u => (u.Surname.ToUpper().StartsWith(splittedExpression[0]))).Take(20).ToListAsync();
-                prevSurnamesResults = await context.Users.Include(u => u.PrevSurnames)
-                    .Where(u => u.PrevSurnames.Any(p => p.Surname.ToUpper().Equals(splittedExpression[0]))).Take(20).ToListAsync();
+                prevSurnamesResults = await context.Users
+                    .Where(u => u.MaidenName.ToUpper().Equals(splittedExpression[0])).Take(20).ToListAsync();
             }
             else if (splittedExpression.Count == 0)
                 exactResults = startsWithResults = prevSurnamesResults = new List<User>();
@@ -133,17 +133,10 @@ namespace FamilyTree.Services
                     Surname = user.Surname,
                     UserId = user.UserId,
                     PictureUrl = user.PictureUrl,
-                    prevSurnames = CreatePrevsurnameList(user.PrevSurnames)
+                    MaidenName = user.MaidenName
                 });
             }
             return userListSearchResponse;
-        }
-        private List<string> CreatePrevsurnameList(List<PreviousSurname> prevSurnameList)
-        {
-            var stringList = new List<string>();
-            foreach(var prevSurname in prevSurnameList)
-                stringList.Add(prevSurname.Surname);
-            return stringList;
         }
     }
 }

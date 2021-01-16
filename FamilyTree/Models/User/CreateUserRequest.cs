@@ -23,8 +23,8 @@ namespace FamilyTree.Models
         public string Password { get; set; }
         [Required]
         public DateTime Birthday { get; set; }
-        [Required]
-        public List<string> PreviousSurnames { get; set; }
+        [Required(AllowEmptyStrings = true)]
+        public string MaidenName { get; set; }
         [RegularExpression(@"Male|Female|NotSure")]
         [Required]
         public string Sex { get; set; }

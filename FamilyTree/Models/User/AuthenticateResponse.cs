@@ -23,8 +23,8 @@ namespace FamilyTree.Models
         [Required]
         [RegularExpression(@"User|Admin")]
         public string Role { get; set; }
-        [Required]
-        public List<String> PreviousSurnames { get; set;}
+        [Required(AllowEmptyStrings = true)]
+        public String MaidenName{ get; set;}
         [Required]
         public DateTime Birthday { get; set; }
         [Required]

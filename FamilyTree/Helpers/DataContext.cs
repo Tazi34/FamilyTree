@@ -10,7 +10,6 @@ namespace FamilyTree.Helpers
     public class DataContext : DbContext
     {
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<PreviousSurname> PreviousSurnames { get; set; }
         public virtual DbSet<Tree> Trees { get; set; }
         public virtual DbSet<Node> Nodes { get; set; }
         public virtual DbSet<Post> Posts { get; set; }
