@@ -174,10 +174,12 @@ const BlogPage = (props: any) => {
           </div>
         </div>
       </ResponsiveMainColumn>
-      <UserProfileDialog
-        open={editProfileDialog}
-        onClose={closeEditProfileDialog}
-      />
+      {user && (
+        <UserProfileDialog
+          open={editProfileDialog}
+          onClose={closeEditProfileDialog}
+        />
+      )}
     </div>
   );
 };

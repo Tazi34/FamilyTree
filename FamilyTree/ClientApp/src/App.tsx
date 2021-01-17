@@ -128,7 +128,7 @@ const App = (props: any) => {
             layout={LayoutBase}
             user={loggedUser}
           />
-          <AuthorizedPrivateRoute
+          <LayoutRoute
             exact
             path={`${BLOG_PAGE_URI}/:blogId`}
             component={BlogPage}
