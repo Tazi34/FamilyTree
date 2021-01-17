@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import SearchUsersContainer from "../search/SearchUsers";
+import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 const useStyles = makeStyles((theme: Theme) => ({
   panel: {
     paddingTop: 12,
@@ -121,13 +122,15 @@ const TreeInformationPanel = ({
       />
       {canEdit && (
         <>
-          <IconButton onClick={handleTreeVisibilityChange}>
-            {treeInformation.isPrivate ? (
-              <VisibilityOffIcon className={classes.icon} />
-            ) : (
-              <VisibilityIcon className={classes.icon} />
-            )}
-          </IconButton>
+          <TooltipMouseFollow title="Change tree visibility">
+            <IconButton onClick={handleTreeVisibilityChange}>
+              {treeInformation.isPrivate ? (
+                <VisibilityOffIcon className={classes.icon} />
+              ) : (
+                <VisibilityIcon className={classes.icon} />
+              )}
+            </IconButton>
+          </TooltipMouseFollow>
 
           <SearchUsersContainer onSelectUser={handleInviteUser} />
         </>
