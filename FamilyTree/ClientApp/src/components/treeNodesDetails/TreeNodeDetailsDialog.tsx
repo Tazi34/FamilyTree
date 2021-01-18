@@ -5,20 +5,13 @@ import PanoramaFishEyeIcon from "@material-ui/icons/PanoramaFishEye";
 import { EntityId } from "@reduxjs/toolkit";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { useThunkDispatch } from "../..";
 import { ApplicationState } from "../../helpers";
-import { Sex } from "../../model/Sex";
-import TreeNodeEdit from "../treeNodeEdit/TreeNodeEdit";
-import TreeNodeEditContainer from "../treeNodeEdit/TreeNodeEditContainer";
-import TreeNodeDetails from "./TreeNodeDetails";
-import {
-  selectPersonNode,
-  selectPersonNodeLocal,
-} from "../tree/reducer/treeReducer";
-import { uploadTreeNodePictureRequest } from "../tree/reducer/updateNodes/setNodePicture";
 import { PersonNode } from "../../model/PersonNode";
+import { selectPersonNode } from "../tree/reducer/treeReducer";
+import TreeNodeEditContainer from "../treeNodeEdit/TreeNodeEditContainer";
+import TooltipMouseFollow from "../UI/TooltipMouseFollow";
+import TreeNodeDetails from "./TreeNodeDetails";
 
-const imgSize = 128;
 const useStyles = makeStyles((theme: Theme) => ({
   actionsSection: {
     position: "absolute",
@@ -65,13 +58,16 @@ const TreeNodeDetailsDialog = ({
         ) : (
           <TreeNodeDetails onClose={onClose} details={node.personDetails} />
         )}
-        {canEdit && (
-          <div className={classes.actionsSection}>
-            <IconButton onClick={() => setEditMode(!editMode)}>
-              {editMode ? <PanoramaFishEyeIcon /> : <EditIcon />}
-            </IconButton>
-          </div>
-        )}
+        <div className={classes.actionsSection}>
+          {canEdit && (
+            <TooltipMouseFollow title="Edit information">
+              <IconButton onClick={() => setEditMode(!editMode)}>
+                {editMode ? <PanoramaFishEyeIcon /> : <EditIcon />}
+              </IconButton>
+            </TooltipMouseFollow>
+          )}
+        </div>
+        )
       </div>
     </Dialog>
   );

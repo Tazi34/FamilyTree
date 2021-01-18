@@ -298,11 +298,13 @@ const PersonNodeCard = ({
                 </div>
 
                 <Avatar
-                  title={details.name}
+                  title={initials}
                   src={details.pictureUrl}
                   className={classes.picture}
                   alt={initials}
-                ></Avatar>
+                >
+                  {initials}
+                </Avatar>
 
                 <Typography
                   align="center"
