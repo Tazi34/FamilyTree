@@ -17,6 +17,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: 450,
   },
   skeletonContainer: {},
+  centerPagination: {
+    display: "flex",
+    justifyContent: "center",
+  },
 }));
 type PostsListProps = {
   posts: Post[];
@@ -60,17 +64,19 @@ const PostsList = ({
           ))}
 
       {showPostsList && (
-        <Pagination
-          count={pages}
-          defaultPage={1}
-          siblingCount={1}
-          onChange={(e, pageNo) => {
-            setCurrentPage(pageNo);
-            if (listRef.current) {
-              window.scrollTo({ top: 0 });
-            }
-          }}
-        />
+        <div className={classes.centerPagination}>
+          <Pagination
+            count={pages}
+            defaultPage={1}
+            siblingCount={1}
+            onChange={(e, pageNo) => {
+              setCurrentPage(pageNo);
+              if (listRef.current) {
+                window.scrollTo({ top: 0 });
+              }
+            }}
+          />
+        </div>
       )}
 
       {!loaded &&

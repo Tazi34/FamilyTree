@@ -24,7 +24,6 @@ import {
   TREE_PAGE_URI,
 } from "./applicationRouting";
 import GlobalAlerts from "./components/alerts/GlobalAlerts";
-import { withAlertMessage } from "./components/alerts/withAlert";
 import BlogPage from "./components/blog/BlogPage";
 import HomePage from "./components/homePage/HomePage";
 import { getInvitations } from "./components/invitation/reducer/invitationsReducer";
@@ -208,4 +207,4 @@ const App = (props: any) => {
   );
 };
 
-export default withAlertMessage(App);
+export default App;

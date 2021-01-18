@@ -2,8 +2,10 @@ import { IconButton, makeStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import MailOutlineIcon from "@material-ui/icons/MailOutline";
 import * as React from "react";
+import { useSelector } from "react-redux";
 import { formatDate } from "../../helpers/formatters";
 import { BlogProfile } from "../../model/BlogProfile";
+import { getUser } from "../loginPage/authenticationReducer";
 import UserProfilePreview from "../userProfile/UserProfilePreview";
 const avatarSize = 50;
 const useStyles = makeStyles((theme: Theme) => ({
@@ -73,6 +75,7 @@ type Props = {
 };
 const BlogProfileSection = ({ profile, onContact }: Props) => {
   const classes = useStyles();
+  const user = useSelector(getUser);
 
   return (
     <Paper className={classes.profileSectionRoot}>
@@ -80,11 +83,13 @@ const BlogProfileSection = ({ profile, onContact }: Props) => {
         <UserProfilePreview profile={profile} imgSize={avatarSize} />
         <div className={classes.profileSectionContent}>
           <div className={classes.filler} />
-          <div className={classes.messageButtonContainer}>
-            <IconButton className={classes.messageButton} onClick={onContact}>
-              <MailOutlineIcon />
-            </IconButton>
-          </div>
+          {user && (
+            <div className={classes.messageButtonContainer}>
+              <IconButton className={classes.messageButton} onClick={onContact}>
+                <MailOutlineIcon />
+              </IconButton>
+            </div>
+          )}
         </div>
       </div>
     </Paper>

@@ -184,4 +184,4 @@ const BlogPage = (props: any) => {
   );
 };
 
-export default withAlertMessage(BlogPage);
+export default BlogPage;

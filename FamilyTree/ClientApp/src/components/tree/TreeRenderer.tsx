@@ -98,6 +98,7 @@ const TreeRenderer = (props: OwnProps) => {
     document.addEventListener("contextmenu", handleStopConnectingMode);
     return () => {
       document.removeEventListener("contextmenu", handleStopConnectingMode);
+      document.removeEventListener("keyup", handleStopConnectingMode);
     };
   });
 
@@ -197,7 +198,6 @@ const TreeRenderer = (props: OwnProps) => {
   const loadedLinks = links
     .map((link: Link) => linkLoader(treeState, link))
     .filter((a: any) => a) as LinkLoaded[];
-  console.log("TreeRenderer");
   return (
     <Fade in={true} timeout={3000}>
       <div>

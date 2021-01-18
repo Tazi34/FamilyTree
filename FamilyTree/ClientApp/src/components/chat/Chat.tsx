@@ -215,7 +215,6 @@ const Chat = ({ chat, onChatClose, onMessageSend, onChatSeen }: Props) => {
               <Formik
                 initialValues={{ message: "" }}
                 onSubmit={(values, { resetForm }) => {
-                  console.log(values.message);
                   onMessageSend(chat.userId, values.message);
                   resetForm();
                 }}

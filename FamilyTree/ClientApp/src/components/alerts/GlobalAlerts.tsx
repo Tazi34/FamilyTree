@@ -5,8 +5,6 @@ import { useSelector } from "react-redux";
 import { selectAlerts } from "./reducer/alertsReducer";
 import { withAlertMessage } from "./withAlert";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
-
 const GlobalAlerts = (props: any) => {
   const alerts = useSelector(selectAlerts);
 

@@ -191,6 +191,10 @@ export const chatReducer = createReducer<ChatsState>(
       })
       .addCase(closeChat, (state, action) => {
         const chatId = action.payload;
+        const chat = state.chats.entities[chatId];
+        if (chat) {
+          chat.unseen = false;
+        }
         state.currentChats = state.currentChats.filter(
           (currentChatId) => currentChatId != chatId
         );

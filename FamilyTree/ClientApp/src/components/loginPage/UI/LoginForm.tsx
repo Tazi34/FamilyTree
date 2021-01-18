@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const LoginForm = ({ onLoginUser, onRemember }: Props) => {
   const classes = useStyles();
+  onRemember(true);
   return (
     <Formik
       onSubmit={(values, { setSubmitting }) => {
@@ -129,6 +130,7 @@ const LoginForm = ({ onLoginUser, onRemember }: Props) => {
                     control={
                       <Checkbox
                         color="default"
+                        defaultChecked
                         icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
                         checkedIcon={<CheckBoxIcon fontSize="small" />}
                         onChange={(e, checked) => {

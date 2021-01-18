@@ -47,7 +47,6 @@ const TreeBody = ({ onEditNodeDialogOpen, onNodeDelete }: Props) => {
       secondParentNode
     );
   };
-  console.log("TreeBody");
   return (
     <div id="tree-canvas" className={classes.zoomContainer}>
       <MovableCanvas>

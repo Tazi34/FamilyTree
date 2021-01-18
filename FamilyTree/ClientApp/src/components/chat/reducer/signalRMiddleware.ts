@@ -3,6 +3,7 @@ import { AnyAction } from "redux";
 import { ApplicationState } from "../../../helpers";
 import { logger } from "../../../helpers/logger";
 import {
+  authenticateToken,
   createUser,
   loginUser,
   logoutUser,
@@ -17,18 +18,15 @@ import {
 import { chatsSelectorsLocal, getMessages } from "./../chatReducer";
 
 const connectionBuilder = (token: string) =>
-  new signalR.HubConnectionBuilder().withUrl(
-    //"https://familytree.azurewebsites.net/chatHub",
-    `${baseURL}/chatHub`,
-    {
-      accessTokenFactory: () => token,
-    }
-  );
+  new signalR.HubConnectionBuilder().withUrl(`${baseURL}/chatHub`, {
+    accessTokenFactory: () => token,
+  });
 const startSignalRConnection = async (connection: any) => {
   try {
     await connection.start();
     console.assert(connection.state === signalR.HubConnectionState.Connected);
-    console.log("Connection established");
+
+    console.log("Connection established " + connection.connectionId);
   } catch (err) {
     console.assert(
       connection.state === signalR.HubConnectionState.Disconnected
@@ -47,6 +45,7 @@ const buildConnection = (storeAPI: any, token?: string) => {
     const state: ApplicationState = storeAPI.getState();
     const currentUserId = state.authentication.user!.id;
 
+    console.log(connectionHub.connectionId);
     logger.log("Received message " + message + " from " + userId);
 
     storeAPI.dispatch(onReceiveMessage(userId, message, currentUserId));
@@ -54,6 +53,7 @@ const buildConnection = (storeAPI: any, token?: string) => {
   connectionHub.onreconnected(() => handleConnectionReconnected(storeAPI));
   connectionHub.onclose(() => logger.log("Closing connection"));
   startSignalRConnection(connectionHub);
+
   return connectionHub;
 };
 
@@ -62,14 +62,12 @@ const loginSuccessActions = [
   createUser.fulfilled.toString(),
   authenticateFacebookToken.fulfilled.toString(),
   authenticateGmailToken.fulfilled.toString(),
+  authenticateToken.fulfilled.toString(),
 ];
 export const signalRMiddleware = (storeAPI: any) => {
   const state: ApplicationState = storeAPI.getState();
   let token = state.authentication.user?.token;
-  if (!token) {
-    token = localStorage[tokenLocalStorageKey];
-  }
-  let connectionHub = buildConnection(storeAPI, token);
+  let connectionHub: signalR.HubConnection | null = null;
 
   return (next: any) => (action: AnyAction) => {
     if (!action) {
@@ -78,7 +76,6 @@ export const signalRMiddleware = (storeAPI: any) => {
 
     if (loginSuccessActions.includes(action.type)) {
       token = action.payload.data.token;
-      console.log("TOKEN " + token);
       connectionHub = buildConnection(storeAPI, token);
     }
 
@@ -88,6 +85,7 @@ export const signalRMiddleware = (storeAPI: any) => {
           console.log("connection stopped");
         });
       }
+
       if (action.type === sendMessage.toString()) {
         const { userId, message } = action.payload;
         const state: ApplicationState = storeAPI.getState();

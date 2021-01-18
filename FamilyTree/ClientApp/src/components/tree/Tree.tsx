@@ -133,7 +133,6 @@ const Tree = (props: any) => {
   if (treeInformation && treeInformation.treeId == 0) {
     return <Redirect to={HOME_PAGE_URI} />;
   }
-  console.log("TREE");
   return (
     <Paper className={classes.root}>
       <div className={classes.treeBackground}>

@@ -57,10 +57,17 @@ const PicturePickerDialog = ({ open, onClose, onPickPicture }: Props) => {
   };
 
   const handlePictureSubmit = () => {
+    setPicturePreview("");
     onPickPicture(file);
+    setFile(null);
+  };
+  const handleClose = () => {
+    setPicturePreview("");
+    setFile(null);
+    onClose();
   };
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={handleClose}>
       <Paper className={classes.pictureDialogContainer}>
         <Typography align="center" variant="h5" className={classes.title}>
           Upload new image
@@ -74,7 +81,6 @@ const PicturePickerDialog = ({ open, onClose, onPickPicture }: Props) => {
           dropzoneText={"Drag and drop or click"}
           filesLimit={1}
           showPreviewsInDropzone={false}
-          //TODO jak bedzie backend
           onChange={handleFileUpload}
         />
         <div className={classes.actionsContainer}>
@@ -91,7 +97,7 @@ const PicturePickerDialog = ({ open, onClose, onPickPicture }: Props) => {
           <Button
             color="primary"
             variant={Boolean(picturePreview) ? "outlined" : "contained"}
-            onClick={onClose}
+            onClick={handleClose}
           >
             Cancel
           </Button>
