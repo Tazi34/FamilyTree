@@ -12,13 +12,8 @@ import { formatInitials } from "../../helpers/formatters";
 import { Comment } from "../../model/Comment";
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    width: "100%",
-
-    backgroundColor: theme.palette.background.paper,
-  },
-  inline: {
-    display: "inline",
+  date: {
+    fontSize: 12,
   },
 }));
 
@@ -28,10 +23,9 @@ type Props = {
   onEdit: (comment: Comment) => void;
   onDelete: (id: number) => void;
 };
-const CommentEntry = ({ comment, onEdit, onDelete, canEdit }: Props) => {
-  const classes = useStyles();
+const CommentEntry = ({ comment, onDelete, canEdit }: Props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
-
+  const classes = useStyles();
   const handleContextMenuOpen = (event: any) => {
     setAnchorEl(event.currentTarget);
   };
@@ -50,7 +44,12 @@ const CommentEntry = ({ comment, onEdit, onDelete, canEdit }: Props) => {
         primary={`${comment.user.name} ${comment.user.surname}`}
         secondary={
           <React.Fragment>
-            <Typography component="span" variant="body2" color="textPrimary">
+            <Typography
+              className={classes.date}
+              component="span"
+              variant="body2"
+              color="textPrimary"
+            >
               {formatDistance(new Date(comment.time), new Date())} ago
             </Typography>
             <div>{comment.text}</div>

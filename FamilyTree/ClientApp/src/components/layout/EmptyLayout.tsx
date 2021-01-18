@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: "100%",
   },
   bottomFixed: {
+    zIndex: 10,
     bottom: 0,
     position: "fixed",
     right: 0,
