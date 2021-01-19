@@ -3,7 +3,6 @@ import { Theme } from "@material-ui/core/styles";
 import MailOutlineIcon from "@material-ui/icons/MailOutline";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { formatDate } from "../../helpers/formatters";
 import { BlogProfile } from "../../model/BlogProfile";
 import { getUser } from "../loginPage/authenticationReducer";
 import UserProfilePreview from "../userProfile/UserProfilePreview";

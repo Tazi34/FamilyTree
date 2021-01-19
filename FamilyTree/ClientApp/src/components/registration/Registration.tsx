@@ -1,16 +1,10 @@
-import { makeStyles } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useDispatch } from "react-redux";
 import useAlert from "../alerts/useAlert";
-import { WithAlert, withAlertMessage } from "../alerts/withAlert";
 import { createUser } from "../loginPage/authenticationReducer";
 import RegistrationForm, { UserRegistrationData } from "./RegistrationForm";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
-
 const Registration = (props: any) => {
-  const classes = useStyles();
   const dispatch: any = useDispatch();
   const alert = useAlert();
 
@@ -34,4 +28,4 @@ const Registration = (props: any) => {
   );
 };
 
-export default withAlertMessage(Registration);
+export default Registration;

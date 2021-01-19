@@ -4,7 +4,6 @@ import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Redirect, useHistory } from "react-router";
 import { BLOG_PAGE_URI, REGISTER_PAGE_URI } from "../../../applicationRouting";
-import { ApplicationState } from "../../../helpers";
 import useAlert from "../../alerts/useAlert";
 import { LoginUserRequestData } from "../API/loginUser";
 import {

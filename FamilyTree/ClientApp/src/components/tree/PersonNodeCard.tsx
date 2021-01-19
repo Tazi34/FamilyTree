@@ -298,7 +298,7 @@ const PersonNodeCard = ({
                 </div>
 
                 <Avatar
-                  title={initials}
+                  title={details.name}
                   src={details.pictureUrl}
                   className={classes.picture}
                   alt={initials}

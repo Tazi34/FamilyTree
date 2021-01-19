@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginBottom: 10,
   },
   preview: {
-    width: "100%",
+    height: 128,
   },
 }));
 type Props = {
