@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Button,
   Dialog,
   makeStyles,
@@ -27,9 +28,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   previewContainer: {
     width: "100%",
     marginBottom: 10,
+    display: "flex",
+    justifyContent: "center",
   },
   preview: {
-    height: 128,
+    height: 100,
+    width: 100,
   },
 }));
 type Props = {
@@ -73,7 +77,7 @@ const PicturePickerDialog = ({ open, onClose, onPickPicture }: Props) => {
           Upload new image
         </Typography>
         <div className={classes.previewContainer}>
-          <img src={picturePreview ?? ""} className={classes.preview} />
+          <Avatar src={picturePreview ?? ""} className={classes.preview} />
         </div>
         <DropzoneArea
           maxFileSize={5 * 1024 * 1024}
