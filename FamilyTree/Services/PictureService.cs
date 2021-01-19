@@ -11,6 +11,9 @@ using System.IO;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Jpeg;
 
 namespace FamilyTree.Services
 {
@@ -67,7 +70,7 @@ namespace FamilyTree.Services
             BlobContainerClient container = blobService.GetBlobContainerClient(nodeContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
-            await blob.UploadAsync(uploadFileStream, true);
+            await blob.UploadAsync(ResizePicture(uploadFileStream), true);
             uploadFileStream.Close();
             node.PictureUrl = blob.Uri.ToString();
             context.Nodes.Update(node);
@@ -114,7 +117,7 @@ namespace FamilyTree.Services
             BlobContainerClient container = blobService.GetBlobContainerClient(profileContainerName);
             BlobClient blob = container.GetBlobClient(fileName);
             Stream uploadFileStream = picture.OpenReadStream();
-            await blob.UploadAsync(uploadFileStream, true);
+            await blob.UploadAsync(ResizePicture(uploadFileStream), true);
             uploadFileStream.Close();
             user.PictureUrl = blob.Uri.ToString();
             context.Users.Update(user);
@@ -206,6 +209,15 @@ namespace FamilyTree.Services
             {
                 PictureUrl = node.PictureUrl
             };
+        }
+        private Stream ResizePicture(Stream pictureStream)
+        {
+            Image image = Image.Load(pictureStream);
+            image.Mutate(x => x.Resize(200, 200));
+            var resizedImageStream = new MemoryStream();
+            image.Save(resizedImageStream, new JpegEncoder());
+            resizedImageStream.Seek(0, SeekOrigin.Begin);
+            return resizedImageStream;
         }
     }
 }
