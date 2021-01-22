@@ -33,21 +33,7 @@ namespace FamilyTreeTests.UserServiceTests
                     Surname = "TestSurname1",
                     Email = "test1@mail",
                     Birthday = DateTime.Now,
-                    PrevSurnames = new List<PreviousSurname>
-                    {
-                        new PreviousSurname
-                        {
-                            UserId = 1,
-                            PreviousSurnameId = 1,
-                            Surname = "user1PrevSurname1"
-                        },
-                        new PreviousSurname
-                        {
-                            UserId = 1,
-                            PreviousSurnameId = 2,
-                            Surname = "user1PrevSurname2"
-                        },
-                    },
+                    MaidenName = "user1PrevSurname1",
                     Role = Role.User,
                     Sex = Sex.NotSure,
                     PasswordHash = "passwd123"
@@ -59,21 +45,7 @@ namespace FamilyTreeTests.UserServiceTests
                     Surname = "TestSurname2",
                     Email = "test2@mail",
                     Birthday = DateTime.Now,
-                    PrevSurnames = new List<PreviousSurname>
-                    {
-                        new PreviousSurname
-                        {
-                            UserId = 2,
-                            PreviousSurnameId = 3,
-                            Surname = "user2PrevSurname1"
-                        },
-                        new PreviousSurname
-                        {
-                            UserId = 2,
-                            PreviousSurnameId = 4,
-                            Surname = "user2PrevSurname2"
-                        },
-                    },
+                    MaidenName = "MaidenName1",
                     Role = Role.User,
                     Sex = Sex.Female,
                     PasswordHash = "passwd123"
@@ -82,58 +54,6 @@ namespace FamilyTreeTests.UserServiceTests
             private byte[] key;
             private JwtSecurityTokenHandler handler;
             private TokenValidationParameters validations;
-            //private static User user1 = new User
-            //{
-            //    UserId = 1,
-            //    Name = "TestName1",
-            //    Surname = "TestSurname1",
-            //    Email = "test1@mail",
-            //    Birthday = DateTime.Now,
-            //    PrevSurnames = new List<PreviousSurname> 
-            //    {
-            //        new PreviousSurname
-            //        {
-            //            UserId = 1,
-            //            PreviousSurnameId = 1,
-            //            Surname = "user1PrevSurname1"
-            //        },
-            //        new PreviousSurname
-            //        {
-            //            UserId = 1,
-            //            PreviousSurnameId = 2,
-            //            Surname = "user1PrevSurname2"
-            //        },
-            //    },
-            //    Role = Role.User,
-            //    Sex = Sex.NotSure,
-            //    PasswordHash = "passwd123"
-            //};
-            //private static User user2 = new User
-            //{
-            //    UserId = 2,
-            //    Name = "TestName2",
-            //    Surname = "TestSurname2",
-            //    Email = "test2@mail",
-            //    Birthday = DateTime.Now,
-            //    PrevSurnames = new List<PreviousSurname>
-            //    {
-            //        new PreviousSurname
-            //        {
-            //            UserId = 2,
-            //            PreviousSurnameId = 3,
-            //            Surname = "user2PrevSurname1"
-            //        },
-            //        new PreviousSurname
-            //        {
-            //            UserId = 2,
-            //            PreviousSurnameId = 4,
-            //            Surname = "user2PrevSurname2"
-            //        },
-            //    },
-            //    Role = Role.User,
-            //    Sex = Sex.Female,
-            //    PasswordHash = "passwd123"
-            //};
             [SetUp]
             public void Setup()
             {
@@ -165,18 +85,18 @@ namespace FamilyTreeTests.UserServiceTests
                 Assert.AreEqual(userId, userIdFromToken);
             }
             [TestCaseSource("Users")]
-            public void AuthenticateSuccess(User user)
+            public async void AuthenticateSuccess(User user)
             {
-                var response = service.Authenticate(user.Email, user.PasswordHash);
+                var response = await service.AuthenticateAsync(user.Email, user.PasswordHash);
 
                 Assert.IsNotNull(response);
                 Assert.AreEqual(response.Name, user.Name);
                 CheckToken(response.Token, user.UserId);
             }
             [Test]
-            public void AuthenticateFail()
+            public async void AuthenticateFail()
             {
-                var response = service.Authenticate("DummyEmail", "DummyPasswd");
+                var response = await service.AuthenticateAsync("DummyEmail", "DummyPasswd");
                 Assert.IsNull(response);
             }
             [TestCaseSource("Users")]
@@ -189,7 +109,7 @@ namespace FamilyTreeTests.UserServiceTests
                     OldPassword = user.PasswordHash,
                     Password = "superNewPasswd"
                 };
-                var response = await service.ChangePasswordAsync(request);
+                var response = await service.ChangePasswordAsync(user.UserId, request);
 
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Once);
                 mockContext.Verify(x => x.SaveChanges(), Times.Once);
@@ -207,28 +127,28 @@ namespace FamilyTreeTests.UserServiceTests
                     OldPassword = "DummyPasswd",
                     Password = "superNewPasswd"
                 };
-                var response = await service.ChangePasswordAsync(request);
+                var response = await service.ChangePasswordAsync(666, request);
 
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Never);
                 mockContext.Verify(x => x.SaveChanges(), Times.Never);
                 Assert.IsNull(response);
             }
             [TestCaseSource("Users")]
-            public void CheckUserIdSuccess(User user)
+            public async void CheckUserIdSuccess(User user)
             {
-                var response = service.CheckUserId(user.UserId);
+                var response = await service.CheckUserIdAsync(user.UserId);
                 Assert.IsNotNull(response);
                 Assert.AreEqual(response.UserId, user.UserId);
                 CheckToken(response.Token, user.UserId);
             }
             [Test]
-            public void CheckUserIdFail()
+            public async void CheckUserIdFail()
             {
-                var response = service.CheckUserId(666);
+                var response = await service.CheckUserIdAsync (666);
                 Assert.IsNull(response);
             }
             [Test]
-            public void CreateUserSuccess()
+            public async void CreateUserSuccess()
             {
                 var request = new CreateUserRequest
                 {
@@ -238,18 +158,16 @@ namespace FamilyTreeTests.UserServiceTests
                     Surname = "NewSurname",
                     Password = "NewPasswd",
                     Sex = "Male",
-                    PreviousSurnames = new List<string> {
-                        "Prev1", "Prev2"
-                    }
+                    MaidenName = "Prev1"
                 };
-                var response = service.CreateUser(request);
+                var response = await service.CreateUserAsync(request);
                 mockSetUser.Verify(x => x.Add(It.IsAny<User>()), Times.Once);
                 mockContext.Verify(x => x.SaveChanges(), Times.Once);
                 Assert.IsNotNull(response);
                 CheckToken(response.Token, response.UserId);
             }
             [TestCaseSource("Users")]
-            public void CreateUserFail(User user)
+            public async void CreateUserFail(User user)
             {
                 var request = new CreateUserRequest
                 {
@@ -259,11 +177,9 @@ namespace FamilyTreeTests.UserServiceTests
                     Surname = user.Surname,
                     Password = user.PasswordHash,
                     Sex = user.Sex,
-                    PreviousSurnames = new List<string> {
-                        user.PrevSurnames[0].Surname, user.PrevSurnames[1].Surname
-                    }
+                    MaidenName = user.MaidenName
                 };
-                var response = service.CreateUser(request);
+                var response = await service.CreateUserAsync(request);
                 mockSetUser.Verify(x => x.Add(It.IsAny<User>()), Times.Never);
                 mockContext.Verify(x => x.SaveChanges(), Times.Never);
                 Assert.IsNull(response);
@@ -276,9 +192,9 @@ namespace FamilyTreeTests.UserServiceTests
                 Assert.AreEqual(response.UserId, user.UserId);
             }
             [Test]
-            public void GetUserByIdFail()
+            public async void GetUserByIdFail()
             {
-                var response = service.CheckUserId(666);
+                var response = await service.CheckUserIdAsync(666);
                 Assert.IsNull(response);
             }
             [TestCaseSource("Users")]
@@ -291,12 +207,10 @@ namespace FamilyTreeTests.UserServiceTests
                     Name = "NewName",
                     Surname = user.Surname,
                     Sex = user.Sex,
-                    PreviousSurnames = new List<string> {
-                        user.PrevSurnames[0].Surname, user.PrevSurnames[1].Surname, "NewPrevSurname"
-                    },
+                    MaidenName = user.MaidenName,
                     UserId = user.UserId
                 };
-                var response = await service.ModifyAsync(request);
+                var response = await service.ModifyAsync(user.UserId, request);
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Once);
                 mockContext.Verify(x => x.SaveChanges(), Times.Once);
                 Assert.IsNotNull(response);
@@ -309,12 +223,10 @@ namespace FamilyTreeTests.UserServiceTests
             {
                 var request = new ModifyUserRequest
                 {
-                    PreviousSurnames = new List<string> {
-                        "NewPrevSurname"
-                    },
+                    MaidenName = "NewPrevSurname",
                     UserId = 666
                 };
-                var response = await service.ModifyAsync(request);
+                var response = await service.ModifyAsync(666, request);
                 mockSetUser.Verify(x => x.Update(It.IsAny<User>()), Times.Never);
                 mockContext.Verify(x => x.SaveChanges(), Times.Never);
                 Assert.IsNull(response);
