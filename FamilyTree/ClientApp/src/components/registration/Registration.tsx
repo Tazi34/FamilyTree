@@ -21,11 +21,7 @@ const Registration = (props: any) => {
       }
     });
   };
-  return (
-    <div>
-      <RegistrationForm onRegister={handleRegister} />
-    </div>
-  );
+  return <RegistrationForm onRegister={handleRegister} />;
 };
 
 export default Registration;
