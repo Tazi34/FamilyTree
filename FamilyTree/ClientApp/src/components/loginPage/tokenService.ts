@@ -13,11 +13,13 @@ const removeTokenFromRequestHeaders = () => {
 
 const addTokenToLocalStorage = (token: string) => {
   localStorage.setItem(tokenLocalStorageKey, token);
+  window.sessionStorage.setItem(tokenLocalStorageKey, token);
 };
 
 const removeTokenFromLocalStorage = () => {
   localStorage.removeItem(tokenLocalStorageKey);
   localStorage.removeItem(rememberUserLocalStorageKey);
+  window.sessionStorage.removeItem(tokenLocalStorageKey);
 };
 
 export const addAuthorizationToken = (token: string) => {

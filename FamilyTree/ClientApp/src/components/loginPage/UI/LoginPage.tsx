@@ -25,12 +25,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     height: "100%",
     width: "100%",
     margin: "0 auto",
-    // backgroundImage: `url(/background.jpg)`,
-    // backgroundSize: "cover",
-    // backgroundPosition: "35% center",
-    // backgroundRepeat: "no-repeat",
-    // opacity: 2,
-    // backgroundAttachment: "fixed",
   },
   content: {
     background: "#f4f4f4",

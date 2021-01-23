@@ -98,10 +98,17 @@ const App = (props: any) => {
 
   //jesli jest token uzytkownika to sprobuj zautoryzowac
   React.useEffect(() => {
-    const token = localStorage.getItem(tokenLocalStorageKey);
+    const localToken = localStorage.getItem(tokenLocalStorageKey);
     const rememberUser = localStorage.getItem(rememberUserLocalStorageKey);
-    if (token && rememberUser === "true") {
-      dispatch(authenticateToken(token)).then((resp: any) => {
+    const sessionToken = window.sessionStorage.getItem(tokenLocalStorageKey);
+    let tokenToSend = "";
+    if (localToken && rememberUser === "true") {
+      tokenToSend = localToken;
+    } else if (sessionToken) {
+      tokenToSend = sessionToken;
+    }
+    if (tokenToSend) {
+      dispatch(authenticateToken(tokenToSend)).then((resp: any) => {
         setVerifying(false);
       });
     } else {

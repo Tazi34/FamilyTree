@@ -1,4 +1,3 @@
-export const localURL = "http://localhost:44377";
 export const backendURL = process.env.REACT_APP_BACKEND_API_BASE_URL;
 export const baseURL = backendURL; //
 
