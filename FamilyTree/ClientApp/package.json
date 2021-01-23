@@ -13,7 +13,6 @@
     "@material-ui/pickers": "^3.2.10",
     "@microsoft/signalr": "^5.0.1",
     "@reduxjs/toolkit": "^1.5.0",
-    "@types/d3": "^6.2.0",
     "@types/draft-js": "^0.10.44",
     "@types/fg-loadcss": "^3.1.1",
     "@types/jest": "^26.0.18",
@@ -26,10 +25,6 @@
     "bootstrap": "^4.5.3",
     "bower": "^1.8.8",
     "connected-react-router": "6.5.2",
-    "d3": "^6.3.0",
-    "d3-dag": "^0.3.5",
-    "d3-dtree": "^2.4.1",
-    "d3-zoom": "^2.0.0",
     "date-fns": "^2.16.1",
     "draft-js": "^0.11.7",
     "draft-js-export-html": "^1.4.1",
@@ -78,6 +73,7 @@
   "devDependencies": {
     "@types/history": "4.7.3",
     "@types/html-to-draftjs": "^1.4.0",
+    "@types/jquery": "^3.5.5",
     "@types/node": "12.11.6",
     "@types/react": "^16.14.2",
     "@types/react-dom": "16.9.2",
@@ -95,8 +91,6 @@
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-jsx-a11y": "6.2.3",
     "eslint-plugin-react": "^7.21.5",
-    "json-server": "^0.16.3",
-    "json-server-auth": "^2.0.2",
     "nan": "^2.14.2",
     "postcss-normalize": "^9.0.0",
     "prettier": "2.2.1",
@@ -135,10 +129,19 @@
       "plugin:prettier/recommended"
     ]
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all",
+      "not ie < 11",
+      "ie 11"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version",
+      "ie 11"
+    ]
+  }
 }
