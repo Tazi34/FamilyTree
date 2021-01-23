@@ -2,7 +2,7 @@ import { createPath } from "../helpers/linkCreationHelpers";
 import { FamilyNode, getFamilyLocation } from "../../../model/FamilyNode";
 import { Link } from "../../../model/Link";
 import { Node } from "../../../model/NodeClass";
-
+import $ from "jquery";
 import { Point } from "../../../model/Point";
 import { TreeState } from "../reducer/treeReducer";
 import {
@@ -11,7 +11,7 @@ import {
   getOutboundLinks,
 } from "../reducer/utils/getOutboundLinks";
 import { PersonNode } from "../../../model/PersonNode";
-const d3 = require("d3");
+
 export default (
   e: any,
   node: Node,
@@ -34,8 +34,8 @@ export default (
     } else {
       familyLocation = getFamilyLocation(family, { x: e.x, y: e.y });
     }
-    const familyNode = d3.select("#" + family.id);
-    familyNode.style(
+    const familyNode = $("#" + family.id);
+    familyNode.css(
       "transform",
       `translate(${familyLocation.x - 10}px,${familyLocation.y - 10}px)`
     );
@@ -57,7 +57,7 @@ export default (
           );
         }
 
-        const linksvg = d3.select("#" + link.id);
+        const linksvg = $("#" + link.id);
         linksvg.attr("d", path);
       }
     });
@@ -77,7 +77,7 @@ export default (
             familyLocation.y
           );
         }
-        const linksvg = d3.select("#" + link.id);
+        const linksvg = $("#" + link.id);
         linksvg.attr("d", path);
       }
     });
@@ -97,7 +97,7 @@ export default (
           otherNodelocation.y
         );
 
-        const linksvg = d3.select("#" + link.id);
+        const linksvg = $("#" + link.id);
         linksvg.attr("d", path);
       }
     });
@@ -107,7 +107,7 @@ export default (
     const otherNodelocation = getNodeById(treeState, link.source);
     if (otherNodelocation) {
       var path = createPath(otherNodelocation.x, otherNodelocation.y, e.x, e.y);
-      const linksvg = d3.select("#" + link.id);
+      const linksvg = $("#" + link.id);
       linksvg.attr("d", path);
     }
   });
