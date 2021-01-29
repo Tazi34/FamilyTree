@@ -17,20 +17,11 @@ export default function configureStore(
   const middleware = [thunk, routerMiddleware(history), signalRMiddleware];
 
   if (process.env.NODE_ENV === "development") {
-    //middleware.push(logger);
+    middleware.push(logger);
   }
 
   for (const key in reducersToPersis) {
     if (Object.prototype.hasOwnProperty.call(reducersToPersis, key)) {
-      // const persistConfig = {
-      //   key: key.toString(),
-      //   storage,
-      // };
-      // const persistedReducer = persistReducer(
-      //   persistConfig,
-      //   reducersToPersis[key]
-      // );
-      // reducers[key] = persistedReducer;
       reducers[key] = reducersToPersis[key];
     }
   }
@@ -41,7 +32,7 @@ export default function configureStore(
   });
 
   const rootReducer = (state: any, action: any) => {
-    if (action.type == logoutUser.toString()) {
+    if (action.type === logoutUser.toString()) {
       removeAuthorizationToken();
       return {
         ...initialAppState,

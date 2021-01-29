@@ -23,8 +23,6 @@ namespace FamilyTree.Models
         public bool CanEdit { get; set; }
         public bool Hidden { get; set; } = false;
         public string Sex { get; set; }
-        
-        //do drawable tree response : TODO co z tym zrobic
         public List<string> Families { get; set; }
         public NodeResponse(Node node, User user, bool userInTree)
         {

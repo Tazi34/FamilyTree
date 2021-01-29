@@ -1,7 +1,6 @@
 import {
   Badge,
   Box,
-  ClickAwayListener,
   Divider,
   IconButton,
   makeStyles,
@@ -84,7 +83,6 @@ const FriendsPanel = (props: any) => {
   };
   return (
     <Box display="flex" flexDirection="column" className={classes.root}>
-      {/* <div className={classes.spaceFiller}></div> */}
       <Paper className={classes.background}>
         <Box
           display="flex"
@@ -94,7 +92,7 @@ const FriendsPanel = (props: any) => {
           <TooltipMouseFollow title="Tree invitations">
             <IconButton onClick={recordButtonPosition}>
               <Badge
-                invisible={!invitations || invitations.length == 0}
+                invisible={!invitations || invitations.length === 0}
                 badgeContent={invitations.length}
                 color="primary"
               >

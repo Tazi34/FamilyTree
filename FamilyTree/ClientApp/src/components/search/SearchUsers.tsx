@@ -35,7 +35,6 @@ const SearchUsersContainer = (props: Props) => {
     dispatch(search({ query }))
       .then((response: any) => {
         if (response.error) {
-          //TODO co jak error ?
         }
       })
       .then(() => setSearchResultsList(true));
@@ -56,11 +55,6 @@ const SearchUsersContainer = (props: Props) => {
     }
     setQuery(newValue);
   };
-  const handleClose = () => {
-    setSearchResultsList(false);
-    setQuery("");
-  };
-
   return (
     <div>
       <div ref={anchor}>

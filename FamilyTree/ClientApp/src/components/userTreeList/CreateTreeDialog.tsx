@@ -1,14 +1,13 @@
-import { Button, makeStyles } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import { Theme } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import { Formik } from "formik";
 import React from "react";
-import ValidationErrorText from "../UI/ValidationErrorText";
+import ErrorValidationWrapper from "../UI/ErrorValidationWrapper";
 import createTreeValidationSchema from "./createTreeValidationSchema";
 
 type Props = {
@@ -48,16 +47,20 @@ const CreateTreeDialog = ({ open, onClose, onSubmit }: Props) => {
               };
               return (
                 <form onSubmit={handleSubmit}>
-                  <TextField
-                    autoFocus
-                    margin="dense"
-                    label="Tree name"
-                    name="treeName"
-                    fullWidth
-                    value={values.treeName}
-                    onChange={change.bind(null, "message")}
-                  />
-                  <ValidationErrorText error={errors.treeName} />
+                  <ErrorValidationWrapper
+                    error={errors.treeName}
+                    touched={touched.treeName}
+                  >
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      label="Tree name"
+                      name="treeName"
+                      fullWidth
+                      value={values.treeName}
+                      onChange={change.bind(null, "message")}
+                    />
+                  </ErrorValidationWrapper>
 
                   <DialogActions>
                     <Button variant="contained" color="primary" type="submit">

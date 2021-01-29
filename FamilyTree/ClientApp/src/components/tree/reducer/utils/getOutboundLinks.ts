@@ -20,7 +20,7 @@ export const getOutboundLinks = (state: TreeState, node: Node): Link[] => {
       .filter((f) => f) as FamilyNode[];
 
     const childFamilies = families.filter(
-      (family) => family.fatherId == node.id || family.motherId == node.id
+      (family) => family.fatherId === node.id || family.motherId === node.id
     );
     childFamilies.forEach((childFamily) => {
       if (childFamily) {
@@ -87,7 +87,6 @@ export const getIncomingLinks = (state: TreeState, node: Node): Link[] => {
   }
   return [];
 };
-// TODO OUTGOING LINKS
 export const getNodeLinks = (state: TreeState, node: Node): Link[] => {
   return [...getIncomingLinks(state, node), ...getOutboundLinks(state, node)];
 };
@@ -121,16 +120,3 @@ function isInt(value: any) {
   var x = parseFloat(value);
   return !isNaN(value) && (x | 0) === x;
 }
-export const familyIdGenerator = (
-  state: TreeState,
-  graphNumber: number
-): string => {
-  const id = `${graphNumber}u${state.nextFamilyId}`;
-  state.nextFamilyId++;
-  return id;
-};
-
-export const randomFamilyId = () => {
-  // TODO generator id rodziny
-  return `100u${Math.floor(Math.random() * 100000 + 1000)}`;
-};

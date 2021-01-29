@@ -1,4 +1,4 @@
-import { makeStyles, Paper } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
@@ -36,7 +36,6 @@ const CreatePostFormContainer = (props: any) => {
       if (!resp.error) {
         history.push(`${BLOG_PAGE_URI}/${user!.id}`);
       } else {
-        //TODO
       }
     });
   };

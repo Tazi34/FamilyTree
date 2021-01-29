@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import ChatsContainer from "../chat/ChatsContainer";
 import FriendsPanel from "../friendList/FriendsPanel";
 import { getUser } from "../loginPage/authenticationReducer";
-import ResponsiveMainColumn from "../ResponsiveMainColumn/ResponsiveMainColumn";
+import ResponsiveMainColumn from "../mainColumn/ResponsiveMainColumn";
 import LayoutBase from "./LayoutBase";
 
 const useStyles = makeStyles((theme: Theme) => ({

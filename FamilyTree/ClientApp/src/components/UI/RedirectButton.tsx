@@ -12,9 +12,6 @@ export const RedirectButton = ({ to, ...props }: RedirectButtonProps) => {
     <Button
       {...props}
       onClick={() => {
-        // if (history.location.pathname.localeCompare(to) == 0) {
-        //   history.go(0);
-        // } else {
         {
           history.push(to);
         }

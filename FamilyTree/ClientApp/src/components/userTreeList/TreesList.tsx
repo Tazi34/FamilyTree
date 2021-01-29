@@ -32,7 +32,7 @@ const TreesList = ({
 }: TreeListProps) => {
   const classes = useStyles();
 
-  if (!loading && trees.length == 0)
+  if (!loading && trees.length === 0)
     return <EmptyTreesList isOwner={isOwner} />;
 
   return (

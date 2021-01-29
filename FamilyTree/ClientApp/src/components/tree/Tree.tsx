@@ -76,7 +76,6 @@ const Tree = (props: any) => {
     (state) => state.tree.isLoading
   );
   React.useEffect(() => {
-    //TODO rozwiazanie kwesti goscia - jak wejdzie gosc rzuca blad i elo
     dispatch(getTree(treeId)).then((resp: any) => {
       if (resp.error) {
         alert.error(
@@ -130,7 +129,7 @@ const Tree = (props: any) => {
 
   if (isLoading) return <div className={classes.treeBackground}></div>;
 
-  if (treeInformation && treeInformation.treeId == 0) {
+  if (treeInformation && treeInformation.treeId === 0) {
     return <Redirect to={HOME_PAGE_URI} />;
   }
   return (

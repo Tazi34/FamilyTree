@@ -67,8 +67,6 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
     height: "100%",
   },
   picture: {
-    // position: "absolute",
-    // top: dividerScale * RECT_HEIGHT - imageSize / 2,
     width: imageSize,
     height: imageSize,
     alignSelf: "center",
@@ -112,7 +110,6 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
   addIconSvg: {
     fontSize: addIconSize,
     color: ({ hasUser }) => (hasUser ? "#f4f4f4" : theme.palette.primary.light),
-
     padding: 0,
   },
   profilePicture: {

@@ -4,7 +4,6 @@ import {
   Divider,
   makeStyles,
   TextField,
-  Typography,
 } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import axios from "axios";
@@ -60,7 +59,7 @@ const PostForm = ({ post, onSubmit }: Props) => {
     const form = new FormData();
     form.append("picture", file);
     return axios.post(baseURL + "/blog/picture", form).then((resp: any) => {
-      if (resp.status == 200) {
+      if (resp.status === 200) {
         return {
           data: {
             link: resp.data.pictureUrl,

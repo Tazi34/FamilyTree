@@ -10,15 +10,11 @@ import { uploadTreeNodePictureRequest } from "../tree/reducer/updateNodes/setNod
 import { updateTreeNode } from "../tree/reducer/updateNodes/updateNode";
 import TreeNodeEdit from "./TreeNodeEdit";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
-
 type Props = {
   node: PersonNode;
   onClose: () => void;
 };
 const TreeNodeEditContainer = ({ node, onClose }: Props) => {
-  const classes = useStyles();
-
   const dispatch = useThunkDispatch();
   const alert = useAlert();
   const handlePictureSet = (data: any) => {
@@ -53,15 +49,10 @@ const TreeNodeEditContainer = ({ node, onClose }: Props) => {
       birthday: date.toISOString(),
     };
     dispatch(updateTreeNode(data)).then((resp: any) => {
-      //TODO error handling
       if (resp.error) {
-        // if (onError) {
-        //   onError("Could not modify node.");
-        // }
+        alert.error("Could not modify node.");
       } else {
-        // if (onSuccess) {
-        //   onSuccess("Tree node modified. ");
-        // }
+        alert.success("Tree node modified. ");
         onClose();
       }
     });

@@ -1,5 +1,4 @@
 import { makeStyles } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { Redirect, useHistory, withRouter } from "react-router";
@@ -12,23 +11,21 @@ import {
 import { ADMIN_ROLE } from "../../helpers/roles";
 import useAlert from "../alerts/useAlert";
 import { withAlertMessage } from "../alerts/withAlert";
-import { getUser } from "../loginPage/authenticationReducer";
-import BlogPost from "./BlogPost";
-import { getComments } from "../blog/redux/comments/commentsActions";
 import {
   deletePost,
   fetchPost,
   selectCurrentPost,
   selectPostStatus,
 } from "../blog/redux/postsReducer";
+import { getUser } from "../loginPage/authenticationReducer";
+import BlogPost from "./BlogPost";
 
-const useStyles = makeStyles((theme: Theme) => ({}));
+const useStyles = makeStyles(() => ({}));
 
 type Props = {
   computedMatch: any;
 } & any;
 const BlogPostPage = (props: Props) => {
-  const classes = useStyles();
   const user = useSelector(getUser);
 
   const alert = useAlert();
@@ -36,8 +33,6 @@ const BlogPostPage = (props: Props) => {
   const postId = props.computedMatch.params.postId;
   const dispatch = useThunkDispatch();
   const post = useSelector(selectCurrentPost);
-
-  const postsFetchingStatus = useSelector(selectPostStatus);
 
   const handleEditPost = (postId: number) => {
     history.push(`${EDIT_POST_FORM_PAGE_URI}/${postId}`);
@@ -58,11 +53,6 @@ const BlogPostPage = (props: Props) => {
       }
     });
   }, [postId]);
-
-  if (postsFetchingStatus.loading) {
-    //TODO
-  }
-
   if (!postId) {
     return <Redirect to={HOME_PAGE_URI} />;
   }
@@ -75,7 +65,7 @@ const BlogPostPage = (props: Props) => {
       canEdit={isOwner}
       onDeletePost={handleDeletePost}
       onEditPost={handleEditPost}
-    ></BlogPost>
+    />
   );
 };
 

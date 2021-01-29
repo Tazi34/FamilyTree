@@ -1,8 +1,6 @@
 import {
   Avatar,
   Box,
-  Button,
-  ButtonBase,
   CardActionArea,
   Divider,
   IconButton,
@@ -10,23 +8,19 @@ import {
   makeStyles,
   Paper,
   Slide,
-  TextField,
   Typography,
 } from "@material-ui/core";
-import * as signalR from "@microsoft/signalr";
-
 import { Theme, useTheme } from "@material-ui/core/styles";
-import React, { useEffect, useRef, useState } from "react";
 import CloseIcon from "@material-ui/icons/Close";
-import { Chat as ChatType, Message } from "./chatReducer";
 import SendIcon from "@material-ui/icons/Send";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
-import ChatMessage from "./ChatMessage";
 import { Formik } from "formik";
-import { formatInitials } from "../../helpers/formatters";
+import React, { useEffect, useRef } from "react";
 import { useHistory } from "react-router";
 import { BLOG_PAGE_URI } from "../../applicationRouting";
+import { formatInitials } from "../../helpers/formatters";
 import Blinking from "../UI/Blinking";
+import ChatMessage from "./ChatMessage";
+import { Chat as ChatType, Message } from "./chatReducer";
 
 const useStyles = makeStyles<any, any>((theme: Theme) => ({
   chatTab: {
@@ -279,6 +273,6 @@ const isLastInSegment = (
   if (index + 1 < messages.length) {
     return currentMessage.fromId !== messages[index + 1].fromId;
   }
-  if (index + 1 == messages.length) return true;
+  if (index + 1 === messages.length) return true;
   return false;
 };

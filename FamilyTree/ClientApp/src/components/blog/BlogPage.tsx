@@ -1,4 +1,4 @@
-import { CircularProgress, makeStyles, Tab, Tabs } from "@material-ui/core";
+import { makeStyles, Tab, Tabs } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -14,15 +14,14 @@ import { StatusState } from "../../helpers/helpers";
 import { BlogProfile } from "../../model/BlogProfile";
 import { Post } from "../../model/Post";
 import useAlert from "../alerts/useAlert";
-import { withAlertMessage } from "../alerts/withAlert";
 import { tryOpenChat } from "../chat/chatReducer";
 import { getUser, User } from "../loginPage/authenticationReducer";
-import ResponsiveMainColumn from "../ResponsiveMainColumn/ResponsiveMainColumn";
+import ResponsiveMainColumn from "../mainColumn/ResponsiveMainColumn";
+import PostsList from "../posts/PostsList";
 import UserProfileDialog from "../userProfile/UserProfileDialog";
 import TreesListProvider from "../userTreeList/TreesListProvider";
 import BlogOwnerSection from "./BlogOwnerSection";
 import BlogProfileSection from "./BlogProfileSection";
-import PostsList from "../posts/PostsList";
 import { deletePost, getBlog, postsSelectors } from "./redux/postsReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({

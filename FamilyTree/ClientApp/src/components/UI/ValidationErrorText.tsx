@@ -8,7 +8,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-//TODO zamienic na wrapper
 const ValidationErrorText = ({ error }: any) => {
   const classes = useStyles();
 

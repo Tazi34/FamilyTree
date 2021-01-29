@@ -46,7 +46,6 @@ export const addFamily = (
     .filter((a) => a) as PersonNode[];
 
   if (childrenNodes.length !== children.length) {
-    //TODO komunikat jakie dzieci
     throw "Unrecognized child";
   }
   if (!firstParentId && !secondParentId) {

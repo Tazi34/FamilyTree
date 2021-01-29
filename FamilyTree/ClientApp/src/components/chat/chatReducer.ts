@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios";
 import {
   createAction,
   createAsyncThunk,
@@ -7,13 +6,13 @@ import {
   createReducer,
   EntityState,
 } from "@reduxjs/toolkit";
+import { AxiosResponse } from "axios";
 import { ApplicationState } from "../../helpers";
+import { createActionWithPayload } from "../../helpers/helpers";
 import chatAPI from "./API/chatAPI";
-
-import { getLatestChats } from "./reducer/getLatestChats";
 import { GetChatResponse } from "./API/getChat";
 import { closeAllChats } from "./reducer/closeAllChats";
-import { createActionWithPayload } from "../../helpers/helpers";
+import { getLatestChats } from "./reducer/getLatestChats";
 
 export type Message = {
   creationTime: Date;
@@ -62,7 +61,7 @@ export const tryOpenChat = createAsyncThunk(
     const state = getState() as ApplicationState;
     const openedChats = state.chats.currentChats;
 
-    if (doOpen && openedChats.find((c) => c == chatId)) {
+    if (doOpen && openedChats.find((c) => c === chatId)) {
       return dispatch(closeChat(chatId));
     } else {
       const chat = chatsSelectors.selectById(state, chatId);
