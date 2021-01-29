@@ -88,7 +88,6 @@ const TreeRenderer = (props: OwnProps) => {
   };
 
   const handleStopConnectingMode = (e: any) => {
-    console.log(e);
     if (connection.isConnecting) {
       e.preventDefault();
       resetConnectingMode();
@@ -100,7 +99,6 @@ const TreeRenderer = (props: OwnProps) => {
     document.addEventListener("contextmenu", handleStopConnectingMode);
     return () => {
       document.removeEventListener("contextmenu", handleStopConnectingMode);
-      document.removeEventListener("keyup", handleStopConnectingMode);
       document.removeEventListener("keydown", handleStopConnectingMode);
     };
   });

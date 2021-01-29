@@ -25,13 +25,10 @@ const startSignalRConnection = async (connection: any) => {
   try {
     await connection.start();
     console.assert(connection.state === signalR.HubConnectionState.Connected);
-
-    console.log("Connection established " + connection.connectionId);
   } catch (err) {
     console.assert(
       connection.state === signalR.HubConnectionState.Disconnected
     );
-    console.error("Connection Error: ", err);
     setTimeout(() => startSignalRConnection(connection), 5000);
   }
 };
@@ -44,9 +41,6 @@ const buildConnection = (storeAPI: any, token?: string) => {
   connectionHub.on("ReceiveMessage", function (userId, message) {
     const state: ApplicationState = storeAPI.getState();
     const currentUserId = state.authentication.user!.id;
-
-    console.log(connectionHub.connectionId);
-    logger.log("Received message " + message + " from " + userId);
 
     storeAPI.dispatch(onReceiveMessage(userId, message, currentUserId));
   });
@@ -81,9 +75,7 @@ export const signalRMiddleware = (storeAPI: any) => {
 
     if (connectionHub) {
       if (action.type === logoutUser.toString()) {
-        connectionHub.stop().then(() => {
-          console.log("connection stopped");
-        });
+        connectionHub.stop().then(() => {});
       }
 
       if (action.type === sendMessage.toString()) {

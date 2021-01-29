@@ -1,20 +1,15 @@
-import {
-  ClickAwayListener,
-  Dialog,
-  makeStyles,
-  Menu,
-  MenuItem,
-  Popover,
-} from "@material-ui/core";
+import { ClickAwayListener, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { Redirect, useHistory } from "react-router";
+import { useHistory } from "react-router";
 import { useThunkDispatch } from "../..";
 import { BLOG_PAGE_URI, TREE_PAGE_URI } from "../../applicationRouting";
-import { SearchResultsDTO } from "./redux/searchReducer";
-
-import { search, searchResultSelector } from "./redux/searchReducer";
+import {
+  search,
+  SearchResultsDTO,
+  searchResultSelector,
+} from "./redux/searchReducer";
 import Search from "./Search";
 import SearchResults from "./SearchResults";
 
@@ -29,7 +24,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 const WAIT_INTERVAL = 500;
 
-const MainSearchContainer = (props: any) => {
+const MainSearchContainer = () => {
   const classes = useStyles();
   const dispatch = useThunkDispatch();
   const [searchResultsList, setSearchResultsList] = React.useState(false);
@@ -43,7 +38,6 @@ const MainSearchContainer = (props: any) => {
     dispatch(search({ query }))
       .then((response: any) => {
         if (response.error) {
-          //TODO co jak error ?
         }
       })
       .then(() => setSearchResultsList(true));

@@ -111,17 +111,11 @@ const FriendsPanel = (props: any) => {
 
         <Slide in={showInvitations} timeout={1000} direction={"left"}>
           <div className={classes.invitationsAbsolute}>
-            <ClickAwayListener
-              onClickAway={() => {
-                if (showInvitations) setShowInvitations(false);
-              }}
-            >
-              <InvitationsList
-                invitations={invitations}
-                onAccept={handleAcceptInvitation}
-                onReject={handleRejectInvitation}
-              />
-            </ClickAwayListener>
+            <InvitationsList
+              invitations={invitations}
+              onAccept={handleAcceptInvitation}
+              onReject={handleRejectInvitation}
+            />
           </div>
         </Slide>
       </Paper>
