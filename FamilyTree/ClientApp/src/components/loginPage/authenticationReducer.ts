@@ -1,9 +1,4 @@
 import {
-  EditProfileRequestData,
-  EditProfileResponse,
-} from "./../userProfile/API/editProfile";
-import { AuthenticateGmailResponse } from "./API/authenticateGmail";
-import {
   createAction,
   createAsyncThunk,
   createDraftSafeSelector,
@@ -20,6 +15,8 @@ import {
   LOGIN_API_URL,
 } from "./../../helpers/apiHelpers";
 import { StatusState } from "./../../helpers/helpers";
+import { EditProfileResponse } from "./../userProfile/API/editProfile";
+import { AuthenticateGmailResponse } from "./API/authenticateGmail";
 import { AuthenticateTokenResponse } from "./API/authenticateToken";
 import authenticationAPI from "./API/authenticationAPI";
 import {

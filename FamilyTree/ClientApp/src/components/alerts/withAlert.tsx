@@ -1,6 +1,5 @@
-import React, { Component, useState } from "react";
+import React, { useState } from "react";
 import { AlertMessage } from "./AlertMessage";
-import { Alert } from "./reducer/alertsReducer";
 export type WithAlert = {
   alertInfo: (message: string) => {};
   alertSuccess: (message: string) => {};

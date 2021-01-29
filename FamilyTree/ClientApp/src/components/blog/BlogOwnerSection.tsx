@@ -1,11 +1,4 @@
-import {
-  Avatar,
-  IconButton,
-  makeStyles,
-  Paper,
-  TextField,
-  Tooltip,
-} from "@material-ui/core";
+import { Avatar, IconButton, makeStyles, TextField } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import SettingsIcon from "@material-ui/icons/Settings";
 import * as React from "react";

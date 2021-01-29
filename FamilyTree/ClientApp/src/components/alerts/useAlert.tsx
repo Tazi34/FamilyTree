@@ -1,10 +1,5 @@
-import { makeStyles } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
-import * as React from "react";
 import { useThunkDispatch } from "../..";
 import { addAlert, Alert } from "./reducer/alertsReducer";
-
-const useStyles = makeStyles((theme: Theme) => ({}));
 
 const useAlert = () => {
   const dispatch = useThunkDispatch();

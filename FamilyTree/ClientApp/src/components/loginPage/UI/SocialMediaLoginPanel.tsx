@@ -1,10 +1,9 @@
-import { Box, Button, Grid, IconButton, makeStyles } from "@material-ui/core";
+import { Button, Grid, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
+import FacebookIcon from "@material-ui/icons/Facebook";
 import * as React from "react";
-
 import GoogleLogin from "react-google-login";
 import { logger } from "../../../helpers/logger";
-import FacebookIcon from "@material-ui/icons/Facebook";
 
 const FacebookLogin = require("react-facebook-login/dist/facebook-login-render-props.js")
   .default;

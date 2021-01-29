@@ -1,10 +1,6 @@
 import { createActionWithPayload } from "../../../helpers/helpers";
 
 interface StatusReducerCreator {
-  // stopLoading: ActionCreatorWithPreparedPayload<{}[], any, string>;
-  // startLoading: ActionCreatorWithPreparedPayload<{}[], any, string>;
-  // receiveError: ActionCreatorWithPreparedPayload<unknown[], any, string>;
-  // clearError: ActionCreatorWithPreparedPayload<unknown[], any, string>;
   stopLoading: any;
   startLoading: any;
   receiveError: any;

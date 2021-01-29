@@ -1,5 +1,3 @@
-import { makeStyles } from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import DrawableLink from "./DrawableLink";
 

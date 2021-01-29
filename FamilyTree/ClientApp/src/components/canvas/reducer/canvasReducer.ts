@@ -1,6 +1,5 @@
-import { createActionWithPayload } from "./../../../helpers/helpers";
 import { createAction, createReducer, createSelector } from "@reduxjs/toolkit";
-import { ApplicationState } from "../../../helpers";
+import { createActionWithPayload } from "./../../../helpers/helpers";
 
 export type CanvasState = {
   disabledZoom: boolean;

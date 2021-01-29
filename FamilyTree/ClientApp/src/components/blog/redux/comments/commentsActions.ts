@@ -1,4 +1,3 @@
-import { COMMENTS_API_URL } from "../../../../helpers/apiHelpers";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AxiosResponse } from "axios";
 import commentsAPI from "../../../comments/commentsAPI/commentsAPI";

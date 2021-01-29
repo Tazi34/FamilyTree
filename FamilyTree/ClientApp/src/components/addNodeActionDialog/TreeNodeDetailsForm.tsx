@@ -42,9 +42,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     //koretka przez Grid Material-UI
     width: imgSize + 23,
     height: imgSize,
-    //cursor: "pointer ",
     marginRight: 10,
-
     position: "relative",
   },
   editPictureIconContainer: {

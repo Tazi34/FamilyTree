@@ -7,7 +7,6 @@ import { useThunkDispatch } from "../..";
 import { BLOG_PAGE_URI, LOGIN_PAGE_URI } from "../../applicationRouting";
 import { closeAllChats } from "../chat/reducer/closeAllChats";
 import { getUser } from "../loginPage/authenticationReducer";
-import "./homePage.css";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {

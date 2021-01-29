@@ -1,11 +1,9 @@
-import { Avatar, Badge, Box, ButtonBase, makeStyles } from "@material-ui/core";
+import { Avatar, Badge, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import * as React from "react";
 import { useThunkDispatch } from "../..";
 import { formatInitials } from "../../helpers/formatters";
 import { Chat, markChatAsSeen } from "../chat/chatReducer";
-import Blinking from "../UI/Blinking";
 import TooltipMouseFollow from "../UI/TooltipMouseFollow";
 
 type Props = {
@@ -21,7 +19,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     border: "solid " + theme.palette.primary.dark,
     borderWidth: 2,
     cursor: "pointer",
-
     margin: "7px 0",
   },
   badge: {

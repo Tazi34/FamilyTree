@@ -1,10 +1,9 @@
-import { Box, Grid, makeStyles } from "@material-ui/core";
+import { Grid, makeStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import * as React from "react";
 import ChatsContainer from "../chat/ChatsContainer";
 import FriendsPanel from "../friendList/FriendsPanel";
 import UserTreeListProvider from "../userTreeList/TreesListProvider";
-import UserTreePanel from "../userTreeList/UserTreePanel";
 import LayoutBase from "./LayoutBase";
 
 const useStyles = makeStyles((theme: Theme) => ({
