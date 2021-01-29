@@ -89,13 +89,6 @@ const TreeInformationPanel = ({
           <Button
             variant="outlined"
             className={classes.button}
-            onClick={() => onMockNodeAdd()}
-          >
-            Add mock Node
-          </Button>
-          <Button
-            variant="outlined"
-            className={classes.button}
             onClick={handleExportTree}
           >
             Export
