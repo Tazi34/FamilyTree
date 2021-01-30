@@ -1,6 +1,5 @@
 import "react-app-polyfill/ie11";
 import "react-app-polyfill/stable";
-import "bootstrap/dist/css/bootstrap.css";
 import { ConnectedRouter } from "connected-react-router";
 import { createBrowserHistory } from "history";
 import * as React from "react";
