@@ -68,7 +68,7 @@ const Tree = (props: any) => {
   const canvasCenter = useSelector(selectCanvasCenter);
   const classes = useStyles();
   const treeId = parseFloat(props.computedMatch.params.treeId);
-  const { onNodeAdd, onDefaultNodeAdd, onNodeDelete } = useTreeActions();
+  const { onNodeAdd, onNodeDelete } = useTreeActions();
   const treeInformation = useSelector<ApplicationState, TreeInformation | null>(
     (state) => state.tree.treeInformation
   );
@@ -123,10 +123,6 @@ const Tree = (props: any) => {
       onNodeDelete(nodeId);
     }
   };
-  const handleMockNodeAdd = () => {
-    onDefaultNodeAdd(treeId, canvasCenter.x, canvasCenter.y - 50);
-  };
-
   if (isLoading) return <div className={classes.treeBackground}></div>;
 
   if (treeInformation && treeInformation.treeId === 0) {
@@ -137,10 +133,7 @@ const Tree = (props: any) => {
       <div className={classes.treeBackground}>
         <div className={classes.relative}>
           <div className={classes.treeInformationPanel}>
-            <TreeInformationContainer
-              onNodeAdd={openAddNodeDialog}
-              onDefaultNodeAdd={handleMockNodeAdd}
-            />
+            <TreeInformationContainer onNodeAdd={openAddNodeDialog} />
           </div>
         </div>
         <TreeBody

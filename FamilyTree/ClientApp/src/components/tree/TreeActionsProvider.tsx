@@ -29,7 +29,6 @@ type TreeActions = {
     y: number,
     formData: CreateNodeFormData
   ) => any;
-  onDefaultNodeAdd: (treeId: number, x: number, y: number) => any;
   onNodeDelete: (id: number) => void;
   onNodeVisibilityChange: (id: number) => void;
 };
@@ -96,26 +95,6 @@ const useTreeActions = (): TreeActions => {
     return dispatch(addEmptyNode(createNodeData));
   };
 
-  const onDefaultNodeAdd = (treeId: number, x: number, y: number) => {
-    const createNodeData: CreateNodeRequestData = {
-      userId: 0,
-      treeId,
-      children: [],
-      fatherId: 0,
-      motherId: 0,
-      picture: "",
-      description: "Very fascinating description :0",
-      name: "Adam",
-      sex: "Male",
-      x,
-      y,
-      surname: "Kowalski",
-      birthday: "2020-12-16T20:29:42.677Z",
-      partners: [],
-    };
-    return dispatch(addEmptyNode(createNodeData));
-  };
-
   const onNodeVisibilityChange = (id: number) => {
     dispatch(changeNodeVisibility(id));
   };
@@ -125,7 +104,6 @@ const useTreeActions = (): TreeActions => {
     onAsChildConnect,
     onNodeDisconnect,
     onNodeAdd,
-    onDefaultNodeAdd,
     onNodeDelete,
     onNodeVisibilityChange,
   };

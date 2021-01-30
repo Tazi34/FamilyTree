@@ -25,6 +25,7 @@ const startSignalRConnection = async (connection: any) => {
   try {
     await connection.start();
     console.assert(connection.state === signalR.HubConnectionState.Connected);
+    logger.log("Connection started " + connection.connectionId);
   } catch (err) {
     console.assert(
       connection.state === signalR.HubConnectionState.Disconnected

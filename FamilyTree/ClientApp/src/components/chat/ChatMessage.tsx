@@ -8,12 +8,12 @@ import { Message } from "./chatReducer";
 
 const useStyles = makeStyles((theme: Theme) => ({
   message: {
-    padding: "6px 12px",
-
+    padding: "4px 10px",
+    paddingTop: 5,
     borderRadius: 10,
     maxWidth: "70%",
     wordBreak: "break-all",
-    fontSize: 15,
+    fontSize: 14,
   },
   outgoingMessage: {
     background: theme.palette.primary.dark,

@@ -93,4 +93,4 @@ const TreeInformationContainer = ({ onNodeAdd, onDefaultNodeAdd }: any) => {
   );
 };
 
-export default withAlertMessage(TreeInformationContainer);
+export default TreeInformationContainer;

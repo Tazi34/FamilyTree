@@ -100,7 +100,7 @@ const useStyles = makeStyles<any, any>((theme: Theme) => ({
   textInputContainer: {
     flexGrow: 1,
     marginRight: 8,
-
+    paddingLeft: 6,
     borderWidth: 2,
     borderRadius: 10,
     maxHeight: 90,
@@ -235,6 +235,11 @@ const Chat = ({ chat, onChatClose, onMessageSend, onChatSeen }: Props) => {
                               if (values.message.length > 0) handleSubmit();
                               e.preventDefault();
                             }
+                          }}
+                          inputProps={{
+                            style: {
+                              fontSize: 12,
+                            },
                           }}
                           multiline={true}
                           autoComplete={"off"}
