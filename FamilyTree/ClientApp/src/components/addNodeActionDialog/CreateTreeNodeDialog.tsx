@@ -73,6 +73,9 @@ const CreateTreeNodeDialog = ({ open, onClose, onSubmit }: Props) => {
                   setFieldValue={setFieldValue}
                   touched={touched}
                   errors={errors}
+                  onPictureSet={(file: any) => {
+                    values.picture = file;
+                  }}
                 />
                 <div className={classes.buttons}>
                   <Button
